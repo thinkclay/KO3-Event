@@ -154,7 +154,6 @@ class KB30 {
                 }
             }
         }
-        
         if ($options['return_path']) {
             return $paths;
         }
@@ -572,18 +571,38 @@ class KB30 {
      *
      *         `benchmark` - Benchmark this events execution.
      *
+     *         `flags`  - Flags to pass to the `preg_match` function used for matching a
+     *         regex event.
+     *
+     *         `offset` - Specify the alternate place from which to start the search.
+     *
      * @throws  LogicException  Exception encountered during listener exec
      * @return  array|boolean
      */
     public static function trigger($event, $params = array(), $options = array()) {
-        $defaults = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => true);
+        $defaults = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => false, 'flags' => null, 'offset' => null);
         $options += $defaults;
+        $org   = $event;
         $event = strtolower($event);
+        $evreg = '#' . $event . '$#i';
         if (isset(static::$__events[$options['namespace']][$event])) {
+            $listeners = static::$__events[$options['namespace']][$event];  
+        } else {
+            foreach (static::$__events[$options['namespace']] as $name => $op) {
+                $regex = '#' . $name . '$#i';
+                if (preg_match($regex, $org, $matches, $options['flags'], $options['offset'])) {
+                    $listeners = static::$__events[$options['namespace']][$name];
+                    unset($matches[0]);
+                    $params += (array) $matches;
+                    break;
+                }
+            }
+        }
+        if ($listeners != null) {
             $return = array();
             $i = 0;
             $debug = false;
-            foreach (static::$__events[$options['namespace']][$event] as $name => $function) {
+            foreach ($listeners as $name => $function) {
                 if ($debug || static::$__debug && $options['benchmark']) {
                     $debug = true;
                     static::analyze('bench_begin', array('name' => 'event_'.$name.'_'.$i));

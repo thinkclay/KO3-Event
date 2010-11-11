@@ -6,11 +6,6 @@ namespace prggmr;
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- * 
- *   ##    ##  ####
- *    #   #   #   #
- *     # #        #
- *      #      #######
  *******************************************************************************
  *******************************************************************************/
 
@@ -58,7 +53,7 @@ usage: prggmr [--processor] [--help] COMMAND [ARGS]
 The current avaliable prggmr options are:
     route   Dispatch the provided route URI.
 
-See 'prggmr --help COMMAND' for more information on a specific command.
+See 'prggmr help COMMAND' for more information on a specific command.
 
 HELP_TEXT
             ,
@@ -153,7 +148,7 @@ ROUTE_HELP
         
         if (!$path) {
             exit(
-"Failed to log prggmr config. Please check your paths and ensure \"system/var/config/prggmr_dev.ini\" exists.
+"Failed to load prggmr config. Please check your paths and ensure \"system/var/config/prggmr_(sys)_dev.ini\" exists.
 "
             );
         }
@@ -216,15 +211,23 @@ Failed to initilize environment please check the following paths and permissions
     }
     
     /**
-     * 
+     * Runs the Command Line Interface commands.
+     * Uses switch...better solution?
      */
     public function run()
     {
         if (count($this->args) == 0) {
             die($this->_messages['help']['main']);
         }
+        
         // We've made it here so lets check our arguments
         switch ($this->args[0]) {
+            case 'help':
+                if (isset($this->_messages['help'][$this->args[1]])) {
+                    die($this->_messages['help'][$this->args[1]]);
+                }
+                die($this->_messages['help']['main']);
+                break;
             case 'route':
                 $arg = $this->args[0];
                 unset($this->args[0]);

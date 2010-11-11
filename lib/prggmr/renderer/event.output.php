@@ -6,11 +6,6 @@ namespace prggmr;
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- * 
- *   ##    ##  ####
- *    #   #   #   #
- *     # #        #
- *      #      #######
  *******************************************************************************
  *******************************************************************************/
 
@@ -202,18 +197,17 @@ class Renderer_Event_Output {
      */
     public function render($template)
     {
-        #ob_start();
+        ob_start();
             $paths = \Mana\KB30::load($template, array('return_path' => true));
-            var_dump($paths);
             foreach ($paths as $k => $v) {
                 if (file_exists($v)) {
                     include $v;
                     break;
                 }
             }
-            #$file = ob_get_clean();
-#            return $file;
-#		ob_flush();
+            $file = ob_get_clean();
+            return $file;
+		ob_flush();
     }
     
 }

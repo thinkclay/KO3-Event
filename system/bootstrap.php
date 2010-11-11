@@ -6,11 +6,6 @@ namespace prggmr;
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- * 
- *   ##    ##  ####
- *    #   #   #   #
- *     # #        #
- *      #      #######
  *******************************************************************************
  *******************************************************************************/
 
@@ -81,7 +76,7 @@ spl_autoload_register('\Mana\KB30::load');
 
 // Listen for KB30's dispatcher
 \Mana\KB30::listen('router.dispatch.startup', function($uri) {
-    $front = new \prggmr\Controller_Event_Front(new Renderer_Event_Output);
+    $front = new \prggmr\Request_Event_Front(new Renderer_Event_Output);
     $front->attach(array('uri'=>$uri));
     $front->dispatch();
     return $front;

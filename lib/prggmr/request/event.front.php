@@ -6,11 +6,6 @@ namespace prggmr;
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- * 
- *   ##    ##  ####
- *    #   #   #   #
- *     # #        #
- *      #      #######
  *******************************************************************************
  *******************************************************************************/
 
@@ -37,15 +32,15 @@ namespace prggmr;
  */
 
 /************************************************************
- * Front Event Controller
+ * Front Event Request
  * 
  * Handles initation of prggmr event execution, intercepts
  * the KB30::router('dispatch') triggering prggmr's interal
- * system handler.
+ * system dispatcher.
  */
 use prggmr;
 use \DirectoryIterator;
-class Controller_Event_Front {
+class Request_Event_Front {
     
     /**
      * Renderer Output Object.
@@ -76,7 +71,6 @@ class Controller_Event_Front {
     
     /**
      * Constructor sets up the _data Renderer_Event_Output.
-     * No other use needed.
      *
      * @param  object  $obj  Renderer_Event_Output
      */
@@ -129,7 +123,7 @@ class Controller_Event_Front {
         \Mana\KB30::trigger('router.startup', array(), array('namespace' => 'prggmr'));
         $this->uri = str_replace(\Mana\KB30::get('prggmr_config.paths.system_web_path'), '', $this->uri);
         $this->uri = ($this->uri == '') ? '/' : $this->uri;
-        #\Mana\KB30::trigger($this->uri, array($this), array('namespace' => 'prggmr'));
+        \Mana\KB30::trigger($this->uri, array($this), array('namespace' => 'prggmr'));
         
     }
     

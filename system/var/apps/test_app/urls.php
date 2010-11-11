@@ -6,11 +6,6 @@ namespace prggmr;
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- * 
- *   ##    ##  ####
- *    #   #   #   #
- *     # #        #
- *      #      #######
  *******************************************************************************
  *******************************************************************************/
 
@@ -37,14 +32,7 @@ namespace prggmr;
  */
 
 /************************************************************
- * System Router
- * 
- * Initials the `prggmr.router.startup` event allowing allowing a
- * dynamically changing routes table including modification
- * to existing routes.
- *
- * Routes can be added via this file or using the recommended method
- * of "listening" them in.
+ * Urls File
  */
 \Mana\KB30::router('/', function($front){
     $front->renderer->attach(array(
