@@ -52,6 +52,7 @@ usage: prggmr [--processor] [--help] COMMAND [ARGS]
 
 The current avaliable prggmr options are:
     route   Dispatch the provided route URI.
+    version Displays current prggmr version.
 
 See 'prggmr help COMMAND' for more information on a specific command.
 
@@ -235,6 +236,8 @@ Failed to initilize environment please check the following paths and permissions
                 array_values($this->args);
                 return $this->args[1];
                 break;
+            case 'version':
+                die("Prggmr EMV Framework 1.0alpha");
             default:
                 die($this->_messages['help']['main']);
                 break;

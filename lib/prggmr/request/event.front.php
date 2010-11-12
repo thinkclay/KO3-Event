@@ -89,7 +89,7 @@ class Request_Event_Front {
     public function dispatch()
     {
         $path  = \Mana\KB30::get('prggmr.config.paths.apps_path');
-        $view  = \Mana\KB30::get('prggmr.config.paths.apps_view');
+        $view  = \Mana\KB30::get('prggmr.config.paths.apps_views');
         $apps  = explode(',', \Mana\KB30::get('prggmr.config.system.installed_apps'));
         $url   = \Mana\KB30::get('prggmr.config.files.app_urls');
         $event = \Mana\KB30::get('prggmr.config.files.app_events');
@@ -103,7 +103,7 @@ class Request_Event_Front {
                 }
                 // Setup our view template directory for this app.
                 \Mana\KB30::library(sprintf('Prggmr App %s Templates', $app), array(
-                    'path' => $path.'/'.$app.'/'.$views,
+                    'path' => $path.'/'.$app.'/'.$view,
                     'prefix' => null,
                     'ext' => '.phtml',
                     'transformer' => function($class, $namespace, $options) {
@@ -128,10 +128,64 @@ class Request_Event_Front {
     }
     
     /**
-     * Generates a Header.
+     * Generates a HTTP Header.
+     * 
+     * @param  int  $code  HTTP Header Code to generate
+     *
+     * @return  boolean
      */
-    public function header($code, $msg)
+    public function header($code)
     {
-        header($_SERVER['SERVER_PROTOCOL'].' '.$code.' '.$msg);
+        $codes = array(
+            // 2xx Codes
+            '200' => 'Ok',
+            '201' => 'Created',
+            '202' => 'Accepted',
+            '203' => 'Non-Authoritative Information',
+            '204' => 'No Content',
+            '205' => 'Reset Content',
+            '206' => 'Partial Content',
+            // 3xx Codes
+            '300' => 'Multiple Choices',
+            '301' => 'Moved Permanently',
+            '302' => 'Found',
+            '303' => 'See Other',
+            '304' => 'Not Modified',
+            '305' => 'Use Proxy',
+            '306' =>  false,  //unused reserved code @throws Notice
+            '307' => 'Temporary Redirect',
+            // 4xx Codes
+            '400' => 'Bad Request',
+            '401' => 'Unauthorized',
+            '402' => 'Payment Required', // Unused reserved code @throws Notice
+            '403' => 'Forbidden',
+            '404' => 'Not Found',
+            '405' => 'Method not allowed',
+            '406' => 'Not Acceptable',
+            '407' => 'Proxy Authentication Required',
+            '408' => 'Request Timeout',
+            '409' => 'Conflict',
+            '410' => 'Gone',
+            '411' => 'Length Required',
+            '412' => 'Precondition Failed',
+            '413' => 'Request Entity Too Large',
+            '414' => 'Request-URI to Long',
+            '415' => 'Unsupported Media Type',
+            '416' => 'Request Range Not Satisfiable',
+            '417' => 'Expectation Failed',
+            // 5xx Codes
+            '500' => 'Internal Server Error',
+            '501' => 'Not Implemented',
+            '502' => 'Bad Gateway',
+            '503' => 'Service Unavaliable',
+            '504' => 'Gateway Timeout',
+            '505' => 'HTTP Version Not Supported'
+        );
+        
+        if (isset($codes[$code])) {
+            header($_SERVER['SERVER_PROTOCOL'].' '.$code.' '.$codes[$code]);
+            return true;
+        }
+        return false;
     }
 }

@@ -580,14 +580,15 @@ class KB30 {
      * @return  array|boolean
      */
     public static function trigger($event, $params = array(), $options = array()) {
-        $defaults = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => false, 'flags' => null, 'offset' => null);
-        $options += $defaults;
-        $org   = $event;
-        $event = strtolower($event);
-        $evreg = '#' . $event . '$#i';
+        $defaults  = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => false, 'flags' => null, 'offset' => null);
+        $options  += $defaults;
+        $org       = $event;
+        $event     = strtolower($event);
+        $evreg     = '#' . $event . '$#i';
+        $listeners = null;
         if (isset(static::$__events[$options['namespace']][$event])) {
             $listeners = static::$__events[$options['namespace']][$event];  
-        } else {
+        } else if (isset(static::$__events[$options['namespace']])) {
             foreach (static::$__events[$options['namespace']] as $name => $op) {
                 $regex = '#' . $name . '$#i';
                 if (preg_match($regex, $org, $matches, $options['flags'], $options['offset'])) {

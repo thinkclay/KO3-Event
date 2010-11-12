@@ -35,7 +35,7 @@ namespace prggmr;
  * Bootstrap file loads the configuration and establishes
  * the prggmr.event.front event to listen on \kb30\router_dispatch.
  */
-$config = \parse_ini_file('var/config/prggmr.dev.nix.ini', true);
+$config = \parse_ini_file('var/config/prggmr.dev.win.ini', true);
 require $config['paths']['system_path'].'/lib/kb30.php';
 
 \Mana\KB30::analyze('bench_begin', array('name' => 'prggmr benchmark'));

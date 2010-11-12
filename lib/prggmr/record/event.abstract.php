@@ -55,7 +55,30 @@ namespace prggmr;
  *
  *  3. Uncoupled event driven dbal.
  *
- * One of the better features of Record is the event handler
+ * The DBAL events are not to be confused with "TRIGGERS" in SQL, while
+ * they do perform at the same capacity ( done via updates, insertion
+ * and deletion ) the performance and useability of triggers outweighs
+ * the functionality of the event based DBAL provided by prggmr.
+ * That is not to say it shouldn't be used, while triggers provide a
+ * incrediable interface for manipulating data in a chained sequence
+ * they do not provide the support for manipulating server-side functions,
+ * this is where prggmr DBAL events will shine.
+ *
+ * All prggmr DBAL events are triggered in the following order during a
+ * select, insert, delete and update command.
+ *
+ * record_model_(model_name)_(operation|select|update|etc..)_before
+ *     -  An event that is called upon before any SQL is executed
+ *     the SQL Querystring is provided as the first parameter, along with
+ *     any parameters given to the statement in an array as the second param.
+ *
+ * record_model_(model_name)_(operation|select|update|etc..)_after
+ *     -  An event that is called upon after a SQL Querystring is executed
+ *     the SQL Querystring is provided as the first parameter, along with
+ *     any parameters given to the statement in an array as the second param,
+ *     with the results of the query in the third param, and the lastInsertId()
+ *     if one is provided as the fourth parameter.
+ *     
  *     
  */
 abstract class Record_Event_Abstract implements Record_Event_Interface {
