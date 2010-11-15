@@ -114,4 +114,29 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEvent('reference', array(&$i), array(0=>'', 1=>'Testing'));
     }
+    
+    # FAILURE
+    #public function testMultiParamsReferenceRegexMutliEvents()
+    #{
+    #    prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj, $str) {
+    #        $obj->node = 'Hello';
+    #        return $reg.$str;
+    #    });
+    #    
+    #    prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj) {
+    #        $obj->node .= ' My Name';
+    #        return $reg;
+    #    });
+    #    
+    #    prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj, $str, $module) {
+    #        $obj->node .= ' is '.$module;
+    #        return $obj->node;
+    #    });
+    #    
+    #    $obj = new stdClass();
+    #    
+    #    $this->assertEvent('ref-param-regex-test', array(&$obj, 'Test', 'Nick'), array(
+    #        0 => 'testTest',1=>'test',2=>'Hello My Name is Nick'
+    #    ));
+    #}
 }
