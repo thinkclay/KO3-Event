@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+namespace prggmr\event;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -36,7 +36,7 @@ namespace prggmr;
  *
  * Details provided at a later time.
  */ 
-class CLI_Event_Handler
+class Handle
 {
     /**
      * Array of help messages outputable to the end user whenever
@@ -145,7 +145,7 @@ ROUTE_HELP
             'log_file' => '/system/var/log/cli.log'
         );
         
-        $path = \Mana\KB30::get('prggmr.config.paths.system_path');
+        $path = \prggmr::get('prggmr.config.paths.system_path');
         
         if (!$path) {
             exit(

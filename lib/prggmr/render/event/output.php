@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+namespace prggmr\render\event;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -36,7 +36,7 @@ namespace prggmr;
  * 
  * Handles the outputable data.
  */
-class Renderer_Event_Output {
+class Output {
     
     #/**
     # * Data ready for output via a renderer processor.
@@ -171,7 +171,7 @@ class Renderer_Event_Output {
                 )
             );
         }
-        $data = \Mana\KB30::trigger('renderer_output', array(
+        $data = \prggmr::trigger('renderer_output', array(
             $this->_data), array(
                 'namespace' => 'prggmr')
         );
@@ -198,7 +198,7 @@ class Renderer_Event_Output {
     public function render($template)
     {
         ob_start();
-            $paths = \Mana\KB30::load($template, array('return_path' => true));
+            $paths = \prggmr::load($template, array('return_path' => true));
             foreach ($paths as $k => $v) {
                 if (file_exists($v)) {
                     include $v;

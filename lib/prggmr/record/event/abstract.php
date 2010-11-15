@@ -55,14 +55,12 @@ namespace prggmr;
  *
  *  3. Uncoupled event driven dbal.
  *
- * The DBAL events are not to be confused with "TRIGGERS" in SQL, while
- * they do perform at the same capacity ( done via updates, insertion
- * and deletion ) the performance and useability of triggers outweighs
- * the functionality of the event based DBAL provided by prggmr.
- * That is not to say it shouldn't be used, while triggers provide a
- * incrediable interface for manipulating data in a chained sequence
- * they do not provide the support for manipulating server-side functions,
- * this is where prggmr DBAL events will shine.
+ * While this is a ActiveRecord DBAL due to the nature that DBAL's can
+ * and respectively so require vast amounts of time to properly develop
+ * prggmr's is in short a packed version of a true activerecord DBAL.
+ * If you are looking for a more in-depth dbal suggest checking out
+ * php-activerecord
+ * https://github.com/kla/php-activerecord
  *
  * All prggmr DBAL events are triggered in the following order during a
  * select, insert, delete and update command.
@@ -81,5 +79,5 @@ namespace prggmr;
  *     
  *     
  */
-abstract class Record_Event_Abstract implements Record_Event_Interface {
+abstract class Event_Abstract implements Event_Interface {
 }

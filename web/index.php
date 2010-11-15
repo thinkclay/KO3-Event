@@ -33,5 +33,5 @@ namespace prggmr;
 
 require '../system/bootstrap.php';
 
-\Mana\KB30::router('dispatch');
-#echo '<pre>'; print_r(\Mana\KB30::analyze('bench_stop', array('name' => 'prggmr benchmark')));
+\prggmr::router('dispatch');
+#echo '<pre>'; print_r(\prggmr::analyze('bench_stop', array('name' => 'prggmr benchmark')));

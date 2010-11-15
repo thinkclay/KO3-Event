@@ -31,35 +31,36 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+use prggmr\request\event as request;
+use prggmr\render\event as render;
+use prggmr\cli\event as cli;
+use prggmr\record\connection as connection;
+
 /************************************************************
  * Bootstrap file loads the configuration and establishes
  * the prggmr.event.front event to listen on \kb30\router_dispatch.
  */
-$config = \parse_ini_file('var/config/prggmr.dev.win.ini', true);
-require $config['paths']['system_path'].'/lib/kb30.php';
+$config = \parse_ini_file('var/config/prggmr.dev.nix.ini', true);
+require $config['paths']['system_path'].'/lib/prggmr.php';
 
-\Mana\KB30::analyze('bench_begin', array('name' => 'prggmr benchmark'));
+\prggmr::analyze('bench_begin', array('name' => 'prggmr benchmark'));
 // Load our configuration ini
-\Mana\KB30::set('prggmr.config', $config);
+\prggmr::set('prggmr.config', $config);
 // Setup our system paths
 // Library Files
-\Mana\KB30::library('Prggmr Library', array(
+\prggmr::library('Prggmr Library', array(
     'path'   => $config['paths']['system_path'].'/lib/',
     'prefix' => null,
     'ext'    => '.php',
     'transformer' => function($class, $namespace, $options) {
         $namespace = ($namespace == null) ? '' : str_replace('\\', DIRECTORY_SEPARATOR, $namespace).DIRECTORY_SEPARATOR;
-        $class = explode('_', $class);
-        if (count($class) != 3) return null;
-        $class = array_map(function($i){
-            return strtolower($i);
-        },$class);
-        $filepath = $namespace.$class[0].DIRECTORY_SEPARATOR.$class[1].'.'.$class[2];
+        $class = str_replace('_', DIRECTORY_SEPARATOR, $class);
+        $filepath = strtolower($namespace.$class);
         return $filepath;
     }
 ));
 // Template files
-\Mana\KB30::library('Prggmr Templates', array(
+\prggmr::library('Prggmr Templates', array(
     'path' => $config['paths']['system_path'].'/system/var/templates/',
     'prefix' => null,
     'ext' => '.phtml',
@@ -69,20 +70,22 @@ require $config['paths']['system_path'].'/lib/kb30.php';
     }
 ));
 // External Library files ( Uses PECL style formatting )
-\Mana\KB30::library('Prggmr External');
+\prggmr::library('Prggmr External', array(
+    'path' => $config['paths']['system_path'].'/lib/'
+));
 
 // Setup our system library in php
-spl_autoload_register('\Mana\KB30::load');
+spl_autoload_register('\prggmr::load');
 
 // Listen for KB30's dispatcher
-\Mana\KB30::listen('router.dispatch.startup', function($uri) {
-    $front = new \prggmr\Request_Event_Front(new Renderer_Event_Output);
+\prggmr::listen('router.dispatch.startup', function($uri) {
+    $front = new request\Dispatch(new event\Output);
     $front->attach(array('uri'=>$uri));
     $front->dispatch();
     return $front;
 });
 
-if (\Mana\KB30::get('prggmr.config.system.debug')) {
-    $cli = new CLI_Event_Handler($argv);
-    \Mana\KB30::router('dispatch', $cli->run());
+if (\prggmr::get('prggmr.config.system.debug')) {
+    $cli = new cli\Handle($argv);
+    \prggmr::router('dispatch', $cli->run());
 }

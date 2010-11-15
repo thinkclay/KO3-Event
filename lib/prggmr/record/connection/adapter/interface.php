@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+namespace prggmr\record;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -36,7 +36,7 @@ namespace prggmr;
  * 
  * Interface for Record Adapters
  */
-interface Record_Adapter_Interface {
+interface Adapter_Interface {
     
     /**
      * Constructs a SQL select statement.

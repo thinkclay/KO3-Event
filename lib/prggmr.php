@@ -1,4 +1,13 @@
 <?php
+/******************************************************************************
+ ******************************************************************************
+ *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
+ *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
+ *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
+ *******************************************************************************
+ *******************************************************************************/
+
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -13,30 +22,26 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- */
-
-/**
- * KB30 a lightweight 5.3 Framework
  *
- * @copyright     Copyright 2010, Nickolas Whiting (http://www.nwhiting.com)
- * @license       http://www.apache.org/licenses/LICENSE-2.0 The Apache License, Version 2.0
+ *
+ * @author  Nickolas Whiting  <me@nwhiting.com>
+ * @package  Prggmr
+ * @category  Record
+ * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-namespace Mana;
 
-use \Mana;
 use \Exception;
 use \InvalidArgumentException;
 use \Closure;
 use \BadMethodCallException;
 use \RuntimeException;
 
-
-if (!defined('KB30_LIBRARY_PATH')) {
-    define('KB30_LIBRARY_PATH', dirname(__DIR__));
+if (!defined('PRGGMR_LIBRARY_PATH')) {
+    define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
 }
 
-class KB30 {
+class prggmr {
     /**
      * The system routes table. Stores the routes which will be
      * transversed to locate the current route.
@@ -47,7 +52,7 @@ class KB30 {
 
     
     /**
-     * KB30 registry property, information is stored as a `key` -> `value` pair.
+     * prggmr registry property, information is stored as a `key` -> `value` pair.
      *
      * @var  array  Array of `key` -> `value` mappings for registry contents.
      */
@@ -55,7 +60,7 @@ class KB30 {
     
     /**
      * List of libraries from which classes are loaded.
-     * Libraries can be added via `KB30::library()`
+     * Libraries can be added via `prggmr::library()`
      *
      * @var  array  Avaliable libraries for loading classes and files.
      */
@@ -93,7 +98,7 @@ class KB30 {
     );
 	
 	/**
-	 * KB30 Default Driver constant.
+	 * prggmr Default Driver constant.
 	 * Default constant is defined for methods that will
 	 * use a driver and allow a global default.
 	 */
@@ -102,9 +107,9 @@ class KB30 {
     /**
      * Loads a PHP file defined by `$class`. Looks through the list of
      * paths set at `static::$__libraries`.
-     * Paths can be added by calling `\KB30::library()`.
+     * Paths can be added by calling `\prggmr::library()`.
      * Loading is also possible by providing the exact path in the form of a
-     * decimal delimited string. e.g.. `KB30::load('library.mylib.orm.sqlite')`
+     * decimal delimited string. e.g.. `prggmr::load('library.mylib.orm.sqlite')`
      *
      * @param  string  $class  Either a fully-namespaced classname or a decimal
      *         string containing the full path to a specific file.
@@ -149,11 +154,13 @@ class KB30 {
             }
             $paths[] = $fullPath;
             if (!$options['return_path']) {
-                if (include $fullPath) {
+                if (file_exists($fullPath)) {
+                    include $fullPath;
                     return true;
                 }
             }
         }
+        
         if ($options['return_path']) {
             return $paths;
         }
@@ -171,15 +178,15 @@ class KB30 {
     }
 
     /**
-     * Adds a library for which a file can be found via `KB30::load()`.
+     * Adds a library for which a file can be found via `prggmr::load()`.
      *
-     * @param  string  $name  Name of the library e.g. `KB30`, `Zend`, `Pear`
+     * @param  string  $name  Name of the library e.g. `prggmr`, `Zend`, `Pear`
      * @param  array  $options  Array of options that allow manipulation of the
      *         loader, and library specific definitions on how to load files
      *         within the library. Avaliable Types:
      *
      *         `path` - Path to this library. Leave blank to use the current
-     *         KB30_LIBRARY_PATH.
+     *         PRGGMR_LIBRARY_PATH.
      *
      *         `prefix` - String prepended to the file path string. e.g..
      *         `library/myclasses` -> `library/myclasses/mylib/orm/sqlite`
@@ -199,7 +206,7 @@ class KB30 {
      */
     public static function library($name, $options = array()) {
         $defaults = array(
-            'path'        => KB30_LIBRARY_PATH,
+            'path'        => PRGGMR_LIBRARY_PATH,
             'prefix'      => null,
             'ext'         => '.php',
             'transformer' => function($class, $namespace, $options) {
@@ -233,7 +240,7 @@ class KB30 {
     
    
     /** 
-     *  Sets a variable within the KB30 registry.
+     *  Sets a variable within the prggmr registry.
      *  Variables can be set using three different configurations, they can be
      *  set as an ordinary `$key`, `$value` pair, an array of `$key` => `$value`
      *  mappings which will be transversed, or finally as a "." delimited string
@@ -251,7 +258,7 @@ class KB30 {
 
         if (is_array($key)) {
             array_walk($key, function($v, $i) use ($overwrite) {
-                KB30::set($i, $v, $overwrite);
+                \prggmr::set($i, $v, $overwrite);
             });
             return true;
         }
@@ -279,7 +286,7 @@ class KB30 {
     }
     
     /**
-     * Returns a variable from `KB30::$__registry`. The variable name can be
+     * Returns a variable from `prggmr::$__registry`. The variable name can be
      * provided as a single string of the variable or a "." delimited string
      * which maps to the array tree storing this variable.
      *
@@ -335,7 +342,7 @@ class KB30 {
      * Returns if a variable identified by `$key` exists in the registry.
      * `has` works just as `get` and allows for identical `$key`
      * configuration.
-     * This is a mirrored shorthand of (KB30::get($key, array('default' => false)) !== false);
+     * This is a mirrored shorthand of (prggmr::get($key, array('default' => false)) !== false);
      *
      * @param  $key  A string of the variable name or a "." delimited
      *         string containing the route of the array tree.
@@ -356,7 +363,7 @@ class KB30 {
      * """
      * example
      * Trigger a route to `blog/test-post` and call the Blog()->view() method.
-     * KB30::router('^blog/(?P<slug>[a-zA-Z-0-9]+)/$', function($slug) { return Blog::view($slug); });
+     * prggmr::router('^blog/(?P<slug>[a-zA-Z-0-9]+)/$', function($slug) { return Blog::view($slug); });
      * """
      *
      * @param  string  $op  A system route or a router operation. Avaliable operations.
@@ -410,7 +417,7 @@ class KB30 {
                 } else {
                     $arg = $_SERVER['REQUEST_URI'];
                 }
-                static::set('kb30.router.uri', $arg);
+                static::set('prggmr.router.uri', $arg);
                 /**
                 * Event based system
                 */
@@ -449,21 +456,21 @@ class KB30 {
                 if (!is_object($arg)) {
                     throw new \InvalidArgumentException(
                         sprintf(
-                            'KB30 route "%s" action is invalid; expected object received "%s"', gettype($arg)
+                            'prggmr route "%s" action is invalid; expected object received "%s"', gettype($arg)
                         )
                     );
                 }
                 if (!$arg instanceof Closure) {
                     throw new \InvalidArgumentException(
                         sprintf(
-                            'KB30 route "%s" action is invalid; expected closure received "%s"', get_class($arg)
+                            'prggmr route "%s" action is invalid; expected closure received "%s"', get_class($arg)
                         )
                     );
                 }
                 if (isset(static::$__routes[$op]) && $options['force'] !== true) {
                     throw new \RuntimeException(
                         sprintf(
-                            'KB30 route "%s" already exists; Provide "force" option to overwrite', $regex
+                            'prggmr route "%s" already exists; Provide "force" option to overwrite', $regex
                         )
                     );
                 }
@@ -496,7 +503,7 @@ class KB30 {
      *         `force` - force this listener is name collision exists.
      *
      *         `namespace` - Namespace for event.
-     *         Defaults to \Mana\KB30::GLOBAL_DEFAULT.
+     *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
      * @return  boolean
@@ -512,14 +519,14 @@ class KB30 {
         if (!is_object($function)) {
             throw new \InvalidArgumentException(
                 sprintf(
-                    'KB30 listener function is invalid; expected object received "%s"', gettype($function)
+                    'prggmr listener function is invalid; expected object received "%s"', gettype($function)
                 )
             );
         }
         if (!$function instanceof Closure) {
             throw new \InvalidArgumentException(
                 sprintf(
-                    'KB30 listener function is invalid; expected Closure received "%s"', get_class($function)
+                    'prggmr listener function is invalid; expected Closure received "%s"', get_class($function)
                 )
             );
         }
@@ -537,7 +544,7 @@ class KB30 {
 			if (isset(static::$__events[$options['namespace']][$event][$options['name']]) && !$options['force']) {
 				throw new \RuntimeException(
 					sprintf(
-						'KB30 listener "%s" already exists; Provide "force" option to overwrite', $options['name']
+						'prggmr listener "%s" already exists; Provide "force" option to overwrite', $options['name']
 					)
 				);
 			}
@@ -567,7 +574,7 @@ class KB30 {
      * @param  array  $options  Array of options. Avaliable options.
      
      *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to \Mana\KB30::GLOBAL_DEFAULT.
+     *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
@@ -635,7 +642,7 @@ class KB30 {
     }
 	
 	/**
-	 * Returns KB30's core object registry.
+	 * Returns prggmr's core object registry.
 	 *
 	 * @param  string  $format  Format in which to return the data [array|object]
 	 * 				   defaults to array.
@@ -667,8 +674,8 @@ class KB30 {
 	}
 	
 	/**
-	 * KB30 Error and Exception Handling.
-	 * KB30 handles errors by throwing Exceptions.
+	 * prggmr Error and Exception Handling.
+	 * prggmr handles errors by throwing Exceptions.
 	 * Exceptions are handled by outputting the trace and result in an easy to read
 	 * format or logged to a specified log file depending on the current debug
 	 * mode.
@@ -687,8 +694,8 @@ class KB30 {
 			case is_bool($op):
                 if ($op) {
                     error_reporting(E_ALL ^ E_STRICT);
-                    set_error_handler('\Mana\KB30::debug');
-                    set_exception_handler('\Mana\KB30::debug');
+                    set_error_handler('\prggmr::debug');
+                    set_exception_handler('\prggmr::debug');
                 } else {
                     error_reporting(0);
                 }
@@ -730,7 +737,7 @@ class KB30 {
 				}, $traceRoute);
                 static::$__exception = $exception;
                 try {
-                    static::trigger('exception', array($op, $exception), array('namespace' => 'kb30',
+                    static::trigger('exception', array($op, $exception), array('namespace' => 'prggmr',
                                                                                'benchmark' => false));
                 } catch (LogicException $log) {
                     true;
@@ -800,7 +807,7 @@ class KB30 {
                 break;
             case 'bench_begin':
                 if (!isset($options['name'])) {
-                    throw new InvalidArgumentException(
+                    throw new \InvalidArgumentException(
                         'Invalid arguments recieved. Expected option `name`'
                     );
                 }
@@ -809,15 +816,15 @@ class KB30 {
                     'time'   => $microtime()
                     #'cpu'    => $cpu(),
                 );
-                static::set('kb30.stats.benchmark.'.$options['name'], $stats);
+                static::set('prggmr.stats.benchmark.'.$options['name'], $stats);
                 static::trigger('benchmark_begin',$stats,array(
-                                                         'namespace' => 'kb30',
+                                                         'namespace' => 'prggmr',
                                                          'benchmark' => false
                                                          ));
                 break;
             case 'bench_stop':
                 if (!isset($options['name'])) {
-                    throw new InvalidArgumentException(
+                    throw new \InvalidArgumentException(
                         'Invalid arguments recieved. Expected option `name`'
                     );
                 }
@@ -828,7 +835,7 @@ class KB30 {
                               'start'  => 0,
                               'end'    => time()
                               );
-                $stats = static::get('kb30.stats.benchmark.'.$options['name']);
+                $stats = static::get('prggmr.stats.benchmark.'.$options['name']);
                 if ($stats != false) {
                     $data['memory'] = ($stats['memory'] > $data['memory']) ? $stats['memory'] - $data['memory'] : $data['memory'] - $stats['memory'];
                     #$data['cpu'] = ($start['cpu'] > $data['cpu']) ? $stats['cpu'] - $data['cpu'] : $data['cpu'] - $stats['cpu'];
@@ -836,10 +843,10 @@ class KB30 {
                     $data['start'] = $stats;
                 }
                 static::trigger('benchmark_stop', $data, array(
-                                                         'namespace' => 'kb30',
+                                                         'namespace' => 'prggmr',
                                                          'benchmark' => false
                                                          ));
-                static::set('kb30.stats.benchmark.'.$options['name'], $data);
+                static::set('prggmr.stats.benchmark.'.$options['name'], $data);
                 static::$__stats['benchmarks'][$options['name']] = $data;
                 return $data;
                 break;

@@ -24,23 +24,40 @@ namespace prggmr;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  System
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-/************************************************************
- * Urls File
- */
-\prggmr::router('/', function($front){
-    echo "I made it here";
-    $front->renderer->attach(array(
-        'hello' => 'World'
-    ));
-    echo $front->renderer->render('test.ptml');
-}, array('namespace' => 'prggmr'));
 
-\prggmr::router('pages/(?P<slug_id>(.*))', function($front, $slug_id){
-}, array('namespace' => 'prggmr'));
+/**
+ * Singleton implementation.
+ */
+abstract class Singleton
+{
+    /**
+     * @var  array  Instances of the singleton.
+     */
+    private static $_instances = array();
+    
+    /**
+     * Returns instance of the called class.
+     */
+    final public static function instance()
+    {
+        $class = get_called_class();
+        
+        if (!isset(self::$_instances[$class])) {
+            self::$_instances[$class] = new $class;
+        }
+        
+        return self::$_instances[$class];
+    }
+    
+    /**
+     * Disallow cloning of a singleton
+     */
+    final private function __clone(){}
+}

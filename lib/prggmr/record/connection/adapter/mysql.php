@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+namespace prggmr\record\connection\adapter;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -27,17 +27,16 @@ namespace prggmr;
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Web
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-/************************************************************
- * Front Event Controller
- * 
- * Handles initation of prggmr event execution, intercepts
- * the KB30::router('dispatch') triggering prggmr's interal
- * system handler.
- */
-class Record_Adapter_MySQL implements Record_Adapter_Interface {
 
+class MySQL extends Instance {
+    
+    public function defaultPort()
+    {
+        return 3306;
+    }
+    
 }

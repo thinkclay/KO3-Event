@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+namespace prggmr\request\event;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -32,15 +32,19 @@ namespace prggmr;
  */
 
 /************************************************************
- * Front Event Request
+ * Dispatch event handler
  * 
  * Handles initation of prggmr event execution, intercepts
  * the KB30::router('dispatch') triggering prggmr's interal
- * system dispatcher.
+ * system dispatcher, and is then passed as the first parameter
+ * to any subsequent event listeners as the "Request".
+ *
+ * Triggers the `prggmr.router.startup`, `prggmr.uri` events.
  */
-use prggmr;
+use renderer\event;
 use \DirectoryIterator;
-class Request_Event_Front {
+
+class Dispatch {
     
     /**
      * Renderer Output Object.
@@ -74,7 +78,7 @@ class Request_Event_Front {
      *
      * @param  object  $obj  Renderer_Event_Output
      */
-    public function __construct(Renderer_Event_Output $obj)
+    public function __construct(Output $obj)
     {
         $this->renderer = $obj;
     }
@@ -88,11 +92,11 @@ class Request_Event_Front {
      */
     public function dispatch()
     {
-        $path  = \Mana\KB30::get('prggmr.config.paths.apps_path');
-        $view  = \Mana\KB30::get('prggmr.config.paths.apps_views');
-        $apps  = explode(',', \Mana\KB30::get('prggmr.config.system.installed_apps'));
-        $url   = \Mana\KB30::get('prggmr.config.files.app_urls');
-        $event = \Mana\KB30::get('prggmr.config.files.app_events');
+        $path  = \prggmr::get('prggmr.config.paths.apps_path');
+        $view  = \prggmr::get('prggmr.config.paths.apps_views');
+        $apps  = explode(',', \prggmr::get('prggmr.config.system.installed_apps'));
+        $url   = \prggmr::get('prggmr.config.files.app_urls');
+        $event = \prggmr::get('prggmr.config.files.app_events');
         $files = array($url, $event);
         $dir   = new \DirectoryIterator($path);
         $msg   = array();
@@ -102,7 +106,7 @@ class Request_Event_Front {
                     require $path.'/'.$app.'/'.$v;
                 }
                 // Setup our view template directory for this app.
-                \Mana\KB30::library(sprintf('Prggmr App %s Templates', $app), array(
+                \prggmr::library(sprintf('Prggmr App %s Templates', $app), array(
                     'path' => $path.'/'.$app.'/'.$view,
                     'prefix' => null,
                     'ext' => '.phtml',
@@ -120,10 +124,10 @@ class Request_Event_Front {
                     implode(',', $msg))
                 );
         }
-        \Mana\KB30::trigger('router.startup', array(), array('namespace' => 'prggmr'));
-        $this->uri = str_replace(\Mana\KB30::get('prggmr_config.paths.system_web_path'), '', $this->uri);
+        \prggmr::trigger('router.startup', array(), array('namespace' => 'prggmr'));
+        $this->uri = str_replace(\prggmr::get('prggmr_config.paths.system_web_path'), '', $this->uri);
         $this->uri = ($this->uri == '') ? '/' : $this->uri;
-        \Mana\KB30::trigger($this->uri, array($this), array('namespace' => 'prggmr'));
+        \prggmr::trigger($this->uri, array($this), array('namespace' => 'prggmr'));
         
     }
     
