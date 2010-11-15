@@ -34,7 +34,7 @@ namespace prggmr\record\connection\adapter;
 
 class MySQL extends Instance {
     
-    public function defaultPort()
+    public function getDefaultPort()
     {
         return 3306;
     }

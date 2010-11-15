@@ -49,7 +49,7 @@ abstract class Instance {
     /**
      * var  string  Current user connected
      */
-    public $usr = null;
+    public $user = null;
     
     /**
      * var  int  Current port connection is established through
@@ -59,7 +59,7 @@ abstract class Instance {
     /**
      * var  str  Current password used for this connection
      */
-    public $pwd = null;
+    public $password = null;
     
     /**
      * var  array  Options used for this connection
@@ -107,8 +107,8 @@ abstract class Instance {
     public function __construct($dsn, $usr = null, $pwd = null, $options = null)
     {
         $this->dsn = $dsn;
-        $tihs->usr = $usr;
-        $this->pwd = $pwd;
+        $this->user = $usr;
+        $this->password = $pwd;
         $this->options = $options;
         $port = preg_match('/^port=([0-9]+)$/', $dsn);
         if (!isset($port[0])) {
@@ -135,8 +135,9 @@ abstract class Instance {
         if (null === $arg) {
             return $this->_default;
         }
+        var_dump($arg);
         $this->_default = $arg;
-        return $this;
+        return $this->_default;
     }
     
     /**
@@ -146,9 +147,16 @@ abstract class Instance {
      */
     public function quote($string)
     {
-        return ($string[0] === $this->quote_identifier) ? $string[strlen($string)-1] === $this->quote_identifier ?
-                                $string : $string.$this->quote_identifier :
-                                    $this->quote_identifier . $string . $this->quote_identifier;
+        $pre = $string[strlen($string)-1] === $this->quote_identifier;
+        $app = $string[0] === $this->quote_identifier;
+        if (!$app) {
+            $string = $this->quote_identifier . $string;
+        }
+        if (!$pre) {
+            $string = $string . $this->quote_identifier; 
+        }
+
+        return $string;
     }
     
     /**
@@ -248,5 +256,5 @@ abstract class Instance {
     /**
      * Default port used for this database
      */
-    abstract public function defaultPort();
+    abstract public function getDefaultPort();
 }

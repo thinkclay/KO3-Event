@@ -58,9 +58,9 @@ class Pool extends \prggmr\Singleton
     /**
      * Adds a new connection to the pool.
      *
-     * @param  array  $connection  Instance of {@link connection\Instance}
+     * @param  array  $connection  Instance of {@link adapter\Instance}
      */
-    public function add(adapter\Instance $connection)
+    public function add(adapter\Instance $connection, $id = null)
     {
         if (null === $connection) {
             throw new \InvalidArgumentException(
@@ -70,32 +70,36 @@ class Pool extends \prggmr\Singleton
             );
         }
         
-        $this->_connections[$id] = $conn;
+        if (null === $id) {
+            $tmp = explode('\\', get_class($connection));
+            $id = $tmp[count($tmp) - 1];
+        }
+        $this->_connections[$id] = $connection;
         
         if ($this->_hasDefault) {
-           $this->setDefault($id);
+           $this->_connections[$id]->isDefault(true);
         }
    
     }
     
     /**
-     * Returns a current connection instance
+     * Returns a connection instance or the default connection
      *
-     * @param  string  $id  Connection identifier
+     * @param  string  $id  Connection identifier, null for current default
      *
      * @return \prggmr\record\connection\instance
      */
-    public function get($id = null)
+    public function getConnection($id = null)
     {
         if (null === $id) {
-            foreach (self::$_connections as $id => $conn) {
+            foreach ($this->_connections as $id => $conn) {
                 if ($conn->isDefault()) {
                     return $conn;
                 }
             }
         }
         if ($this->exists($id)) {
-            return self::$_connection[$id];
+            return $this->_connections[$id];
         } else {
             throw new \InvalidArgumentException(
                 sprintf(
@@ -104,6 +108,16 @@ class Pool extends \prggmr\Singleton
                 )
             );
         }
+    }
+    
+    /**
+     * Returns an array of all current connections
+     *
+     * @return  array  Array of current DB connections.
+     */
+    public function listConnections()
+    {
+        return $this->_connections;
     }
     
     /**
@@ -116,10 +130,8 @@ class Pool extends \prggmr\Singleton
     public function setDefault($id)
     {
         if ($this->exists($id)) {
-            foreach ($this->_connection as $id => $conn) {
-                $conn->isDefault(false);
-            }
-            $this->_connection[$id]->isDefault(true);
+            $this->getConnection()->isDefault(false);
+            $this->_connections[$id]->isDefault(true);
             return true;
         } else {
             throw new \InvalidArgumentException(
