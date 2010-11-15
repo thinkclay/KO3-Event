@@ -95,7 +95,7 @@ abstract class Instance {
      * Init a new connection.
      *
      * @param  string  $dsn  DSN Querystring used for this connection
-     * @param  string  $usr  The username that will connection
+     * @param  string  $usr  The username that will used for connection
      * @param  string  $pwd  The user's password
      * @param  array   $options  Array of options for this connection.
      *

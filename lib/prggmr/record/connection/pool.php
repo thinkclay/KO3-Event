@@ -34,12 +34,9 @@ namespace prggmr\record\connection;
 /**
  * Connections Pool
  *
- * Stores a pool of active `prggmr\Record_Config_Connection`
+ * Stores a pool of active `prggmr\record\connection\adapter\Instance`
  * Connections are added as
- * \prggmr\Record_Pool_Connections::instance(function($cfg){
- *       $cfg['identifier'] => new \prggmr\record\connection\adapter\MySQL($dsn [,$usr [,$pwd [,$driver_opt]]])
- *       return $cfg;
- *   });
+ * \prggmr\record\connection\Pool::add(new \prggmr\record\connection\adapter\Instance());
  */
 
 use \InvalidArgumentException;
@@ -69,17 +66,6 @@ class Pool extends \prggmr\Singleton
             throw new \InvalidArgumentException(
                 sprintf(
                     'Connection Pool failed to recieve connection data'
-                )
-            );
-        }
-        
-        try {
-            $conn->testConnection();
-        } catch (PDOException $e) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Connection instance (%s) failed to connection',
-                    $id
                 )
             );
         }
