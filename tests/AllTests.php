@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @credit kla/php-activerecord
+ */
+
 foreach (glob('*Test.php') as $file)
 {
     include($file);

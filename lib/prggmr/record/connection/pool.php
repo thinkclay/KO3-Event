@@ -76,7 +76,7 @@ class Pool extends \prggmr\Singleton
         }
         $this->_connections[$id] = $connection;
         
-        if ($this->_hasDefault) {
+        if (!$this->_hasDefault) {
            $this->_connections[$id]->isDefault(true);
         }
    

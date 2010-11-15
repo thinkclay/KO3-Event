@@ -257,9 +257,9 @@ class prggmr {
     public static function set($key, $value = null, $overwrite = true) {
 
         if (is_array($key)) {
-            array_walk($key, function($v, $i) use ($overwrite) {
-                \prggmr::set($i, $v, $overwrite);
-            });
+            foreach ($key as $k => $v) {
+                \prggmr::set($k, $v, $overwrite);
+            }
             return true;
         }
         
@@ -271,7 +271,9 @@ class prggmr {
 			$data =& static::$__registry;
 			$nodeCount = count($nodes) - 1;
 			for ($i=0;$i!=$nodeCount;$i++) {
-				if (!isset($data[$nodes[$i]])) {
+                // Bug caused data to not overwrite if converting from ( any ) -> array
+                // and an overwrite is in order
+				if (!is_array($data[$nodes[$i]])) {
 					$data[$nodes[$i]] = array();
 				}
 				$data =& $data[$nodes[$i]];
@@ -601,8 +603,16 @@ class prggmr {
                 if (preg_match($regex, $org, $matches, $options['flags'], $options['offset'])) {
                     $listeners = static::$__events[$options['namespace']][$name];
                     unset($matches[0]);
-                    $params += (array) $matches;
-                    break;
+                    if (count($matches) != 0) {
+                        // take the keys from array 1 and merge them ontop of array2
+                        if (count($params) !=0) {
+                            foreach ($params as $k => $v) {
+                                array_push($matches, $v);
+                            }
+                        }
+                    }
+                    $params = $matches;
+                    #break;
                 }
             }
         }

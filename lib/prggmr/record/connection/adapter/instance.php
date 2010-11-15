@@ -135,7 +135,6 @@ abstract class Instance {
         if (null === $arg) {
             return $this->_default;
         }
-        var_dump($arg);
         $this->_default = $arg;
         return $this->_default;
     }
