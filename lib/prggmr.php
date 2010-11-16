@@ -602,16 +602,15 @@ class prggmr {
                 $regex = '#' . $name . '$#i';
                 if (preg_match($regex, $org, $matches, $options['flags'], $options['offset'])) {
                     $listeners = static::$__events[$options['namespace']][$name];
-                    unset($matches[0]);
-                    if (count($matches) != 0) {
+                    $mc = count($matches);
+                    if ($mc != 0) {
+                        if ($mc != 1) unset($matches[0]);
                         // take the keys from array 1 and merge them ontop of array2
-                        if (count($params) !=0) {
-                            foreach ($params as $k => $v) {
-                                array_push($matches, $v);
-                            }
+                        foreach ($matches as $k => $v) {
+                            array_unshift($params, $v);
                         }
                     }
-                    $params = $matches;
+                    #$params = $matches;
                     #break;
                 }
             }
