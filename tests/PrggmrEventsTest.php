@@ -115,27 +115,13 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         $this->assertEvent('reference', array(&$i), array(0=>'', 1=>'Testing'));
     }
     
-    public function testMultiParamsReferenceRegexMutliEvents()
+    public function testStaticInvoke()
     {
-        prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj, $str) {
-            $obj->node = 'Hello';
-            return $reg.$str;
-        }, array('name' => 'Ref Test Event 1'));
+        prggmr::listen('magic_invoke', function($param) {
+            return $param;
+        });
         
-        prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj) {
-            $obj->node .= ' My Name';
-            return $reg;
-        }, array('name' => 'Ref Test Event 2'));
-        
-        prggmr::listen('ref-param-regex-([a-z]+)', function($reg, &$obj, $str, $module) {
-            $obj->node .= ' is '.$module;
-            return $obj->node;
-        }, array('name' => 'Ref Test Event 3'));
-        
-        $obj = new stdClass();
-        
-        $this->assertEvent('ref-param-regex-test', array(&$obj, 'Test', 'Nick'), array(
-            0 => 'testTest',1=>'test',2=>'Hello My Name is Nick'
-        ));
+        $event = prggmr::magic_invoke(array('test'));
+        $this->assertEquals($event[0], array(0=>'test'));
     }
 }

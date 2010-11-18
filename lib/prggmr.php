@@ -595,6 +595,7 @@ class prggmr {
         $event     = strtolower($event);
         $evreg     = '#' . $event . '$#i';
         $listeners = null;
+        if (!is_array($params)) $params = array();
         if (isset(static::$__events[$options['namespace']][$event])) {
             $listeners = static::$__events[$options['namespace']][$event];  
         } else if (isset(static::$__events[$options['namespace']])) {
@@ -625,7 +626,7 @@ class prggmr {
                     static::analyze('bench_begin', array('name' => 'event_'.$name.'_'.$i));
                 }
                 try {
-                    $return[] = call_user_func_array($function, $params);
+                    $results = call_user_func_array($function, $params);
                 } catch (\Exception $e) {
                     throw new \LogicException(
                         sprintf(
@@ -644,6 +645,12 @@ class prggmr {
                     );
                 }
                 $i++;
+                $return[] = $results;
+                // Adds support for listeners to return "TRUE" and halts
+                // any other listeners from triggering.
+                if ($results === true) {
+                    break;
+                }
             }
             return $return;
         }
@@ -860,5 +867,33 @@ class prggmr {
                 return $data;
                 break;
         }
+    }
+    
+    /**
+     * Triggers event listeners and returns the results; the results are
+     * always returned in an array for use with events with multiple
+     * listeners returning results.
+     *
+     * @param  string  $event  Name of the event to trigger
+     * @param  array  $params  Parameters to directly pass to the event listener
+     * @param  array  $options  Array of options. Avaliable options.
+     
+     *         `namespace` - `namespace` - Namespace for event.
+     *         Defaults to \prggmr::GLOBAL_DEFAULT.
+     *
+     *         `benchmark` - Benchmark this events execution.
+     *
+     *         `flags`  - Flags to pass to the `preg_match` function used for matching a
+     *         regex event.
+     *
+     *         `offset` - Specify the alternate place from which to start the search.
+     *
+     * @throws  LogicException  Exception encountered during listener exec
+     * @return  array|boolean
+     */
+    public function __callStatic($event, $params = array()) {
+        $defaults = array(0 => array(), 1 => array());
+        $params += $defaults;
+        return static::trigger($event, $params[0], $params[1]);   
     }
 }
