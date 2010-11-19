@@ -41,7 +41,7 @@ namespace prggmr\request\event;
  *
  * Triggers the `prggmr.router.startup`, `prggmr.uri` events.
  */
-use renderer\event;
+use prggmr\render\event as render;
 use \DirectoryIterator;
 
 class Dispatch {
@@ -78,7 +78,7 @@ class Dispatch {
      *
      * @param  object  $obj  Renderer_Event_Output
      */
-    public function __construct(Output $obj)
+    public function __construct(render\Output $obj)
     {
         $this->renderer = $obj;
     }

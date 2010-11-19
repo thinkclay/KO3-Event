@@ -79,13 +79,13 @@ spl_autoload_register('\prggmr::load');
 
 // Listen for KB30's dispatcher
 \prggmr::listen('router.dispatch.startup', function($uri) {
-    $front = new request\Dispatch(new event\Output);
+    $front = new request\Dispatch(new render\Output);
     $front->attach(array('uri'=>$uri));
     $front->dispatch();
     return $front;
 });
 
 if (\prggmr::get('prggmr.config.system.debug')) {
-    $cli = new cli\Handle($argv);
+    $cli = new cli\Handler($argv);
     \prggmr::router('dispatch', $cli->run());
 }

@@ -41,6 +41,8 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
     define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
 }
 
+define('PRGGMR_VERSION', '0.01-alpha');
+
 class prggmr {
     /**
      * The system routes table. Stores the routes which will be
@@ -233,11 +235,6 @@ class prggmr {
         }
         return true;
     }
-    
-    public static function initialize($options = array()) {
-        // nothing here yet
-    }
-    
    
     /** 
      *  Sets a variable within the prggmr registry.
@@ -261,6 +258,16 @@ class prggmr {
                 \prggmr::set($k, $v, $overwrite);
             }
             return true;
+        }
+        /**
+         * Event call which will be used for cache.
+         */
+        $event = static::trigger('registry_set', array($key, $options), array(
+                    'namespace' => '__prggmr'));
+        if (is_array($event)) {
+            if ($event[0] === false) {
+                return true;
+            }
         }
         
         if (static::has($key) && !$overwrite) {
@@ -306,6 +313,14 @@ class prggmr {
     public static function get($key, $options = array()) {
         $defaults = array('default' => false, 'tree' => true);
         $options += $defaults;
+        /**
+         * Event call which will be used for cache.
+         */
+        $event = static::trigger('registry_get', array($key, $options), array(
+                    'namespace' => '__prggmr'));
+        if (is_array($event)) {
+            return $event[0];
+        }
         if (is_string($key)) {
             if (stripos($key, '.')) {
                 $keyArray = explode('.', $key);
@@ -351,6 +366,14 @@ class prggmr {
      * @return  boolean
      */
     public static function has($key) {
+        /**
+         * Event call which will be used for cache.
+         */
+        $event = static::trigger('registry_has', array($key, $options), array(
+                    'namespace' => '__prggmr'));
+        if (is_array($event)) {
+            return $event[0];
+        }
         return (static::get($key, array('default' => false)) !== false);
     }
     
@@ -646,9 +669,9 @@ class prggmr {
                 }
                 $i++;
                 $return[] = $results;
-                // Adds support for listeners to return "TRUE" and halts
+                // Adds support for listeners to return "false" and halts
                 // any other listeners from triggering.
-                if ($results === true) {
+                if ($results === false) {
                     break;
                 }
             }
@@ -891,9 +914,19 @@ class prggmr {
      * @throws  LogicException  Exception encountered during listener exec
      * @return  array|boolean
      */
-    public function __callStatic($event, $params = array()) {
+    public static function __callStatic($event, $params = array()) {
         $defaults = array(0 => array(), 1 => array());
         $params += $defaults;
         return static::trigger($event, $params[0], $params[1]);   
+    }
+    
+    /**
+     * Returns the current version of prggmr
+     *
+     * @return  string
+     */
+    public function version()
+    {
+        return PRGGMR_VERSION;
     }
 }

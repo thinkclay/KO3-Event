@@ -1,42 +1,13 @@
 <?php
-namespace prggmr\event;
-/******************************************************************************
- ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
- *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
- *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
- *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
- *******************************************************************************
- *******************************************************************************/
+namespace prggmr\cli\event;
 
-/**
- *  Copyright 2010 Nickolas Whiting
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *
- * @author  Nickolas Whiting  <me@nwhiting.com>
- * @package  Prggmr
- * @category  Web
- * @copyright  Copyright (c), 2010 Nickolas Whiting
- */
 
 /**
  * Command Line Interface handler for prggmr.
  *
  * Details provided at a later time.
  */ 
-class Handle
+class Handler
 {
     /**
      * Array of help messages outputable to the end user whenever
@@ -47,12 +18,19 @@ class Handle
     private $_messages = array(
         'help' => array(
             'main' => <<<HELP_TEXT
-        
+            
+Prggmr - PHP EMV Framework
+
 usage: prggmr [--processor] [--help] COMMAND [ARGS]
 
 The current avaliable prggmr options are:
-    route   Dispatch the provided route URI.
-    version Displays current prggmr version.
+    route       Dispatch the provided route URI.
+    version     Displays current prggmr version.
+    test        Runs prggmr tests, testing either an apps test suite or prggmr
+                library itself.
+    startapp    Builds the provided app name within the applications directory
+    syncdb      Syncs the database with the current installed applications
+                models.
 
 See 'prggmr help COMMAND' for more information on a specific command.
 
@@ -75,6 +53,24 @@ prggmr route "/code/view/code-sample" :
 prggmr --processor=json route "/code/view/code-sample" :
 
     Runs route "/code/view/(?P<slug_id>(.*))" processing output using JSON.
+
+ROUTE_HELP
+,
+            'test' => <<<ROUTE_HELP
+            
+usage: test [testname]
+
+Runs prggmr's phpunit testing, provide no arguments to run the full test suite.
+
+Example :
+
+prggmr test
+
+    Runs all prggmr's phpunit tests.
+
+prggmr test PrggmrEventsTests
+
+    Runs PrggmrEventsTests unit tests.
 
 ROUTE_HELP
         )
@@ -175,7 +171,6 @@ Failed to initilize environment please check the following paths and permissions
         
         unset($arg[0]);
         $opt = array();
-        
         foreach ($arg as $k => $v) {
             if (strpos($v, '--') !== false) {
                 $ex = explode('=', $v);
@@ -223,11 +218,15 @@ Failed to initilize environment please check the following paths and permissions
         
         // We've made it here so lets check our arguments
         switch ($this->args[0]) {
-            case 'help':
-                if (isset($this->_messages['help'][$this->args[1]])) {
-                    die($this->_messages['help'][$this->args[1]]);
+            case 'test':
+                if (isset($this->args[1])) {
+                    $test = $this->args[1];
+                } else {
+                    $test = 'AllTests';
                 }
-                die($this->_messages['help']['main']);
+                $res = shell_exec("phpunit tests/$test");
+                die($res."
+");
                 break;
             case 'route':
                 $arg = $this->args[0];
@@ -237,7 +236,15 @@ Failed to initilize environment please check the following paths and permissions
                 return $this->args[1];
                 break;
             case 'version':
-                die("Prggmr EMV Framework 1.0alpha");
+                die("prggmr version ".PRGGMR_VERSION."
+");
+                break;
+            case 'help':
+                if (isset($this->_messages['help'][$this->args[1]])) {
+                    die($this->_messages['help'][$this->args[1]]);
+                }
+                die($this->_messages['help']['main']);
+                break;
             default:
                 die($this->_messages['help']['main']);
                 break;
