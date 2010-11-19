@@ -122,6 +122,57 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         });
         
         $event = prggmr::magic_invoke(array('test'));
-        $this->assertEquals($event[0], array(0=>'test'));
+        $this->assertEquals($event, array(0=>'test'));
+    }
+    
+    public function testStaticInvokeReferences()
+    {
+        prggmr::listen('magic_ref_invoke', function(&$obj){
+            $obj->test = 'Hello';
+            return $obj->test;
+        });
+        
+        prggmr::listen('magic_ref_invoke', function(&$obj){
+            $obj->test .= ' Im Nick';
+            return $obj->test;
+        });
+        $obj = new stdClass();
+        $event = prggmr::magic_ref_invoke(array(&$obj));
+        $this->assertEquals($event, array(0=>'Hello', 1=>'Hello Im Nick'));
+        
+    }
+    
+    public function testEventHault()
+    {
+        prggmr::listen('event_hault', function(){
+            return 'test1';
+        });
+        
+        prggmr::listen('event_hault', function(){
+            return true;
+        });
+        
+        prggmr::listen('event_hault', function(){
+           return 'I will not be reached'; 
+        });
+        
+        $this->assertEvent('event_hault', null, array(0=>'test1',1=>true));
+    }
+    
+    public function testEventShift()
+    {
+        prggmr::listen('event_shift', function(){
+            return 'test1';
+        }, array('name' => 'shift_0'));
+        
+        prggmr::listen('event_shift', function(){
+            return 'test2';
+        }, array('shift' => true, 'name' => 'shift_1'));
+        
+        prggmr::listen('event_shift', function(){
+            return 'test3';
+        }, array('shift' => true, 'name' => 'shift_2'));
+        
+        $this->assertEvent('event_shift', null, array(0=>'test3',1=>'test2',3=>'test1'));
     }
 }
