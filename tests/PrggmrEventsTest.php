@@ -149,30 +149,30 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         });
         
         prggmr::listen('event_hault', function(){
-            return true;
+            return false;
         });
         
         prggmr::listen('event_hault', function(){
            return 'I will not be reached'; 
         });
         
-        $this->assertEvent('event_hault', null, array(0=>'test1',1=>true));
+        $this->assertEvent('event_hault', null, array(0=>'test1',1=>false));
     }
     
     public function testEventShift()
     {
         prggmr::listen('event_shift', function(){
             return 'test1';
-        }, array('name' => 'shift_0'));
+        });
         
         prggmr::listen('event_shift', function(){
             return 'test2';
-        }, array('shift' => true, 'name' => 'shift_1'));
+        }, array('shift' => true, 'name' => 'shift_2'));
         
         prggmr::listen('event_shift', function(){
             return 'test3';
-        }, array('shift' => true, 'name' => 'shift_2'));
+        }, array('shift' => true, 'name' => 'shift_3'));
         
-        $this->assertEvent('event_shift', null, array(0=>'test3',1=>'test2',3=>'test1'));
+        $this->assertEvent('event_shift', null, array(0=>'test3',1=>'test2',2=>'test1'));
     }
 }

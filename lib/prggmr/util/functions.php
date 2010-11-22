@@ -1,5 +1,5 @@
 <?php
-namespace prggmr;
+
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -24,13 +24,28 @@ namespace prggmr;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  System
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-set_include_path('/home/nick/prggmr/github/Prggmr/' . DIRECTORY_SEPARATOR . get_include_path());
-require 'lib/prggmr.php';
-\prggmr::initalize('/home/nick/prggmr/github/Prggmr/system/var/config/prggmr.dev.nix.ini');
+/**
+ * Shifts the key => value onto the begginning of the array
+ * with the key index provided.
+ *
+ * @param  string  $key  Key value of array index
+ * @param  mixed  $value  Value of new array index
+ * @param  array  $array  Array to shift new element
+ */
+function array_unshift_key($key, $value, &$array) {
+    $key = (string) $key;
+    if (!is_array($array)){
+        return false;
+    }
+    $tmp = array($key => $value);
+    $tmp += $array;
+    $array = $tmp;
+    return $array;
+}

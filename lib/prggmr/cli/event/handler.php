@@ -26,8 +26,6 @@ usage: prggmr [--processor] [--help] COMMAND [ARGS]
 The current avaliable prggmr options are:
     route       Dispatch the provided route URI.
     version     Displays current prggmr version.
-    test        Runs prggmr tests, testing either an apps test suite or prggmr
-                library itself.
     startapp    Builds the provided app name within the applications directory
     syncdb      Syncs the database with the current installed applications
                 models.
@@ -218,16 +216,6 @@ Failed to initilize environment please check the following paths and permissions
         
         // We've made it here so lets check our arguments
         switch ($this->args[0]) {
-            case 'test':
-                if (isset($this->args[1])) {
-                    $test = $this->args[1];
-                } else {
-                    $test = 'AllTests';
-                }
-                $res = shell_exec("phpunit tests/$test");
-                die($res."
-");
-                break;
             case 'route':
                 $arg = $this->args[0];
                 unset($this->args[0]);

@@ -36,6 +36,10 @@ use \InvalidArgumentException;
 use \Closure;
 use \BadMethodCallException;
 use \RuntimeException;
+use prggmr\request\event as request;
+use prggmr\render\event as render;
+use prggmr\cli\event as cli;
+use prggmr\record\connection as connection;
 
 if (!defined('PRGGMR_LIBRARY_PATH')) {
     define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
@@ -229,7 +233,7 @@ class prggmr {
         }
         
         if ($options['shift'] === true) {
-            array_unshift(static::$__libraries, array($name => $options));
+            array_unshift_key($name, $options, static::$__libraries);
         } else {
             static::$__libraries[$name] = $options;
         }
@@ -252,13 +256,18 @@ class prggmr {
      *  @return  boolean
      */
     public static function set($key, $value = null, $overwrite = true) {
-
+		
+		if (null === $key) {
+			return false;
+		}
+		
         if (is_array($key)) {
             foreach ($key as $k => $v) {
                 \prggmr::set($k, $v, $overwrite);
             }
             return true;
         }
+		
         /**
          * Event call which will be used for cache.
          */
@@ -501,7 +510,7 @@ class prggmr {
                 }
                 $arg = array('function' => $arg, 'params' => $options['params']);
                 if ($options['shift'] === true) {
-                    array_unshift(static::$__routes, array($op => $arg));
+                    array_unshift_key($op, $arg, static::$__routes);
                 } else {
                     static::$__routes[$op] = $arg;
                 }
@@ -536,7 +545,15 @@ class prggmr {
      */
     public static function listen($event, $function, $options = array()) {
         $defaults = array('shift' => false,
-                          'name' => function(){return rand(100000, 999999);},
+                          'name' => function(){
+								$range = range('a','z');
+								$rand = array_rand($range, 8);
+								$str = '';
+								for ($i=0;$i!=8;$i++){
+									$str .= $range[$rand[$i]];
+								}
+								return $str;
+							},
                           'force' => false,
                           'namespace' => static::GLOBAL_DEFAULT);
 		$options += $defaults;
@@ -581,7 +598,7 @@ class prggmr {
 			static::$__events[$options['namespace']][$event] = array();
 		}
 		if ($options['shift']) {
-			array_unshift(static::$__events[$options['namespace']][$event], array($options['name'] => $function));
+			array_unshift_key($options['name'], $function, static::$__events[$options['namespace']][$event]);
 		} else {
 			static::$__events[$options['namespace']][$event][$options['name']] = $function;
 		}
@@ -925,8 +942,88 @@ class prggmr {
      *
      * @return  string
      */
-    public function version()
+    public static function version()
     {
         return PRGGMR_VERSION;
     }
+	
+	/**
+	 * Initials prggmr framework, loads the configuration file, establishes
+	 * our default library paths, includes our functions file.
+	 *
+	 * @param  string  $config  Path to configuration file.
+	 */
+	public static function initalize($config = null)
+	{
+		if (null === $config) {
+			throw new InvalidArgumentException(
+				'No configuration file provided. Please provide a prggmr config file path'
+			);
+		}
+		
+		$config = \parse_ini_file($config, true);
+		
+		if (!is_array($config) || count($config) == 0) {
+			throw new InvalidArgumentException(
+				sprintf(
+						'Invalid configuration file (%s)',
+						$config
+				)
+			);
+		}
+		
+		static::analyze('bench_begin', array('name' => 'prggmr benchmark'));
+		
+		// Load our configuration ini
+		static::set('prggmr.config', $config);
+		
+		// include our functions file
+		require $config['paths']['system_path'].'/lib/prggmr/util/functions.php';
+		
+		// Setup our system paths
+		// Library Files
+		static::library('Prggmr Library', array(
+			'path'   => $config['paths']['system_path'].'/lib/',
+			'prefix' => null,
+			'ext'    => '.php',
+			'transformer' => function($class, $namespace, $options) {
+				$namespace = ($namespace == null) ? '' : str_replace('\\', DIRECTORY_SEPARATOR, $namespace).DIRECTORY_SEPARATOR;
+				$class = str_replace('_', DIRECTORY_SEPARATOR, $class);
+				$filepath = strtolower($namespace.$class);
+				return $filepath;
+			}
+		));
+		
+		// Template files
+		static::library('Prggmr Templates', array(
+			'path' => $config['paths']['system_path'].'/system/var/templates/',
+			'prefix' => null,
+			'ext' => '.phtml',
+			'transformer' => function($class, $namespace, $options) {
+				if (strpos($class, '.') === false) return null;
+				return str_replace('.', DIRECTORY_SEPARATOR, $class);
+			}
+		));
+		
+		// External Library files ( Uses PECL style formatting )
+		static::library('Prggmr External', array(
+			'path' => $config['paths']['system_path'].'/lib/'
+		));
+		
+		// Setup our system library in php
+		spl_autoload_register('\prggmr::load');
+		
+		// Listen for prggmr's dispatcher
+		static::listen('router.dispatch.startup', function($uri) {
+			$front = new request\Dispatch(new render\Output);
+			$front->attach(array('uri'=>$uri));
+			$front->dispatch();
+			return $front;
+		});
+		
+		if (static::get('prggmr.config.system.debug')) {
+			$cli = new cli\Handler($_SERVER['argv']);
+			static::router('dispatch', $cli->run());
+		}
+	}
 }

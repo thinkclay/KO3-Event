@@ -81,4 +81,9 @@ class PrggmrArrayMatrixesTest extends \PHPUnit_Framework_TestCase
         prggmr::set('test.val.isarray', '2');
         $this->assertArrayHasKey('isarray', prggmr::get('test.val'));
     }
+    
+    public function testNullKeySet()
+    {
+        $this->assertFalse(prggmr::set(null, 'none'));
+    }
 }
