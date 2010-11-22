@@ -1,5 +1,5 @@
 <?php
-namespace prggmr\request\event;
+namespace prggmr\render;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -27,9 +27,11 @@ namespace prggmr\request\event;
  * 
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  System
+ * @category  Render
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
+
+use prggmr\render\engine as engine;
 
 /**
  * Prggmr View
@@ -68,18 +70,33 @@ class View {
      * Constructor.
      * 
      */
-    public function __construct(){}
+    public function __construct()
+    {
+        // Assign our default engine
+        
+    }
     
     /**
      * Sets a variable for use when compiling templates.
+     * Triggers the 'view_assign' event.
+     *
+     * @event  var_assign  Event triggered when a variable is assigned, using
+     *         the view namespace. Provides the var name, value and a reference
+     *         to the view object.
      *
      * @param  mixed  $key  The variable name, an array of varibles.
      * @param  mixed  $value  The value of the variable
+     * @param  array  $options  Array of options to use when setting this var.
+     *
+     *         `event` - Boolean to trigger the "view_assign" event.
+     *         
      *
      * @return  boolean
      */
-    public function assign($key, $value = null)
+    public function assign($key, $value = null, $options = array())
     {
+        $defaults = array('event' => true);
+        $options += $defaults;
         if (null === $key) return false;
         
         if(is_array($key)) {
@@ -92,9 +109,15 @@ class View {
         $this->_attributes[$key] = $value;
         
         if ($this->hasEngines()) {
-            foreach ($this->getEngines() as $name => $engine) {
-                $engine->assign($key, $value);
+            foreach ($this->_engines as $name => $engine) {
+                $engine['object']->assign($key, $value);
             }
+        }
+        
+        if ($options['event'] === true) {
+            \prggmr::trigger('var_assign', array($key, $value, &$this), array(
+                'namespace' => 'view'
+            ));
         }
     }
     
@@ -119,5 +142,67 @@ class View {
             return $this->_attributes[$name];
         }
         return false;
+    }
+    
+    /**
+     * Determain if the view has engines in its stack.
+     *
+     * @return  boolean
+     */
+    public function hasEngines()
+    {
+        return (count($this->_engines) == 0) ? false : true;
+    }
+    
+    /**
+     * Returns the avaliable template engines.
+     *
+     * @return  array
+     */
+    public function getEngines()
+    {
+        if ($this->hasEngines()) return array_keys($this->_engines);
+        return false;
+    }
+    
+    /**
+     * Adds a new template engine to the engine stack.
+     *
+     * @param  object  $engine  The engine object
+     * @param  array  $options An array of options to pass the engine
+     *         while its environment is built.
+     *
+     *         `name` - Name to use for this engine. Defaults to class name.
+     *
+     *         `default` - Set this engine as the default.
+     *
+     *         `options` - An array of options to provide the engine.
+     *
+     * @return  boolean  True on success, False Failure
+     */
+    public function addEngine($object, $options = array())
+    {
+        $defaults = array('name' => get_class($object), 'default' => false,
+                          'options' => null);
+        $options += $defaults;
+        if (!$object instanceof engine\EngineAbstract) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Template engine %s must extend the EngineAbstract class'
+                , get_class($object)
+            ));
+        }
+        
+        if ($object->buildEnvironment($options['options'], $this) !== true) {
+            return false;
+        }
+        
+        $this->_engines[$options['name']]['object'] = $object;
+        
+        if ($options['default']) {
+            $this->setDefaultEngine($options['name']);
+        }
+        
+        return true;
     }
 }

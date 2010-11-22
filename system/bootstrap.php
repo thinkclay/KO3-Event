@@ -31,6 +31,6 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-set_include_path('/home/nick/prggmr/github/Prggmr/' . DIRECTORY_SEPARATOR . get_include_path());
+set_include_path('/home/nwhiting/X Studios/Code/prggmr/github/prggmr/' . DIRECTORY_SEPARATOR . get_include_path());
 require 'lib/prggmr.php';
-\prggmr::initalize('/home/nick/prggmr/github/Prggmr/system/var/config/prggmr.dev.nix.ini');
+\prggmr::initalize('/home/nwhiting/X Studios/Code/prggmr/github/prggmr/system/var/config/prggmr.dev.nix.ini');

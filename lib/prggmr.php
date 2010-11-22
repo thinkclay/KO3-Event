@@ -994,17 +994,6 @@ class prggmr {
 			}
 		));
 		
-		// Template files
-		static::library('Prggmr Templates', array(
-			'path' => $config['paths']['system_path'].'/system/var/templates/',
-			'prefix' => null,
-			'ext' => '.phtml',
-			'transformer' => function($class, $namespace, $options) {
-				if (strpos($class, '.') === false) return null;
-				return str_replace('.', DIRECTORY_SEPARATOR, $class);
-			}
-		));
-		
 		// External Library files ( Uses PECL style formatting )
 		static::library('Prggmr External', array(
 			'path' => $config['paths']['system_path'].'/lib/'
