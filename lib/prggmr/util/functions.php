@@ -49,3 +49,20 @@ function array_unshift_key($key, $value, &$array) {
     $array = $tmp;
     return $array;
 }
+
+/**
+ * Returns the name of a class using get_class
+ * with the namespace stripped.
+ *
+ * @param  object  $object  Object class to retrieve name
+
+ * @return  string  Name of the class with namespaces stripped
+ */
+function get_class_name($object) {
+    if (!is_object($object)) {
+        return false;
+    }
+    
+    $class = explode('\\', get_class($object));
+    return $class[count($class) - 1];
+}

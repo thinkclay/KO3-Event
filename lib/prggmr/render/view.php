@@ -73,7 +73,9 @@ class View {
     public function __construct()
     {
         // Assign our default engine
+        $engine = new engine\Standard();
         
+        $this->addEngine($engine, array('default' => true));
     }
     
     /**
@@ -161,7 +163,7 @@ class View {
      */
     public function getEngines()
     {
-        if ($this->hasEngines()) return array_keys($this->_engines);
+        if ($this->hasEngines()) return $this->_engines;
         return false;
     }
     
@@ -178,11 +180,13 @@ class View {
      *
      *         `options` - An array of options to provide the engine.
      *
+     * @exception  InvalidArgumentException  Thrown when an engine object does
+     *             not extend the EngineAbstract Class.
      * @return  boolean  True on success, False Failure
      */
     public function addEngine($object, $options = array())
     {
-        $defaults = array('name' => get_class($object), 'default' => false,
+        $defaults = array('name' => get_class_name($object), 'default' => false,
                           'options' => null);
         $options += $defaults;
         if (!$object instanceof engine\EngineAbstract) {
@@ -204,5 +208,53 @@ class View {
         }
         
         return true;
+    }
+    
+    /**
+     * Sets the default template engine compiler.
+     *
+     * @param  mixed  $engine  Name or the object of the engine.
+     *
+     * @exception  InvalidArgumentException  Thrown when an engine object does
+     *             not extend the EngineAbtsract Class.
+     * @return  boolean  True on success | False on failure
+     */
+    public function setDefaultEngine($engine)
+    {
+        if (is_object($engine)) {
+            if (!$engine instanceof engine\EngineAbstract) {
+                throw new InvalidArgumentException(
+                    sprintf(
+                        'Template engine %s must extend the EngineAbstract class'
+                    , get_class($object)
+                ));
+            }
+            
+            $name = get_class_name($engine);
+        } else {
+            $name = $engine;
+        }
+        
+        if ($this->engineExists($name)) {
+            foreach ($this->_engines as $k => $v) {
+                $this->_engines[$k]['default'] = false;
+            }
+            $this->_engines[$name]['default'] = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Checks if the given engine name exists in the engine stack.
+     *
+     * @param  string  $name  Name of the engine.
+     *
+     * @return  boolean  True on success | False on failure
+     */
+    public function engineExists($name)
+    {
+        return (isset($this->_engines[$name]));
     }
 }
