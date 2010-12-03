@@ -157,7 +157,9 @@ class Pool extends \prggmr\Singleton
     
     /**
      * Closes a connection.
-     * Removes from pool but PDO has no `close`.
+     * Removes from pool but PDO has no `close` so the connection really
+     * isn't closed, although it will no longer be accessiable.
+     * ( waste of memory? )
      *
      * @param  string  $id  Connection identifier
      */

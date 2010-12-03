@@ -74,7 +74,6 @@ class View {
     {
         // Assign our default engine
         $engine = new engine\Standard();
-        
         $this->addEngine($engine, array('default' => true));
     }
     
@@ -256,5 +255,15 @@ class View {
     public function engineExists($name)
     {
         return (isset($this->_engines[$name]));
+    }
+    
+    /**
+     * Returns the template variables.
+     *
+     * @return  array  Array of template variables.
+     */
+    public function getTemplateVars()
+    {
+        return $this->_attributes;
     }
 }

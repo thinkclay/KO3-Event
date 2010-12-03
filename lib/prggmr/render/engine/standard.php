@@ -31,6 +31,8 @@ namespace prggmr\render\engine;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+use \InvalidArgumentException;
+
 /**
  * Standard template engine, this engine uses straight php to compile templates
  * and is the default engine that is shipped with Prggmr.
@@ -38,6 +40,126 @@ namespace prggmr\render\engine;
  * This can also be used as a template for adding additional template engines.
  */
 class Standard extends EngineAbstract {
+    
+    /**
+     * Prggmr view paths.
+     *
+     * @var  array  Array of absolute paths to template files.
+     */
+    protected $_paths = array();
+    
+    /**
+     * Prggmr Engine options.
+     *
+     * @var  array  Array of options used when compiling templates.
+     */
+    protected $_options = array(
+        'extension' => '.phtml'
+    );
+    
+    /**
+     * Modifies a engine option, or sets it if it does not exist.
+     *
+     * @param  string  $option  Name of the option.
+     * @param  string  $value  New value
+     *
+     * @return  boolean  True on success | False on failure
+     */
+    public function option($option, $value)
+    {
+        if (isset($this->_options[$option])) {
+            $this->_options[$option] = $value;
+            return true;
+        }
+        
+        $this->_options[$option] = $value;
+        return true;
+    }
+    
+    /**
+     * Adds a path used for transvering directores when compiling templates.
+     *
+     * @param  mixed  $path  Absolute path | Array of paths
+     * @param  array  $options  Array of options to use when adding the path
+     *         Avaliable options.
+     *
+     *         `shift` - Push this path to the top of the path stack.
+     *
+     * @throws  InvalidArgumentException  Thrown when path cannot be found
+     * 
+     * @return  boolean  True on success | False on failure
+     */
+    public function path($path, $options = array())
+    {
+        $defaults = array('shift' => false);
+        $options += $defaults;
+        if (is_array($path)) {
+            foreach ($path as $k => $v) {
+                $this->path($v);
+            }
+        }
+        
+        if (!file_exists($path)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Invalid template path %s',
+                    $path
+                )
+            );
+        }
+        
+        if (true === $options['shift']) {
+            array_unshift($this->_paths, $path);   
+        } else {
+            $this->_paths[] = $path;
+        }   
+    }
+    
+    /**
+     * Returns the current template include paths.
+     *
+     * @return  array  Array of include paths.
+     */
+    public function paths()
+    {
+        return $this->_paths;
+    }
+    
+    /**
+     * Alias to `path`
+     *
+     * Adds a path used for transvering directores when compiling templates.
+     *
+     * @see prggmr\render\engine\Standard::path()
+     * 
+     * @param  mixed  $path  Absolute path | Array of paths
+     * @param  array  $options  Array of options to use when adding the path
+     *         Avaliable options.
+     *
+     *         `shift` - Push this path to the top of the path stack.
+     *
+     * @throws  InvalidArgumentException  Thrown when path cannot be found
+     * 
+     * @return  boolean  True on success | False on failure
+     */
+    public function addTemplatePath($path, $options = array())
+    {
+        return $this->path($path, $options);
+    }
+    
+    /**
+     * Alias to `paths`
+     * 
+     * Returns the current template include paths.
+     *
+     * @see prggmr\render\engine\Standard::paths()
+     *
+     * @return  array  Array of include paths.
+     */
+    public function getTemplatePaths()
+    {
+        return $this->_paths;
+    }
     
     /**
      * Sets a variable for use when compiling templates.
@@ -100,6 +222,9 @@ class Standard extends EngineAbstract {
      * @param  array  $options An array of options passed to the template
      *         engine.
      *
+     * @throws  InvalidArgumentException  Thrown when the template cannot be
+     *          found.
+     *
      * @return  string  The compiled template.
      */
     public function compile($template, $vars = array(), $options = array())
@@ -108,12 +233,52 @@ class Standard extends EngineAbstract {
             $this->assign($vars);
         }
         
+        $found = false;
+        
+        // Transverse all template directories and locate the template
+        // the first instance found will be used, if no template directorys
+        // have been set the autoload paths will be used
+        
+        if (count($this->_paths) == 0) {
+            if (!file_exists($template)) {
+                $paths = \prggmr::load($template, array('return_path' => true));
+                foreach ($paths as $k => $v) {
+                    if (file_exists($v)) {
+                        $template = $v;
+                        $found = true;
+                        break;
+                    }
+                }
+            } else {
+                $found = true;
+            }
+        } else {
+            foreach ($this->_paths as $k => $v) {
+                if (file_exists($v.'/'.$template)) {
+                    $found = true;
+                    $template = $v.'/'.$template;
+                    break;
+                } else {
+                    $paths[] = $v.'/'.$template;
+                }
+            }
+        }
+        
+        if (false === $found) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Failed to locate template file %s; Directories scanned (%s)',
+                    $template, implode(',', $paths)
+                )
+            );
+        }
+        
         // Parse the template
         ob_start();
-        include $template;
-        $content = ob_get_clean();
+            include $template;
+            $content = ob_get_clean();
         ob_end_clean();
         
-        return $template;
+        return $content;
     }
 }
