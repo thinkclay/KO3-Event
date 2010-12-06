@@ -2,6 +2,16 @@
 
 include_once 'bootstrap.php';
 
+
+class TestClass {
+    
+    public function test()
+    {
+       return get_class_name(get_class());
+    }
+    
+}
+
 class GetClassNameTest extends \PHPUnit_Framework_TestCase
 {
     public function testGetClassName()
@@ -12,8 +22,10 @@ class GetClassNameTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('View', get_class_name($view));
         $this->assertEquals('Handler', get_class_name($cli));
         $this->assertEquals('stdClass', get_class_name($std));
-        $this->assertFalse(get_class_name('Test'));
+        $this->assertEquals('Test', get_class_name('Test'));
         $this->assertFalse(get_class_name(null));
         $this->assertFalse(get_class_name(array()));
+        $class = new TestClass();
+        $this->assertEquals('TestClass', $class->test());
     }
 }

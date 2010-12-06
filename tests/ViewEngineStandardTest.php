@@ -36,6 +36,21 @@ class ViewEngineStandardTest extends \PHPUnit_Framework_TestCase
         $this->engine->path($this->sys_path . '/tests/view/templates');
         $compile = $this->engine->compile('test_recompile.phtml', array('test_var' => 'Hello World',
                                                                         'test_var2' => 'Recompile Me'));
-        $this->assertEquals('string', gettype($compile));   
+        $this->assertEquals('Hello World, Recompile Me', $compile);
+    }
+    
+    public function testCompileNoExtension()
+    {
+        $this->engine->path($this->sys_path . '/tests/view/templates');
+        $compile = $this->engine->compile('test_recompile', array('test_var' => 'Hello World',
+                                                                        'test_var2' => 'Recompile Me'));
+        $this->assertEquals('Hello World, Recompile Me', $compile);
+    }
+    
+    public function testEngineOptions()
+    {
+        $this->engine->setOpt('extension', 'pgmr');
+        $this->assertNotEquals('phtml', $this->engine->getOpt('extension'));
+        $this->assertEquals('pgmr', $this->engine->getOpt('extension'));
     }
 }

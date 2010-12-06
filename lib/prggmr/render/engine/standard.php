@@ -54,7 +54,7 @@ class Standard extends EngineAbstract {
      * @var  array  Array of options used when compiling templates.
      */
     protected $_options = array(
-        'extension' => '.phtml'
+        'extension' => 'phtml'
     );
     
     /**
@@ -65,7 +65,7 @@ class Standard extends EngineAbstract {
      *
      * @return  boolean  True on success | False on failure
      */
-    public function option($option, $value)
+    public function setOpt($option, $value)
     {
         if (isset($this->_options[$option])) {
             $this->_options[$option] = $value;
@@ -74,6 +74,22 @@ class Standard extends EngineAbstract {
         
         $this->_options[$option] = $value;
         return true;
+    }
+    
+    /**
+     * Returns an engine option.
+     *
+     * @param  string  $option  Name of the option.
+     *
+     * @return  mixed  Value of option | False on non-existant
+     */
+    public function getOpt($option)
+    {
+        if (isset($this->_options[$option])) {
+            return $this->_options[$option];
+        }
+        
+        return false;
     }
     
     /**
@@ -229,11 +245,18 @@ class Standard extends EngineAbstract {
      */
     public function compile($template, $vars = array(), $options = array())
     {
+        $defaults = $this->_options;
+        $options += $defaults;
+        
         if (count($vars) != 0) {
             $this->assign($vars);
         }
         
         $found = false;
+        
+        if (false === strpos($template, '.')) {
+            $template = $template . '.' . $options['extension'];
+        }
         
         // Transverse all template directories and locate the template
         // the first instance found will be used, if no template directorys
@@ -277,7 +300,7 @@ class Standard extends EngineAbstract {
         ob_start();
             include $template;
             $content = ob_get_clean();
-        ob_end_clean();
+        ob_clean();
         
         return $content;
     }

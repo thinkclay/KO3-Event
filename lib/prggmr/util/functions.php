@@ -51,18 +51,20 @@ function array_unshift_key($key, $value, &$array) {
 }
 
 /**
- * Returns the name of a class using get_class
- * with the namespace stripped.
+ * Returns the name of a class using get_class with the namespace stripped.
+ * This will not work inside a class scope as get_class() a workaround for
+ * that is using get_class_name(get_class());
  *
- * @param  object  $object  Object class to retrieve name
+ * @param  object|string  $object  Object or Class Name to retrieve name
 
- * @return  string  Name of the class with namespaces stripped
+ * @return  string  Name of class with namespaces stripped
  */
-function get_class_name($object) {
-    if (!is_object($object)) {
+function get_class_name($object = null)
+{
+    if (!is_object($object) && !is_string($object)) {
         return false;
     }
     
-    $class = explode('\\', get_class($object));
+    $class = explode('\\', (is_string($object) ? $object : get_class($object)));
     return $class[count($class) - 1];
 }
