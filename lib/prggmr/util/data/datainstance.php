@@ -92,7 +92,7 @@ class DataInstance implements \Iterator, \Countable
         /**
          * Event call which will be used for cache.
          */
-        $event = \prggmr::trigger('registry_set', array($key, $options), array(
+        $event = \prggmr::trigger('registry_set', array($key, $value, $overwrite), array(
                     'namespace' => get_class_name(get_class())));
         if (is_array($event)) {
             if ($event[0] === false) {
@@ -199,7 +199,7 @@ class DataInstance implements \Iterator, \Countable
         /**
          * Event call which will be used for cache.
          */
-        $event = \prggmr::trigger('registry_has', array($key, $options), array(
+        $event = \prggmr::trigger('registry_has', array($key), array(
                     'namespace' => get_class_name(get_class())));
         if (is_array($event)) {
             return $event[0];

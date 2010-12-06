@@ -49,9 +49,9 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 define('PRGGMR_VERSION', '0.01-alpha');
 
 // Only real require needed in prggmr library
-require 'lib/prggmr/util/data/datastatic.php';
-require 'lib/prggmr/util/data/datainstance.php';
-require 'lib/prggmr/util/functions.php';
+require 'prggmr/util/data/datastatic.php';
+require 'prggmr/util/data/datainstance.php';
+require 'prggmr/util/functions.php';
 
 class prggmr extends data\DataStatic {
     /**
