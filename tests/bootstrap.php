@@ -1,2 +1,2 @@
 <?php
-include_once '../system/bootstrap.php';
+include_once '../var/bootstrap.php';

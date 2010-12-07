@@ -1,5 +1,5 @@
-#!/usr/bin/env php
 <?php
+namespace prggmr\util;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ########## 
@@ -27,16 +27,37 @@
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Web
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-if ($_ENV['PWD'] !== null) {
-   set_include_path($_ENV['PWD'] . PATH_SEPARATOR . get_include_path());
-}
 
-if (!file_exists($_ENV['PWD'].'/system/bootstrap.php')) {
-    die ("Failed to locate prggmr $_ENV[PWD]/system/bootstrap.php file, check your bootstrap file in $_ENV[PWD]/system/bootstrap.php");
+/**
+ * Singleton implementation.
+ */
+abstract class Singleton
+{
+    /**
+     * @var  array  Instances of the singleton.
+     */
+    private static $_instances = array();
+    
+    /**
+     * Returns instance of the called class.
+     */
+    final public static function instance()
+    {
+        $class = get_called_class();
+        
+        if (!isset(self::$_instances[$class])) {
+            self::$_instances[$class] = new $class;
+        }
+        
+        return self::$_instances[$class];
+    }
+    
+    /**
+     * Disallow cloning of a singleton
+     */
+    final private function __clone(){}
 }
-
-include $_ENV['PWD'].'/system/bootstrap.php';

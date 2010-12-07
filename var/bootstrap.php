@@ -31,16 +31,6 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-/************************************************************
- * Urls File
- */
-\prggmr::router('/', function($front){
-    echo "I made it here";
-    $front->renderer->attach(array(
-        'hello' => 'World'
-    ));
-    echo $front->renderer->render('test.ptml');
-}, array('namespace' => 'prggmr'));
-
-\prggmr::router('pages/(?P<slug_id>(.*))', function($front, $slug_id){
-}, array('namespace' => 'prggmr'));
+set_include_path('/home/nwhiting/X Studios/Code/prggmr/github/prggmr/' . DIRECTORY_SEPARATOR . get_include_path());
+require 'lib/prggmr.php';
+\prggmr::initalize('/home/nwhiting/X Studios/Code/prggmr/github/prggmr/var/ini/prggmr.dev.nix.ini');

@@ -42,8 +42,9 @@ namespace prggmr\record\connection;
 use \InvalidArgumentException;
 use \RuntimeException;
 use \prggmr\record\connection\adapter as adapter;
+use \prggmr\util as util;
 
-class Pool extends \prggmr\Singleton
+class Pool extends util\Singleton
 {
     /**
      * @var  array  The connection pool.
