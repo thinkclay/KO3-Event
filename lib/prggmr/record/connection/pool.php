@@ -59,6 +59,7 @@ class Pool extends util\Singleton
     /**
      * Adds a new connection to the pool.
      *
+     * @throws  InvalidArgumentException
      * @param  array  $connection  Instance of {@link adapter\Instance}
      */
     public function add(adapter\Instance $connection, $id = null)
@@ -87,7 +88,7 @@ class Pool extends util\Singleton
      * Returns a connection instance or the default connection
      *
      * @param  string  $id  Connection identifier, null for current default
-     *
+     * @throws InvalidArgumentExcption
      * @return \prggmr\record\connection\instance
      */
     public function getConnection($id = null)
@@ -126,6 +127,10 @@ class Pool extends util\Singleton
      *
      * @param  string  $id  Connection identifier
      *
+     * @event  record_connection_default
+     *      @param  object  New connection object default.
+     * 
+     * @throws  InvalidArgumentException
      * @return  boolean
      */
     public function setDefault($id)
@@ -133,6 +138,7 @@ class Pool extends util\Singleton
         if ($this->exists($id)) {
             $this->getConnection()->isDefault(false);
             $this->_connections[$id]->isDefault(true);
+            \prggmr::trigger('record_connection_default', array($this->_connections[$id]));
             return true;
         } else {
             throw new \InvalidArgumentException(
@@ -162,6 +168,9 @@ class Pool extends util\Singleton
      * isn't closed, although it will no longer be accessiable.
      * ( waste of memory? )
      *
+     * @event  record_connection_close
+     *      @param  object  Connection object closing.
+     * 
      * @param  string  $id  Connection identifier
      */
     public function close($id)
@@ -173,6 +182,9 @@ class Pool extends util\Singleton
                 $keys = array_keys($this->_connections);
                 $this->_connections[$keys[0]]->isDefault(true);
             }
+            
+            \prggmr::trigger('record_connection_close', array($conn));
+            
             unset($conn);
         }
         return true;

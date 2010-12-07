@@ -99,7 +99,8 @@ abstract class Instance {
      * @param  string  $pwd  The user's password
      * @param  array   $options  Array of options for this connection.
      *
-     * @event  prggmr\record_connection_add  $this
+     * @event  prggmr\record_connection_add
+     *      @param  object  prggmr\record\connection\adapter\Instance
      *
      * @return  Instance
      * 
@@ -195,6 +196,10 @@ abstract class Instance {
     /**
      * Begins a transaction.
      *
+     * @event  record_connection_adapter_transaction
+     *      @param  object   Adapter object initalizing the transaction.
+     *
+     * @throws  RuntimeException
      * @return  boolean
      */
     public function transaction()
@@ -203,12 +208,17 @@ abstract class Instance {
             throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
         }
+        \prggmr::trigger('record_connection_adapter_transaction', array($this));
         return true;
     }
     
     /**
      * Commits a transaction.
      *
+     * @event  record_connection_adapter_commit
+     *      @param  object  $obj  Adapter object pushing the commit.
+     *
+     * @throws  RuntimeException
      * @return  boolean
      */
     public function commit()
@@ -217,6 +227,7 @@ abstract class Instance {
             throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
         }
+        \prggmr::trigger('record_connection_adapter_commit', array($this));
         return true;
     }
     
@@ -231,10 +242,10 @@ abstract class Instance {
      *         PDO::FETCH_CLASS
      * @see  http://us.php.net/manual/en/pdo.query.php
      *
-     * @event  \prggmr\record_raw
-     *     @param  object  $this  Connection Instance
-     *     @param  string  $statement  SQL Statement Executed
-     *     @param  object  $results  Any results returned from the query
+     * @event  record_connection_adapter_raw
+     *     @param  object  Connection Instance
+     *     @param  string  SQL Statement Executed
+     *     @param  object  Any results returned from the query
      *             {@link PDOStatement}
      *
      * @return  boolean
@@ -248,12 +259,41 @@ abstract class Instance {
                                        intval($this->connection->errorCode));
         }
         $this->querystring = $statement;
-        \prggmr::trigger('record_raw', array($this, $statement, clone $query));
+        \prggmr::trigger('record_connection_adapter_raw', array($this, $statement, clone $query));
         return $query;
     }
     
     /**
-     * Default port used for this database
+     * Default port used for this database.
+     *
+     * @return  integer  Default port used for database connection.
      */
     abstract public function getDefaultPort();
+    
+    /**
+     * Returns driver specific attributes.
+     *
+     * @param  integer  $attr  Constant name of the attribute.
+     * 
+     * @see PDO::getAttribute()
+     *
+     * @return  string  Value of attribute.
+     */
+    abstract public function attribute($attr);
+    
+    /**
+     * Queries for database table column information.
+     *
+     * @param  string  $table  Name of the table.
+     *
+     * @return  object  PDOStatement
+     */
+    abstract public function columns($table);
+    
+    /**
+     * Queries for database table information.
+     *
+     * @return  object  PDOStatement
+     */
+    abstract public function tables();
 }

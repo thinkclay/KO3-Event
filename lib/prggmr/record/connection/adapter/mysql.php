@@ -32,11 +32,57 @@ namespace prggmr\record\connection\adapter;
  */
 
 
-class MySQL extends Instance {
-    
+class MySQL extends Instance
+{
+    /**
+     * Default port used for this database.
+     *
+     * @return  integer  Default port used for MySQL connections.
+     */
     public function getDefaultPort()
     {
         return 3306;
     }
     
+    /**
+     * Returns driver specific attributes.
+     *
+     * @param  integer  $attr  Constant name of the attribute
+     * 
+     * @see PDO::getAttribute()
+     *
+     * @return  string  Value of attribute.
+     */
+    public function attribute($attr)
+    {
+        return $this->connection->getAttribute($attr);
+    }
+    
+    /**
+     * Queries for MySQL table column information.
+     *
+     * @param  string  $table  Name of the table.
+     *
+     * @return  object  PDOStatement
+     */
+    public function columns($table)
+    {
+        return $this->connection->raw(
+            sprintf(
+                'SHOW COLUMNS FROM %s',
+                $table
+            ));
+    }
+    
+    /**
+     * Queries for MySQL table information.
+     *
+     * @return  object  PDOStatement
+     */
+    public function tables()
+    {
+        return $this->connection->raw(
+                'SHOW TABLES'
+            );
+    }
 }
