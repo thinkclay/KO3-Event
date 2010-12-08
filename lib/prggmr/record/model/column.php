@@ -31,6 +31,8 @@ namespace prggmr\record\model;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+#use \prggmr\util\validate as validate;
+
 /**
  * Prggmr Model Columns
  *
@@ -103,6 +105,27 @@ class Column
     protected $_filters = array();
     
     /**
+     * Determains if the columns filters have run.
+     *
+     * @var  boolean  Flag for filters invoked.
+     */
+    protected $_filtersInvoked = false;
+    
+    /**
+     * Stack of validators to use when validating this column.
+     *
+     * @var  array  Stack of validators.
+     */
+    protected $_validators = array();
+    
+    /**
+     * Current value of this column.
+     *
+     * @var  mixed  Value of the column.
+     */
+    protected $_value = null;
+    
+    /**
      * Initalizes a column object
      *
      * @param  string  $name  Name of this column
@@ -112,9 +135,168 @@ class Column
      * @param  boolean  $null  Allow null values
      * @param  boolean  $pk  Column is the Primary Key
      * @param  array  $filters  Array of filters to apply
+     *
+     * @throws  InvalidArgumentException
      */
-    public function __construct($name, $type = 101, $length = 75, $default = '', $null = true, $pk = false, $filters = array())
+    public function __construct($name, $type = 101, $length = 75,
+                                $default = null, $null = true,
+                                $pk = false, $validators = array(),
+                                $filters = array())
     {
+        $typecheck = false;
+        for ($i=0;$i!=8;$i++) {
+            if ($type == (101 + $i)) {
+                $typecheck = true;
+            }
+        }
+        if (false == $typecheck) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Invalid column type %s',
+                    $type
+                )
+            );
+        }
         
+        $this->_name    = $name;
+        $this->_type    = $type;
+        $this->_length  = $length;
+        $this->_default = $default;
+        $this->_null    = $null;
+        $this->_validators = $validators;
+        $this->_pk      = $pk;
+        $this->_filters = $filters;
+    }
+    
+    /**
+     * Returns if column is the Primary key
+     *
+     * @return  boolean  True if primary | False otherwise
+     */
+    public function isPk()
+    {
+        return $this->_pk;
+    }
+    
+    /**
+     * Adds a new filter to run on the column.
+     *
+     * @param  object  $filter  Closure of filter to run. Excepts 1 Parameter.
+     *         A variable reference to the column value.
+     *
+     * @return  boolean  True on success | False otherwise
+     */
+    public function filter(\Closure $obj)
+    {
+        if (!$obj instanceof Closure) {
+            return false;
+        }
+        
+        $this->_filters[] = $obj;
+    }
+    
+    /**
+     * Runs a columns filters.
+     *
+     * @return  mixed  Value of the column after invoking filters.
+     */
+    public function invokeFilters()
+    {
+        if (true == $this->_filtersInvoked) {
+            return $this->value;
+        }
+        
+        if (count($filters) != 0) {
+            foreach ($this->_filters as $k => $v) {
+                if ($v instanceof \Closure) {
+                    $v(&$this->_value);
+                }
+            }
+        }
+        
+        $this->_filtersInvoked = true;
+        
+        return $this->_value;
+    }
+    
+    /**
+     * Returns the type of column.
+     *
+     * @return  integer  Type of column
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+    
+    /**
+     * Returns the default value of column.
+     *
+     * @return  mixed  Default value of column
+     */
+    public function getDefault()
+    {
+        return $this->_default;
+    }
+    
+    /**
+     * Returns the value of column.
+     *
+     * @return  mixed  Value of column
+     */
+    public function getValue()
+    {
+        return $this->_value;
+    }
+    
+    /**
+     * Returns the length of column.
+     *
+     * @return  mixed  Value of column
+     */
+    public function getLength()
+    {
+        return $this->_length;
+    }
+    
+    /**
+     * Validates a columns value before insertion.
+     *
+     * @return  mixed  Value of column | Array of errors.
+     */
+    public function validate()
+    {
+        // Invoke filters before validating the field.
+        if (false == $this->_filtersInvoked) {
+            $this->invokeFilters();    
+        }
+        
+        $errors = array();
+        
+        if (count($this->_validators) != 0) {
+            foreach ($this->_validators as $k => $v) {
+                #if ($v instanceof validate\ValidatorAbstract) {
+                #    if (false === $v->validate($this->_value)) {
+                #        $errors[] = $v->getErrors();
+                #    }
+                #}
+                if ($v instanceof \Closure) {
+                    $valid = $v($this->_value);
+                    if (true !== $valid) {
+                        $errors[] = $valid;
+                    }
+                }
+            }
+        }
+        
+        if (null === $this->_value && false === $this->_null) {
+            $errors[] = \prggmr::get('prggmr.l10n.errors.column.null');
+        }
+        
+        if (count($errors) != 0) {
+            return $errors;
+        }
+        
+        return $this->_value;
     }
 }
