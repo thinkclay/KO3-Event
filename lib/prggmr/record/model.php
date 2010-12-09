@@ -47,7 +47,7 @@ class Model
      *
      * @var  array  Stack of column names
      */
-    protected $_columns = array();
+    protected $_attributes = array();
     
     /**
      * Table name used for model in the database.
