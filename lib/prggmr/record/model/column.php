@@ -31,8 +31,10 @@ namespace prggmr\record\model;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-#use \prggmr\util\validate as validate;
-
+use \InvalidArgumentException;
+use \DateTime;
+use \Closure;
+use \prggmr\record\connection\adapter as adapter;
 /**
  * Prggmr Model Columns
  *
@@ -54,6 +56,22 @@ class Column
     const DATETIME = 106;
     const DATE     = 107;
     const TIME     = 108;
+    
+    /**
+     * Mappings used for error handling.
+     *
+     * @var  array  Stack of column type human friendly.
+     */
+    protected $_maps = array(
+        101 => 'string',
+        102 => 'integer',
+        103 => 'float',
+        104 => 'decimal',
+        105 => 'text',
+        106 => 'datetime',
+        107 => 'date',
+        108 => 'time'
+    );
     
     /**
      * Type of this column.
@@ -128,24 +146,52 @@ class Column
     /**
      * Initalizes a column object
      *
-     * @param  string  $name  Name of this column
-     * @param  integer  $type  Type of the column
-     * @param  length  $length  Max length of the column
-     * @param  mixed  $default  Default value if none
-     * @param  boolean  $null  Allow null values
-     * @param  boolean  $pk  Column is the Primary Key
-     * @param  array  $filters  Array of filters to apply
+     @param  array   $options  Array of options. Avaliable options
+     *
+     *         `name` - Name of column.
+     *
+     *         `type` - Type of column.
+     *
+     *         `length` - Maximum length
+     *
+     *         `default` - Default value
+     *
+     *         `null`  - Allow null values
+     *
+     *         `pk`  -  Column is the PK
+     *
+     *         `filters`  -  Array of filters to apply to column upon
+     *         insert/update commits.
+     *
+     *         `validators`  -  Array of validators to invoke upon
+     *         insert/update commits.
      *
      * @throws  InvalidArgumentException
      */
-    public function __construct($name, $type = 101, $length = 75,
-                                $default = null, $null = true,
-                                $pk = false, $validators = array(),
-                                $filters = array())
+    public function __construct($options = array())
     {
+        
+        $defaults = array(
+                    'name'       => null,
+                    'type'       => model\Column::STRING,
+                    'length'     => 75,
+                    'default'    => null,
+                    'null'       => true,
+                    'pk'         => false,
+                    'validators' => array(),
+                    'filters'    => array()
+                    );
+        $options += $defaults;
+        
+        if (null === $options['name']) {
+            throw new InvalidArgumentException (
+                'Invalid column name provided.'
+            );
+        }
+        
         $typecheck = false;
         for ($i=0;$i!=8;$i++) {
-            if ($type == (101 + $i)) {
+            if ($options['type'] == (101 + $i)) {
                 $typecheck = true;
             }
         }
@@ -153,19 +199,19 @@ class Column
             throw new InvalidArgumentException(
                 sprintf(
                     'Invalid column type %s',
-                    $type
+                    $options['type']
                 )
             );
         }
         
-        $this->_name    = $name;
-        $this->_type    = $type;
-        $this->_length  = $length;
-        $this->_default = $default;
-        $this->_null    = $null;
-        $this->_validators = $validators;
-        $this->_pk      = $pk;
-        $this->_filters = $filters;
+        $this->_name    = $options['name'];
+        $this->_type    = $options['type'];
+        $this->_length  = $options['length'];
+        $this->_default = $options['default'];
+        $this->_null    = $options['null'];
+        $this->_validators = $options['validators'];
+        $this->_pk      = $options['pk'];
+        $this->_filters = $options['filters'];
     }
     
     /**
@@ -260,6 +306,16 @@ class Column
     }
     
     /**
+     * Returns column name.
+     *
+     * @return  string  Name of column
+     */
+    public function getName()
+    {
+        return $this->_name;
+    }
+    
+    /**
      * Validates a columns value before insertion.
      *
      * @return  mixed  Value of column | Array of errors.
@@ -298,5 +354,70 @@ class Column
         }
         
         return $this->_value;
+    }
+    
+    /**
+     * Sets a columns value, casting the value before its set.
+     * If null value given the default will be used.
+     *
+     * @param  mixed  $value  Value to set.
+     * @param  object  $connection  \prggmr\record\connection\Instance
+     *
+     * @throws  InvalidArgumentException
+     * @return  boolean  True on success | False otherwise
+     */
+    public function set($value, $connection = null)
+    {
+        if (null === $value) {
+            $default = $this->getDefault();
+            if ($default instanceof Closure) {
+                $default = $default($this);
+            }
+        }
+        switch ($this->_type) {
+            case static::STRING:
+            case static::TEXT:
+                $this->_value = (string) $value;
+                return true;
+                break;
+            case static::DECIMAL:
+                $this->_value = (double) $value;
+                return true;
+                break;
+            case static::FLOAT:
+                $this->_value = (float) $value;
+                return true;
+                break;
+            case static::INTEGER:
+                $this->_value = (integer) $value;
+                return true;
+                break;
+            case static::DATE:
+            case static::DATETIME:
+            case static::TIME:
+                if (!$connection instanceof adapter\Instance) {
+                    throw new InvalidArgumentException(
+                        sprintf(
+                            'Failed to cast date to database\'s date format
+                            on column %s, invalid connection instance %s',
+                            $this->getName(),
+                            get_class_name($connection)
+                        )
+                    );
+                }
+                
+                if (!$value instanceof DateTime) {
+                    $value = new DateTime($value);
+                }
+                
+                if ($this->_type == static::DATE) {
+                    $this->_value = $connection->date($value);
+                } else {
+                    $this->_value = $connection->datetime($value);
+                }
+                return true;
+                break;
+        }
+        return true;
     }
 }
