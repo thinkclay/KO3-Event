@@ -48,7 +48,7 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 
 define('PRGGMR_VERSION', '0.01-alpha');
 
-// Only real require needed in prggmr library
+require 'prggmr/util/singleton.php';
 require 'prggmr/util/data/datastatic.php';
 require 'prggmr/util/data/datainstance.php';
 require 'prggmr/util/functions.php';
@@ -226,17 +226,33 @@ class prggmr extends data\DataStatic {
                 $class = str_replace('_', DIRECTORY_SEPARATOR, $class);
                 return $namespace.$class;
             },
-            'shift' => false
+            'shift' => false,
+			'update' => false
         );
         $options += $defaults;
-
-        if (!is_dir($options['path'])) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'Library path "%s" is not a valid path', $options['path']
-                )
-            );
-        }
+	
+		$pathcheck = function($path) {
+			// PATH_SEPERATOR
+			if (strpos($path, PATH_SEPARATOR) !== false) {
+				$path = explode(PATH_SEPARATOR, $path);
+			} else {
+				$path = array($path);
+			}
+			foreach ($path as $v) {
+				if (!is_dir($v)) {
+					throw new \InvalidArgumentException(
+						sprintf(
+							'Library path "%s" is not a valid path', $v
+						)
+					);
+				}
+			}
+		};
+		if (is_array($options['path'])) {
+			array_map($pathcheck, $options['path']);
+		} else {
+			$pathcheck($options['path']);
+		}
         
         if ($options['shift'] === true) {
             array_unshift_key($name, $options, static::$__libraries);

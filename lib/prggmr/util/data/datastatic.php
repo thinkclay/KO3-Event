@@ -42,7 +42,7 @@ use \InvalidArgumentException;
  *
  * @see prggmr\util\data\DataInstance
  */
-class DataStatic
+class DataStatic extends \prggmr\util\Singleton
 {
     /**
      * Registry property, information is stored as a `key` -> `value` pair.
