@@ -1,5 +1,5 @@
 <?php
-
+namespace prggmr\record\connection\adapter;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ##########
@@ -31,40 +31,58 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-/**
- * Shifts the key => value onto the begginning of the array
- * with the key index provided.
- *
- * @param  string  $key  Key value of array index
- * @param  mixed  $value  Value of new array index
- * @param  array  $array  Array to shift new element
- */
-function array_unshift_key($key, $value, &$array) {
-    $key = (string) $key;
-    if (!is_array($array)){
-        return false;
-    }
-    $tmp = array($key => $value);
-    $tmp += $array;
-    $array = $tmp;
-    return $array;
-}
 
-/**
- * Returns the name of a class using get_class with the namespace stripped.
- * This will not work inside a class scope as get_class() a workaround for
- * that is using get_class_name(get_class());
- *
- * @param  object|string  $object  Object or Class Name to retrieve name
-
- * @return  string  Name of class with namespaces stripped
- */
-function get_class_name($object = null)
+class SQLite extends Instance
 {
-    if (!is_object($object) && !is_string($object)) {
-        return false;
+    /**
+     * Default port used for this database.
+     *
+     * @return  null  Port connections are not utilized for default SQLite.
+     */
+    public function getDefaultPort()
+    {
+        return null;
     }
 
-    $class = explode('\\', (is_string($object) ? $object : get_class($object)));
-    return $class[count($class) - 1];
+    /**
+     * Returns driver specific attributes.
+     *
+     * @param  integer  $attr  Constant name of the attribute
+     *
+     * @see PDO::getAttribute()
+     *
+     * @return  string  Value of attribute.
+     */
+    public function attribute($attr)
+    {
+        return $this->connection->getAttribute($attr);
+    }
+
+    /**
+     * Queries for SQLite table column information.
+     *
+     * @param  string  $table  Name of the table.
+     *
+     * @return  object  PDOStatement
+     */
+    public function columns($table)
+    {
+        return $this->connection->raw(
+            sprintf(
+                'pragma table_info(%s)',
+                $table
+            ));
+    }
+
+    /**
+     * Queries for SQLite table information.
+     *
+     * @return  object  PDOStatement
+     */
+    public function tables()
+    {
+        return $this->connection->raw(
+                'SELECT name FROM sqlite_master'
+            );
+    }
 }

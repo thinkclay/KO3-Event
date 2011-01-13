@@ -1,5 +1,5 @@
 <?php
-
+namespace models;
 /******************************************************************************
  ******************************************************************************
  *   ##########  ##########  ##########  ##########  ####    ####  ##########
@@ -27,44 +27,29 @@
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Record
+ * @category  System
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-/**
- * Shifts the key => value onto the begginning of the array
- * with the key index provided.
- *
- * @param  string  $key  Key value of array index
- * @param  mixed  $value  Value of new array index
- * @param  array  $array  Array to shift new element
- */
-function array_unshift_key($key, $value, &$array) {
-    $key = (string) $key;
-    if (!is_array($array)){
-        return false;
-    }
-    $tmp = array($key => $value);
-    $tmp += $array;
-    $array = $tmp;
-    return $array;
-}
+use \prggmr\record as record,
+    \prggmr\record\model as model;
 
-/**
- * Returns the name of a class using get_class with the namespace stripped.
- * This will not work inside a class scope as get_class() a workaround for
- * that is using get_class_name(get_class());
- *
- * @param  object|string  $object  Object or Class Name to retrieve name
+class Cars_Model extends record\Model {
 
- * @return  string  Name of class with namespaces stripped
- */
-function get_class_name($object = null)
-{
-    if (!is_object($object) && !is_string($object)) {
-        return false;
-    }
-
-    $class = explode('\\', (is_string($object) ? $object : get_class($object)));
-    return $class[count($class) - 1];
+    public $columns = array(
+           'id' => array(
+                'type' => model\Column::INTEGER,
+                'length' => 11,
+                'pk' => true
+               ),
+           'name' => array(
+                'type' => model\Column::STRING,
+                'length' => 20,
+                'null' => false
+              ),
+            'number' => array(
+                'type' => model\Column::INTEGER,
+                'length' => 2
+            )
+       );
 }

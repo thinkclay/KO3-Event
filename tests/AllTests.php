@@ -6,7 +6,7 @@
 
 foreach (glob('*Test.php') as $file)
 {
-    include($file);
+    include_once ($file);
 }
 
 class AllTests
@@ -14,12 +14,12 @@ class AllTests
     public static function suite()
     {
         $suite = new PHPUnit_Framework_TestSuite('PHPUnit');
-        
+
         foreach (glob('*Test.php') as $file)
         {
             $suite->addTestSuite(substr($file,0,-4));
         }
-    
+
         return $suite;
     }
 }

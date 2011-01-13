@@ -2,7 +2,7 @@
 namespace prggmr\record\model;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\record\model;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  System
@@ -56,97 +56,97 @@ class Column
     const DATETIME = 106;
     const DATE     = 107;
     const TIME     = 108;
-    
+
     /**
      * Mappings used for error handling.
      *
      * @var  array  Stack of column type human friendly.
      */
     protected $_maps = array(
-        101 => 'string',
-        102 => 'integer',
-        103 => 'float',
-        104 => 'decimal',
-        105 => 'text',
-        106 => 'datetime',
-        107 => 'date',
-        108 => 'time'
+        101 => 'STRING',
+        102 => 'INTEGER',
+        103 => 'FLOAT',
+        104 => 'DECIMAL',
+        105 => 'TEXT',
+        106 => 'DATETIME',
+        107 => 'DATE',
+        108 => 'TIME'
     );
-    
+
     /**
      * Type of this column.
      *
      * @var  integer  Type of column
      */
     protected $_type = null;
-    
+
     /**
      * Is this column the PK.
      *
      * @var  boolean  Flag for PK.
      */
     protected $_pk = false;
-    
+
     /**
      * Allow null values for this column.
      *
      * @var  boolean  Allow null
      */
     protected $_null = true;
-    
+
     /**
      * Name of this column.
      *
      * @var  string  Name of the column
      */
     protected $_name = null;
-    
+
     /**
      * Maximum Length of this column.
      *
      * @var  integer  Max length of column value
      */
     protected $_length = null;
-    
+
     /**
      * Default value for column.
      *
      * @var  mixed  Default value
      */
     protected $_default = null;
-    
+
     /**
      * Set of filters to apply before a insert/update on this column.
-     * 
+     *
      * @var  array  Array of filters.
      */
     protected $_filters = array();
-    
+
     /**
      * Determains if the columns filters have run.
      *
      * @var  boolean  Flag for filters invoked.
      */
     protected $_filtersInvoked = false;
-    
+
     /**
      * Stack of validators to use when validating this column.
      *
      * @var  array  Stack of validators.
      */
     protected $_validators = array();
-    
+
     /**
      * Current value of this column.
      *
      * @var  mixed  Value of the column.
      */
     protected $_value = null;
-    
+
     /**
      * Initalizes a column object
      *
-     @param  array   $options  Array of options. Avaliable options
+     * @param  array   $options  Array of options. Avaliable options
      *
      *         `name` - Name of column.
      *
@@ -170,10 +170,10 @@ class Column
      */
     public function __construct($options = array())
     {
-        
+
         $defaults = array(
                     'name'       => null,
-                    'type'       => model\Column::STRING,
+                    'type'       => self::STRING,
                     'length'     => 75,
                     'default'    => null,
                     'null'       => true,
@@ -182,13 +182,13 @@ class Column
                     'filters'    => array()
                     );
         $options += $defaults;
-        
+
         if (null === $options['name']) {
-            throw new InvalidArgumentException (
-                'Invalid column name provided.'
+            throw new \InvalidArgumentException (
+                \prggmr::get('prggmr.i18n.exceptions.record_column_noname')
             );
         }
-        
+
         $typecheck = false;
         for ($i=0;$i!=8;$i++) {
             if ($options['type'] == (101 + $i)) {
@@ -196,14 +196,15 @@ class Column
             }
         }
         if (false == $typecheck) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf(
-                    'Invalid column type %s',
-                    $options['type']
+                    \prggmr::get('prggmr.i18n.exceptions.record_invalid_column'),
+                    $options['type'],
+                    implode(",", $this->_maps)
                 )
             );
         }
-        
+
         $this->_name    = $options['name'];
         $this->_type    = $options['type'];
         $this->_length  = $options['length'];
@@ -213,7 +214,7 @@ class Column
         $this->_pk      = $options['pk'];
         $this->_filters = $options['filters'];
     }
-    
+
     /**
      * Returns if column is the Primary key
      *
@@ -223,7 +224,7 @@ class Column
     {
         return $this->_pk;
     }
-    
+
     /**
      * Adds a new filter to run on the column.
      *
@@ -234,13 +235,13 @@ class Column
      */
     public function filter(\Closure $obj)
     {
-        if (!$obj instanceof Closure) {
+        if (!$obj instanceof \Closure) {
             return false;
         }
-        
+
         $this->_filters[] = $obj;
     }
-    
+
     /**
      * Runs a columns filters.
      *
@@ -251,7 +252,7 @@ class Column
         if (true == $this->_filtersInvoked) {
             return $this->value;
         }
-        
+
         if (count($filters) != 0) {
             foreach ($this->_filters as $k => $v) {
                 if ($v instanceof \Closure) {
@@ -259,12 +260,12 @@ class Column
                 }
             }
         }
-        
+
         $this->_filtersInvoked = true;
-        
+
         return $this->_value;
     }
-    
+
     /**
      * Returns the type of column.
      *
@@ -274,7 +275,7 @@ class Column
     {
         return $this->_type;
     }
-    
+
     /**
      * Returns the default value of column.
      *
@@ -284,7 +285,7 @@ class Column
     {
         return $this->_default;
     }
-    
+
     /**
      * Returns the value of column.
      *
@@ -294,7 +295,7 @@ class Column
     {
         return $this->_value;
     }
-    
+
     /**
      * Returns the length of column.
      *
@@ -304,7 +305,7 @@ class Column
     {
         return $this->_length;
     }
-    
+
     /**
      * Returns column name.
      *
@@ -314,7 +315,7 @@ class Column
     {
         return $this->_name;
     }
-    
+
     /**
      * Validates a columns value before insertion.
      *
@@ -324,11 +325,11 @@ class Column
     {
         // Invoke filters before validating the field.
         if (false == $this->_filtersInvoked) {
-            $this->invokeFilters();    
+            $this->invokeFilters();
         }
-        
+
         $errors = array();
-        
+
         if (count($this->_validators) != 0) {
             foreach ($this->_validators as $k => $v) {
                 #if ($v instanceof validate\ValidatorAbstract) {
@@ -344,18 +345,18 @@ class Column
                 }
             }
         }
-        
+
         if (null === $this->_value && false === $this->_null) {
-            $errors[] = \prggmr::get('prggmr.l10n.errors.column.null');
+            $errors[] = \prggmr::get('prggmr.i18n.exceptions.record_column_null_value');
         }
-        
+
         if (count($errors) != 0) {
             return $errors;
         }
-        
+
         return $this->_value;
     }
-    
+
     /**
      * Sets a columns value, casting the value before its set.
      * If null value given the default will be used.
@@ -370,7 +371,7 @@ class Column
     {
         if (null === $value) {
             $default = $this->getDefault();
-            if ($default instanceof Closure) {
+            if ($default instanceof \Closure) {
                 $default = $default($this);
             }
         }
@@ -398,18 +399,18 @@ class Column
                 if (!$connection instanceof adapter\Instance) {
                     throw new InvalidArgumentException(
                         sprintf(
-                            'Failed to cast date to database\'s date format
-                            on column %s, invalid connection instance %s',
+                            \prggmr::get('prggmr.i18n.exceptions.record_column_date_cast')
+                            ,
                             $this->getName(),
                             get_class_name($connection)
                         )
                     );
                 }
-                
-                if (!$value instanceof DateTime) {
-                    $value = new DateTime($value);
+
+                if (!$value instanceof \DateTime) {
+                    $value = new \DateTime($value);
                 }
-                
+
                 if ($this->_type == static::DATE) {
                     $this->_value = $connection->date($value);
                 } else {

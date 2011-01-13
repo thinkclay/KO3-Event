@@ -2,7 +2,7 @@
 namespace prggmr\record;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,16 +24,18 @@ namespace prggmr\record;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  System
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+use \InvalidArgumentException;
 use \prggmr\record\connection as connection;
 use \prggmr\record\connection\adapter as adapter;
 use \prggmr\record\model as model;
+use \prggmr\record\sql as sql;
 
 /**
  * Prggmr Models
@@ -43,32 +45,27 @@ use \prggmr\record\model as model;
  * Models are defined as:
  *
  *
-    use prggmr\record\model as model;
-    use prggmr\record as record;
-    class Racers extends record\Model
-    {
-       $columns = array(
-           'id' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 11,
-                'pk' => true
-               )
-           'name' => array(
-                'type' => model\Column::STRING,
-                'length' => 20,
-                'filters' => array(function($value){return strtolower($value);}),
-                'null' => false,
-                'validators' => array(
-                    function($val) {
-                        
-                    }
-                )
-              ),
-            'number' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 2
+    use \prggmr\record as record,
+    \prggmr\record\model as model;
+
+    class Cars_Model extends record\Model {
+
+        public $columns = array(
+            'id' => array(
+                 'type' => model\Column::INTEGER,
+                 'length' => 11,
+                 'pk' => true
+            ),
+            'name' => array(
+                 'type' => model\Column::STRING,
+                 'length' => 20,
+                 'null' => false
+            ),
+             'number' => array(
+                 'type' => model\Column::INTEGER,
+                 'length' => 2
             )
-       );
+        );
     }
  */
 
@@ -78,28 +75,28 @@ class Model
      * Defined columns for a model.
      */
     public $columns = array();
-    
+
     /**
      * Stack of the model's table columns in the database.
      *
      * @var  array  Stack of column names
      */
     protected $_attributes = array();
-    
+
     /**
      * Table name used for model in the database.
      *
      * @var  string  Table database name.
      */
     protected $_tableName = null;
-    
+
     /**
      * Write status of the model.
      *
      * @var  boolean  If model needs to write.
      */
     protected $_isDirty = false;
-    
+
     /**
      * Read-only status of the model.
      *
@@ -108,45 +105,45 @@ class Model
      * @var  boolean  Read-only status.
      */
     protected $_readOnly = false;
-    
+
     /**
      * Determains if the model is a new record.
      *
      * @var  boolean  New record to insert.
      */
     protected $_isNew = true;
-    
+
     /**
      * prggmr\record\connection\adapter\Instance to use for transactions.
-     * 
+     *
      * If null the default connection pool is used.
      *
      * @see prggmr\record\connection\adapter\Instance
      * @var  mixed  prggmr\record\connection\adapter\Instance|Null for default
      */
     protected $_connection = null;
-    
+
     /**
      * Primary key column for model.
      *
      * @var  string  Primary key column name.
      */
     protected $_pk = null;
-    
+
     /**
      * Name of database model uses.
      *
      * @var  string  Database name model associates.
      */
     protected $_database = null;
-    
+
     /**
      * Table object instance.
      *
      * @var  object  prggmr\record\model\Table
      */
     protected $_table = null;
-    
+
     /**
      * Initalize the model.
      *
@@ -156,27 +153,41 @@ class Model
      *
      * @event  record_model_init
      *      @param  object  Model instance
-     * 
+     *
      * @throws  InvalidArgumentException
      * @return  object  prggmr\record\Model
      */
     public function __construct($attr = array(), $conn = null, $options = array())
     {
-        $defaults = array('readonly' => false, 'new' => false, 'table' => function($obj){
-            return get_class_name($obj); 
+        $defaults = array('readonly' => false, 'new' => true, 'table' => function($obj){
+            return get_class_name($obj);
         });
-        
+
         $options += $defaults;
-        
-        if (count($attr) != 0) {
+
+        if (count($this->columns) == 0) {
+            throw new \RuntimeException(
+                sprintf(
+                'Model "%s" does not contain column information',
+                $options['table']($this)
+                )
+            );
+        }
+
+        //foreach ($this->columns as $name => $attr) {
+        //    $attr['name'] = (isset($attr['name'])) ? $attr['name'] : $name;
+        //    $this->columns[$name] = new model\Column($attr);
+        //}
+
+        if (null !== $attr && count($attr) != 0) {
             foreach ($attr as $k => $v) {
                 $this->{$k} = $v;
             }
         }
-        
+
         if (null !== $conn) {
             if (!$conn instanceof adapter\Instance) {
-                throw new InvalidArgumentException(
+                throw new \InvalidArgumentException(
                     sprintf(
                         'Invalid connection instance; Expected instance of %s recieved %s',
                         'prggmr\record\connection\adapter\Instance',
@@ -188,29 +199,34 @@ class Model
         } else {
             $this->_connection = connection\Pool::instance()->getConnection();
         }
-        
+
         $this->_attributes = $attr;
-        
+
         if ($options['table'] instanceof \Closure) {
-            $tablename = $options['table']($this);
+            $options['table'] = $options['table']($this);
         }
-        
-        $table = new model\Table($attr, $tablename);
-        
+
+        $this->_tableName = $options['table'];
+
+        $this->_table = new model\Table($this->columns, $this->_tableName);
+
         // set our primary key if it exists
         $this->pk();
+
+        $this->_isNew = $options['new'];
+        $this->_readOnly = $options['readonly'];
     }
-    
+
     /**
      * Overload __set into our data properties.
      *
-     * 
+     *
      */
     public function __set($name, $value)
     {
         return $this->attribute($name, $value);
     }
-    
+
     /**
      * Overload __get into our table columns object.
      *
@@ -220,14 +236,14 @@ class Model
     public function __get($name)
     {
         $col = $this->_table->getColumn($name);
-        
+
         if (false === $col) {
             return false;
         }
-        
+
         return $col->getValue();
     }
-    
+
     /**
      * Sets a columns value.
      *
@@ -238,20 +254,20 @@ class Model
      */
     public function attribute($column, $value)
     {
-        $col = $this->_table->getColumn($name);
-        
+        $col = $this->_table->getColumn($column);
+
         if (false === $col) {
             return false;
         }
-        
+
         if (!$col->set($value, $this->_connection)) {
             return false;
         }
-        
+
         return $this;
     }
-    
-    
+
+
     /**
      * Returns the connection instance.
      *
@@ -260,9 +276,9 @@ class Model
      */
     public function getConnection()
     {
-        return $this->conn;
+        return $this->_connection;
     }
-    
+
     /**
      * Returns the readonly status.
      *
@@ -272,7 +288,7 @@ class Model
     {
         return $this->_readOnly;
     }
-    
+
     /**
      * Returns the new row status.
      *
@@ -282,7 +298,7 @@ class Model
     {
         return $this->_isNew;
     }
-    
+
     /**
      * Returns the primary key column object. False if model doesn't have.
      *
@@ -292,6 +308,9 @@ class Model
     public function pk()
     {
         if (null === $this->_pk) {
+            if (null === $this->_table) {
+                return false;
+            }
             foreach ($this->_table->getColumns() as $col => $obj) {
                 if ($obj->isPk()) {
                     $this->_pk = $obj;
@@ -300,10 +319,10 @@ class Model
             }
             return false;
         }
-        
+
         return $this->_pk;
     }
-    
+
     /**
      * Returns the table object assoicated with model.
      *
@@ -313,5 +332,20 @@ class Model
     public function table()
     {
         return $this->_table;
+    }
+
+    /**
+     * Write the current model to the database table as a new, or
+     * update an existing record.
+     *
+     * @return  boolean  True on success | False otherwise
+     */
+    public function save()
+    {
+        if ($this->isReadOnly()) {
+            return false;
+        }
+
+        $querystring = new sql\QueryBuilder($this);
     }
 }

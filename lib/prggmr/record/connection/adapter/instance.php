@@ -2,7 +2,7 @@
 namespace prggmr\record\connection\adapter;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -35,62 +35,62 @@ namespace prggmr\record\connection\adapter;
  * Connection Instance
  */
 abstract class Instance {
-    
+
     /**
      * @var  object  PDO Connection instance {@link PDO}
      */
     public $connection = null;
-    
+
     /**
      * @var  string  DSN Connection string
      */
     public $dsn = null;
-    
+
     /**
      * var  string  Current user connected
      */
     public $user = null;
-    
+
     /**
      * var  int  Current port connection is established through
      */
     public $port = null;
-    
+
     /**
      * var  str  Current password used for this connection
      */
     public $password = null;
-    
+
     /**
      * var  array  Options used for this connection
      */
     public $options = null;
-    
+
     /**
      * var  boolean  Flag determaining if this conneciton has ben tested
      */
-    public $tested = false;
-    
+    protected $_tested = null;
+
     /**
      * @var  string  Quote Indentifier used for tables,fields
      */
     public $quote_identifier = '`';
-    
+
     /**
      * @var  string  Querystring of the last run query
      */
     public $querystring = null;
-    
+
     /**
      * @var  object  Instance of \prggmr\Log
      */
     public $log = null;
-    
+
     /**
      * @var  boolean  Is the default connection instance
      */
     protected $_default = false;
-    
+
     /**
      * Init a new connection.
      *
@@ -103,7 +103,7 @@ abstract class Instance {
      *      @param  object  prggmr\record\connection\adapter\Instance
      *
      * @return  Instance
-     * 
+     *
      */
     public function __construct($dsn, $usr = null, $pwd = null, $options = null)
     {
@@ -117,13 +117,13 @@ abstract class Instance {
         } else {
             $this->port = $port[0];
         }
-        
+
         \prggmr::trigger('record_connection_add', array($this));
-        
+
         return true;
     }
 
-    
+
     /**
      * Sets or returns if instance is the default.
      *
@@ -139,7 +139,7 @@ abstract class Instance {
         $this->_default = $arg;
         return $this->_default;
     }
-    
+
     /**
      * Returns the string quoted using the $quote_identifier
      *
@@ -153,36 +153,36 @@ abstract class Instance {
             $string = $this->quote_identifier . $string;
         }
         if (!$pre) {
-            $string = $string . $this->quote_identifier; 
+            $string = $string . $this->quote_identifier;
         }
 
         return $string;
     }
-    
+
     /**
      * Returns a datetime object formatted in the database's date format
      *
      * @param  object  $date  Datetime object
-     * 
+     *
      * @return  string  Database date format
      */
     public function date($date)
     {
         return $date->format('Y-m-d');
     }
-    
+
     /**
      * Returns a datetime object formatted in the database's datetime format
      *
      * @param  object  $date  Datetime object
-     * 
+     *
      * @return  string  Database date format
      */
     public function datetime($date)
     {
         return $date->format('Y-m-d H:i:s T');
     }
-    
+
     /**
      * Returns the insertid from a previous transaction.
      *
@@ -192,7 +192,7 @@ abstract class Instance {
     {
         return $this->connection->lastInsertId();
     }
-    
+
     /**
      * Begins a transaction.
      *
@@ -211,7 +211,7 @@ abstract class Instance {
         \prggmr::trigger('record_connection_adapter_transaction', array($this));
         return true;
     }
-    
+
     /**
      * Commits a transaction.
      *
@@ -230,7 +230,35 @@ abstract class Instance {
         \prggmr::trigger('record_connection_adapter_commit', array($this));
         return true;
     }
-    
+
+    /**
+     * Tests and establishes the database connection, otherwise result of
+     * previous test will be returned.
+     *
+     * @event  record_connection_adapter_test
+     *      @param  object  $obj  Adapter object performing the test
+     * @throws  RuntimeException
+     * @return  boolean  True on success | False on failure
+     */
+    public function connect()
+    {
+        if (null === $this->_tested) {
+            // Connection not tested, test the connection
+            try {
+                $this->connection = new \PDO($this->dsn,
+                                            $this->user,
+                                            $this->password,
+                                            $this->options);
+            } catch (Exception $e) {
+                throw new RuntimeException($this->connection->errorInfo,
+                                       intval($this->connection->errorCode));
+            }
+            $this->_tested = true;
+        }
+
+        return $this->_tested;
+    }
+
     /**
      * Executes a raw sql query and returns a {@link PDOStatement}
      * result.
@@ -262,25 +290,25 @@ abstract class Instance {
         \prggmr::trigger('record_connection_adapter_raw', array($this, $statement, clone $query));
         return $query;
     }
-    
+
     /**
      * Default port used for this database.
      *
      * @return  integer  Default port used for database connection.
      */
     abstract public function getDefaultPort();
-    
+
     /**
      * Returns driver specific attributes.
      *
      * @param  integer  $attr  Constant name of the attribute.
-     * 
+     *
      * @see PDO::getAttribute()
      *
      * @return  string  Value of attribute.
      */
     abstract public function attribute($attr);
-    
+
     /**
      * Queries for database table column information.
      *
@@ -289,7 +317,7 @@ abstract class Instance {
      * @return  object  PDOStatement
      */
     abstract public function columns($table);
-    
+
     /**
      * Queries for database table information.
      *

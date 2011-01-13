@@ -2,7 +2,7 @@
 namespace prggmr\record\connection;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -50,19 +50,27 @@ class Pool extends util\Singleton
      * @var  array  The connection pool.
      */
     protected $_connections = array();
-    
+
     /**
      * @var  boolean  Determine if pool has a default connection.
      */
     protected $_hasDefault = false;
-    
+
     /**
      * Adds a new connection to the pool.
      *
+     * @param  object  $connection  prggmr\record\connection\adapter\Instance
+     * @param  string  $id  Id of this connection
+     * @param  boolean  $establish  Test and establish connection when added rather
+     *         than when performing the first transaction to this connection.
+     *
+     * @event  record_connection_add
+     *      @param  object  New connection object.
+     *
      * @throws  InvalidArgumentException
-     * @param  array  $connection  Instance of {@link adapter\Instance}
+     * @param  object  $connection  Instance of {@link adapter\Instance}
      */
-    public function add(adapter\Instance $connection, $id = null)
+    public function add(adapter\Instance $connection, $id = null, $establish = false)
     {
         if (null === $connection) {
             throw new \InvalidArgumentException(
@@ -71,19 +79,28 @@ class Pool extends util\Singleton
                 )
             );
         }
-        
+
+        if (true == $establish) {
+            $connect = $connection->connect();
+            if (true !== $connect) {
+                throw new RuntimeException(
+                    'Connection (%s) failed to return a succesful connection'
+                );
+            }
+        }
+
         if (null === $id) {
             $tmp = explode('\\', get_class($connection));
             $id = $tmp[count($tmp) - 1];
         }
+
         $this->_connections[$id] = $connection;
-        
+
         if (!$this->_hasDefault) {
            $this->_connections[$id]->isDefault(true);
         }
-   
     }
-    
+
     /**
      * Returns a connection instance or the default connection
      *
@@ -111,7 +128,7 @@ class Pool extends util\Singleton
             );
         }
     }
-    
+
     /**
      * Returns an array of all current connections
      *
@@ -121,7 +138,7 @@ class Pool extends util\Singleton
     {
         return $this->_connections;
     }
-    
+
     /**
      * Sets the given id as the default connection.
      *
@@ -129,7 +146,7 @@ class Pool extends util\Singleton
      *
      * @event  record_connection_default
      *      @param  object  New connection object default.
-     * 
+     *
      * @throws  InvalidArgumentException
      * @return  boolean
      */
@@ -149,10 +166,10 @@ class Pool extends util\Singleton
             );
         }
     }
-    
+
     /**
      * Tests if the given connection exists
-     * 
+     *
      * @param  string  $id  Connection identifier
      *
      * @return  boolean
@@ -161,7 +178,7 @@ class Pool extends util\Singleton
     {
         return isset($this->_connections[$id]);
     }
-    
+
     /**
      * Closes a connection.
      * Removes from pool but PDO has no `close` so the connection really
@@ -170,7 +187,7 @@ class Pool extends util\Singleton
      *
      * @event  record_connection_close
      *      @param  object  Connection object closing.
-     * 
+     *
      * @param  string  $id  Connection identifier
      */
     public function close($id)
@@ -182,9 +199,9 @@ class Pool extends util\Singleton
                 $keys = array_keys($this->_connections);
                 $this->_connections[$keys[0]]->isDefault(true);
             }
-            
+
             \prggmr::trigger('record_connection_close', array($conn));
-            
+
             unset($conn);
         }
         return true;

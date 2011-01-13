@@ -1,7 +1,7 @@
 <?php
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -62,14 +62,14 @@ class prggmr extends data\DataStatic {
      */
     protected static $__routes = array();
 
-    
+
     /**
      * prggmr registry property, information is stored as a `key` -> `value` pair.
      *
      * @var  array  Array of `key` -> `value` mappings for registry contents.
      */
     protected static $__registry = array();
-    
+
     /**
      * List of libraries from which classes are loaded.
      * Libraries can be added via `prggmr::library()`
@@ -77,28 +77,28 @@ class prggmr extends data\DataStatic {
      * @var  array  Avaliable libraries for loading classes and files.
      */
     protected static $__libraries = array();
-	
+
 	/**
      * Array of event listeners
      *
      * @var  array  Array of anonymous functions waiting for an event.
      */
     protected static $__events = array();
-	
+
 	/**
 	 * Debug flag
 	 *
 	 * @var  boolean  Flag for debugging
 	 */
 	protected static $__debug = false;
-    
+
     /**
      * Last Exception handled
      *
      * @var  string  String of the last exception that was handled by debug
      */
     public static $__exception = false;
-    
+
     /**
      * Provides runtime statistical data.
      *
@@ -108,7 +108,7 @@ class prggmr extends data\DataStatic {
         'events'     => array(),
         'benchmarks' => array()
     );
-	
+
 	/**
 	 * prggmr Default Driver constant.
 	 * Default constant is defined for methods that will
@@ -125,9 +125,9 @@ class prggmr extends data\DataStatic {
      *
      * @param  string  $class  Either a fully-namespaced classname or a decimal
      *         string containing the full path to a specific file.
-     *         
+     *
      * @param  boolean  $require  Require file. Exception thrown if not found
-     * 
+     *
      * @param  array   $options  Array of options. Avaliable options
      *
      *         `return_path` - Returns the full generated path to the file.
@@ -154,25 +154,46 @@ class prggmr extends data\DataStatic {
                 $class     = substr($class, $nspos + 1);
             }
         }
+
         $paths = array();
-        foreach (static::$__libraries as $name => $config) {
+
+        $pathCheck = function($path, $config) use (&$namespace, &$class, &$options, &$pathCheck) {
+
+            $return = array();
+
             if ($config['transformer'] instanceof \Closure) {
-                $path = $config['transformer']($class, $namespace, $options);
+                $location = $config['transformer']($class, $namespace, $options);
                 // Add allowance of skipping this library if dictated
-                if ($path === null || $path === false) continue;
-                $fullPath = $config['prefix'].$config['path'].$path.$config['ext'];
+                if ($location === null || $location === false) {} else {
+                    $fullPath = $config['prefix'].$path.$location.$config['ext'];
+                }
             } else {
-                $fullPath = $config['prefix'].$config['path'].$namespace.$class.$config['ext'];
+                $fullPath = $config['prefix'].$path.$namespace.$class.$config['ext'];
             }
-            $paths[] = $fullPath;
-            if (!$options['return_path']) {
-                if (file_exists($fullPath)) {
-                    include $fullPath;
-                    return true;
+
+            return $fullPath;
+        };
+
+        foreach (static::$__libraries as $name => $config) {
+            if (is_array($config['path'])) {
+                foreach ($config['path'] as $k => $_path) {
+                    $checkPaths[] = $pathCheck($_path, $config);
+                }
+            } else {
+                $checkPaths = array($pathCheck($config['path'], $config));
+            }
+            //$checkPaths = $pathCheck($config['path'], $config);
+            $paths += $checkPaths;
+            foreach ($checkPaths as $k => $path) {
+                if (!$options['return_path']) {
+                    if (file_exists($path)) {
+                        include $path;
+                        return true;
+                    }
                 }
             }
         }
-        
+
         if ($options['return_path']) {
             return $paths;
         }
@@ -212,6 +233,9 @@ class prggmr extends data\DataStatic {
      *
      *         `shift` - Prepend route to the beginning of the routes table if set to true.
      *
+     *         `merge` - Merges a current library loader with new configuration, allowing
+     *         modification of library loading at runtime.
+     *
      * @throws  InvalidArgumentException  Thrown when directory path cannot be found
      *
      * @return  boolean  Returns true when library is succesfully added.
@@ -226,11 +250,24 @@ class prggmr extends data\DataStatic {
                 $class = str_replace('_', DIRECTORY_SEPARATOR, $class);
                 return $namespace.$class;
             },
-            'shift' => false,
-			'update' => false
+            'shift'       => false,
+			'update'      => false,
+            'merge'       => false
         );
-        $options += $defaults;
-	
+
+        $merge = false;
+
+        if (isset($options['merge']) && true == $options['merge']) {
+            $merge = true;
+        }
+
+        if (isset(static::$__libraries[$name]) && $merge) {
+            $tmp = array_merge_recursive(static::$__libraries[$name], $options);
+            $options = $tmp;
+        } else {
+            $options += $defaults;
+        }
+
 		$pathcheck = function($path) {
 			// PATH_SEPERATOR
 			if (strpos($path, PATH_SEPARATOR) !== false) {
@@ -248,12 +285,21 @@ class prggmr extends data\DataStatic {
 				}
 			}
 		};
+
 		if (is_array($options['path'])) {
 			array_map($pathcheck, $options['path']);
 		} else {
 			$pathcheck($options['path']);
 		}
-        
+
+        if ($merge && array_key_exists($name, static::$__libraries)) {
+            if (!is_array(static::$__libraries[$name]['path'])) {
+                static::$__libraries[$name]['path'] = array(static::$__libraries[$name]['path']);
+            }
+            static::$__libraries[$name]['path'] += (array) $options['path'];
+            return true;
+        }
+
         if ($options['shift'] === true) {
             array_unshift_key($name, $options, static::$__libraries);
         } else {
@@ -261,7 +307,7 @@ class prggmr extends data\DataStatic {
         }
         return true;
     }
-    
+
     /**
      * Router operations are performed as anonymous functions tied to an array
      * set at `static::$__routes`.
@@ -283,17 +329,17 @@ class prggmr extends data\DataStatic {
      *          `dispatch` - Dispatch the system router.
      *
      *          `routes` - Return the current system routes table.
-     *         
+     *
      * @param  object  $arg  The operation that will be performed if the `regex`
      *         is matched, the anonymous function that returns the string to match for the route,
      *         or the string to use for matching the routes.
-     *         
+     *
      * @param  array  $options  Array of options to use for this route. Avaliable options
      *
      *         `shift` - Prepend route to the beginning of the routes table if set to true.
      *
      *         `force` - Overwrites previous route is same exists if set to true.
-     *          
+     *
      *         `params` - Set of additional parameters to provide the route action.
      *         See [[http://www.nwhiting.com]] for examples.
      *
@@ -301,7 +347,7 @@ class prggmr extends data\DataStatic {
      *         routes table.
      *
      *         `offset` - Specify the alternate place from which to start the search.
-     *         
+     *
      *
      * @throws  LogicException, RuntimeException, InvalidArgumentException
      * @return  boolean
@@ -357,7 +403,7 @@ class prggmr extends data\DataStatic {
                 } catch (Exception $e) {
                     throw new \LogicException(
                         sprintf(
-                            'Dispatch execution failed due to exception "%s" with message "%s"', get_class($e), $e->getMessage() 
+                            'Dispatch execution failed due to exception "%s" with message "%s"', get_class($e), $e->getMessage()
                         )
                     );
                 }
@@ -394,7 +440,7 @@ class prggmr extends data\DataStatic {
         }
         return true;
     }
-	
+
 	/**
      * Adds a new listener to the event queue.
      * Listeners are anonymous functions that are executed via a triggered
@@ -417,7 +463,7 @@ class prggmr extends data\DataStatic {
      *
      * @throws  InvalidArgumentException,RuntimeException
      * @return  boolean
-     * 
+     *
      */
     public static function listen($event, $function, $options = array()) {
         $defaults = array('shift' => false,
@@ -448,7 +494,7 @@ class prggmr extends data\DataStatic {
                 )
             );
         }
-        
+
 		if ($options['name'] instanceof Closure) {
 			$fd = false;
 			do {
@@ -481,7 +527,7 @@ class prggmr extends data\DataStatic {
 
         return true;
     }
-    
+
     /**
      * Triggers event listeners and returns the results; the results are
      * always returned in an array for use with events with multiple
@@ -490,7 +536,7 @@ class prggmr extends data\DataStatic {
      * @param  string  $event  Name of the event to trigger
      * @param  array  $params  Parameters to directly pass to the event listener
      * @param  array  $options  Array of options. Avaliable options.
-     
+
      *         `namespace` - `namespace` - Namespace for event.
      *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
@@ -513,7 +559,7 @@ class prggmr extends data\DataStatic {
         $listeners = null;
         if (!is_array($params)) $params = array();
         if (isset(static::$__events[$options['namespace']][$event])) {
-            $listeners = static::$__events[$options['namespace']][$event];  
+            $listeners = static::$__events[$options['namespace']][$event];
         } else if (isset(static::$__events[$options['namespace']])) {
             foreach (static::$__events[$options['namespace']] as $name => $op) {
                 $regex = '#' . $name . '$#i';
@@ -546,7 +592,7 @@ class prggmr extends data\DataStatic {
                 } catch (\Exception $e) {
                     throw new \LogicException(
                         sprintf(
-                            'Event (%s) Listener "%s" execution failed due to exception "%s" with message "%s"', $event, $name, get_class($e), $e->getMessage() 
+                            'Event (%s) Listener "%s" execution failed due to exception "%s" with message "%s"', $event, $name, get_class($e), $e->getMessage()
                         )
                     );
                 }
@@ -572,13 +618,13 @@ class prggmr extends data\DataStatic {
         }
         return true;
     }
-	
+
 	/**
 	 * Returns prggmr's core object registry.
 	 *
 	 * @param  string  $format  Format in which to return the data [array|object]
 	 * 				   defaults to array.
-	 * 
+	 *
 	 * @return  mixed
 	 */
 	public static function registry($format = 'array') {
@@ -604,7 +650,7 @@ class prggmr extends data\DataStatic {
 				break;
 		}
 	}
-	
+
 	/**
 	 * prggmr Error and Exception Handling.
 	 * prggmr handles errors by throwing Exceptions.
@@ -691,7 +737,7 @@ class prggmr extends data\DataStatic {
 		// allways return true to disable php's internal handling
 		return true;
 	}
-    
+
     /**
      * Analyzes current system runtime useage information for debugging
      * purposes.
@@ -715,13 +761,17 @@ class prggmr extends data\DataStatic {
      */
     public static function analyze($op, $options = array())
     {
+        if (false == PRGGMR_DEBUG) {
+            return true;
+        }
+
         $defaults = array();
         $options += $defaults;
         $microtime = function() {
             $time = explode(" ",microtime());
             return $time[0] + $time[1];
         };
-        
+
         $memory = function() {
             if (function_exists('memory_get_usage')) {
                 return memory_get_usage();
@@ -729,7 +779,7 @@ class prggmr extends data\DataStatic {
                 return 0;
             }
         };
-        
+
         switch ($op) {
             #case 'cpu':
             #    return $cpu();
@@ -784,7 +834,7 @@ class prggmr extends data\DataStatic {
                 break;
         }
     }
-    
+
     /**
      * Triggers event listeners and returns the results; the results are
      * always returned in an array for use with events with multiple
@@ -793,7 +843,7 @@ class prggmr extends data\DataStatic {
      * @param  string  $event  Name of the event to trigger
      * @param  array  $params  Parameters to directly pass to the event listener
      * @param  array  $options  Array of options. Avaliable options.
-     
+
      *         `namespace` - `namespace` - Namespace for event.
      *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
@@ -810,9 +860,9 @@ class prggmr extends data\DataStatic {
     public static function __callStatic($event, $params = array()) {
         $defaults = array(0 => array(), 1 => array());
         $params += $defaults;
-        return static::trigger($event, $params[0], $params[1]);   
+        return static::trigger($event, $params[0], $params[1]);
     }
-    
+
     /**
      * Returns the current version of prggmr
      *
@@ -822,7 +872,7 @@ class prggmr extends data\DataStatic {
     {
         return PRGGMR_VERSION;
     }
-	
+
 	/**
 	 * Initials prggmr framework, loads the configuration file, establishes
 	 * our default library paths, includes our functions file.
@@ -836,9 +886,9 @@ class prggmr extends data\DataStatic {
 				'No configuration file provided. Please provide a prggmr config file path'
 			);
 		}
-		
+
 		$config = \parse_ini_file($config, true);
-		
+
 		if (!is_array($config) || count($config) == 0) {
 			throw new InvalidArgumentException(
 				sprintf(
@@ -847,15 +897,19 @@ class prggmr extends data\DataStatic {
 				)
 			);
 		}
-		
-		static::analyze('bench_begin', array('name' => 'prggmr benchmark'));
-		
-		// Load our configuration ini
+
+        // Set our configuration values
 		static::set('prggmr.config', $config);
-		
+
+        if (!defined('PRGGMR_DEBUG')) {
+            define('PRGGMR_DEBUG', $config['system']['debug']);
+        }
+
+		static::analyze('bench_begin', array('name' => 'prggmr benchmark'));
+
 		// Setup our system paths
 		// Library Files
-		static::library('Prggmr Library', array(
+		static::library('prggmr', array(
 			'path'   => $config['paths']['system_path'].'/lib/',
 			'prefix' => null,
 			'ext'    => '.php',
@@ -866,15 +920,15 @@ class prggmr extends data\DataStatic {
 				return $filepath;
 			}
 		));
-		
+
 		// External Library files ( Uses PECL style formatting )
-		static::library('Prggmr External', array(
+		static::library('prggmr.external', array(
 			'path' => $config['paths']['system_path'].'/lib/'
 		));
-		
+
 		// Setup our system library in php
 		spl_autoload_register('\prggmr::load');
-		
+
 		// Listen for prggmr's dispatcher
 		static::listen('router.dispatch.startup', function($uri) {
 			$front = new request\Dispatch(new render\Output);
@@ -882,7 +936,7 @@ class prggmr extends data\DataStatic {
 			$front->dispatch();
 			return $front;
 		});
-		
+
 		if (static::get('prggmr.config.system.debug')) {
 			$cli = new cli\Handler($_SERVER['argv']);
 			static::router('dispatch', $cli->run());

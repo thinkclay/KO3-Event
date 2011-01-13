@@ -2,7 +2,7 @@
 namespace prggmr\record\model;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\record\model;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  System
@@ -42,21 +42,21 @@ use \prggmr\record\model as model;
 
 class Table
 {
-    
+
     /**
      * Name of this table.
      *
      * @var  integer  Type of column
      */
     protected $_name = null;
-    
+
     /**
      * Stack of the table's columns in the database.
      *
      * @var  array  Stack of column objects
      */
     protected $_columns = array();
-    
+
     /**
      * Initalizes a table object
      *
@@ -69,13 +69,13 @@ class Table
     public function __construct($columns, $name)
     {
         if (count($columns) === 0) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'Invalid columns array provided'
             );
         }
-        
+
         $this->_name = $name;
-        
+
         $defaults = array(
                           'name'       => null,
                           'type'       => model\Column::STRING,
@@ -86,15 +86,16 @@ class Table
                           'validators' => array(),
                           'filters'    => array()
                           );
-        
+
         foreach ($columns as $name => $attr) {
             $attr += $defaults;
+            $attr['name'] = (null == $attr['name']) ? $name : $attr['name'];
             if (null !== $attr['name']) {
-                $this->_columns[$attr['name']] = new model\Column($attr); 
+                $this->_columns[$attr['name']] = new model\Column($attr);
             }
         }
     }
-    
+
     /**
      * Returns the columns associated with this table.
      *
@@ -104,7 +105,7 @@ class Table
     {
         return $this->_columns;
     }
-    
+
     /**
      * Returns a specific column object in the table.
      *
@@ -114,9 +115,9 @@ class Table
      */
     public function getColumn($column)
     {
-        return (isset($this->_columns[$column])) ? $this->_columns[$column] : false; 
+        return (isset($this->_columns[$column])) ? $this->_columns[$column] : false;
     }
-    
+
     /**
      * Returns the table name.
      *

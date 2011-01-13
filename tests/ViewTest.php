@@ -9,12 +9,12 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     {
         $this->view = new render\View();
     }
-    
+
     public function tearDown()
     {
         unset($this->view);
     }
-    
+
     public function testViewConstructor()
     {
         $obj = new render\engine\Standard();
@@ -25,7 +25,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $engines['Standard']['default']);
         $this->assertEquals('Standard', get_class_name($engines['Standard']['object']));
     }
-    
+
     public function testVarAssignments()
     {
         $this->view->assign('test_key', true);
@@ -37,7 +37,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('test_key' => 'Overwrite Val'), $this->view->getTemplateVars());
         $this->assertEquals('Overwrite Val', $engines['Standard']['object']->test_key);
     }
-    
+
     public function testVarAssignmentsOverloading()
     {
         $this->view->test = 'Test Val';
@@ -46,13 +46,13 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('test_key' => 'Overwrite Val', 'test' => 'Test Val'), $this->view->getTemplateVars());
         $this->assertEquals('Test Val', $engines['Standard']['object']->test);
     }
-    
+
     public function testVarAssignmentsEventManipulation()
     {
         prggmr::listen('var_assign', function($key, $value, $view) {
             $view->assign($key, $value . ' Added In Event', array('event' => false));
         }, array('namespace' => 'view'));
-        
+
         $this->view->assign('test_val_2', 'This has been');
         $engines = $this->view->getEngines();
         $this->assertEquals(array('test_val_2' => 'This has been Added In Event'), $this->view->getTemplateVars());

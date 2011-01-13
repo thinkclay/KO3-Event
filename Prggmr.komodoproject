@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="cf30b40e-3902-4597-93c2-2cf229c12464" kpf_version="5" name="Prggmr.komodoproject">
+<preference-set idref="cf30b40e-3902-4597-93c2-2cf229c12464">
+  <boolean id="import_live">1</boolean>
+<preference-set id="testPlans">
+<preference-set id="Prggmr.komodoproject - test plan # 1">
+  <string id="command_line"></string>
+  <string relative="url" id="directory">tests/</string>
+  <string id="language">PHP - PHPUnit</string>
+</preference-set>
+</preference-set>
+</preference-set>
+</project>
