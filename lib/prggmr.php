@@ -31,16 +31,16 @@
  */
 
 
-use \Exception;
-use \InvalidArgumentException;
-use \Closure;
-use \BadMethodCallException;
-use \RuntimeException;
-use prggmr\request\event as request;
-use prggmr\render\event as render;
-use prggmr\cli\event as cli;
-use prggmr\record\connection as connection;
-use prggmr\util\data as data;
+use \Exception,
+\InvalidArgumentException,
+\Closure,
+\BadMethodCallException,
+\RuntimeException,
+prggmr\request\event as request,
+prggmr\render\event as render,
+prggmr\cli\event as cli,
+prggmr\record\connection as connection,
+prggmr\util\data as data;
 
 if (!defined('PRGGMR_LIBRARY_PATH')) {
     define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
@@ -465,47 +465,24 @@ class prggmr extends data\DataStatic {
      * @return  boolean
      *
      */
-    public static function listen($event, $function, $options = array()) {
+    public static function listen($event, \Closure $function, $options = array()) {
         $defaults = array('shift' => false,
-                          'name' => function(){
-								$range = range('a','z');
-								$rand = array_rand($range, 8);
-								$str = '';
-								for ($i=0;$i!=8;$i++){
-									$str .= $range[$rand[$i]];
-								}
-								return $str;
-							},
+                          'name' => str_random(12),
                           'force' => false,
                           'namespace' => static::GLOBAL_DEFAULT);
 		$options += $defaults;
         $event = strtolower($event);
-        if (!is_object($function)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'prggmr listener function is invalid; expected object received "%s"', gettype($function)
-                )
-            );
-        }
-        if (!$function instanceof Closure) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'prggmr listener function is invalid; expected Closure received "%s"', get_class($function)
-                )
-            );
-        }
-
 		if ($options['name'] instanceof Closure) {
 			$fd = false;
 			do {
 				$name = $options['name']();
-				if (!isset(static::$__events[$options['namespace']][$event][$name])) {
+				if (!static::hasListener($event, $name, $options['namespace'])) {
 					$fd = true;
 				}
 			} while(!$fd);
 			$options['name'] = $name;
 		} else {
-			if (isset(static::$__events[$options['namespace']][$event][$options['name']]) && !$options['force']) {
+			if (static::hasListener($event, $options['name'], $options['namespace']) && !$options['force']) {
 				throw new \RuntimeException(
 					sprintf(
 						'prggmr listener "%s" already exists; Provide "force" option to overwrite', $options['name']
@@ -526,6 +503,24 @@ class prggmr extends data\DataStatic {
 		}
 
         return true;
+    }
+
+    /**
+     * Checks if a listener with the given name currently exists in the
+     * listeners stack.
+     *
+     * @param  string  $listener  Name of the event listener.
+     * @param  string  $event  Event which the listener will execute on.
+     * @param  string  $namespace  Namespace listener belongs to.
+     *         [Default: static::GLOBAL_DEFAULT]
+     *
+     * @return  boolean  False if non-existant | True otherwise.
+     */
+    public function hasListener($listener, $event, $namespace) {
+        if (isset(static::$__events[$namespace][$event][$listener])) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -607,7 +602,7 @@ class prggmr extends data\DataStatic {
                     );
                 }
                 $i++;
-                $return[] = $results;
+                $return[$name] = $results;
                 // Adds support for listeners to return "false" and halts
                 // any other listeners from triggering.
                 if ($results === false) {
@@ -868,7 +863,7 @@ class prggmr extends data\DataStatic {
      *
      * @return  string
      */
-    public static function version()
+    public static function version(/* ... */)
     {
         return PRGGMR_VERSION;
     }

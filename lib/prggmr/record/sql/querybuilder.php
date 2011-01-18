@@ -44,6 +44,7 @@ class QueryBuilder
     protected $_model = null;
 
 
+
     public function __construct(record\Model $model)
     {
 

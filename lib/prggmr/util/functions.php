@@ -32,12 +32,15 @@
  */
 
 /**
- * Shifts the key => value onto the begginning of the array
+ * PHP 5.3+
+ * Shifts the value onto the begginning of the array
  * with the key index provided.
  *
  * @param  string  $key  Key value of array index
  * @param  mixed  $value  Value of new array index
  * @param  array  $array  Array to shift new element
+ *
+ * @return  array  Newly formed array
  */
 function array_unshift_key($key, $value, &$array) {
     $key = (string) $key;
@@ -67,4 +70,21 @@ function get_class_name($object = null)
 
     $class = explode('\\', (is_string($object) ? $object : get_class($object)));
     return $class[count($class) - 1];
+}
+
+/**
+ * Returns a random string of alphabetical characters.
+ *
+ * @param  integer  $length  Length of the string.
+ *
+ * @return  string  String of random alphabetical characters.
+ */
+function str_random($length = 8) {
+    $range = range('a','z');
+    $rand = array_rand($range, 8);
+    $str = '';
+    for ($i=0;$i!=$length;$i++){
+        $str .= $range[$rand[$i]];
+    }
+    return $str;
 }

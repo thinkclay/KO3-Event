@@ -2,7 +2,7 @@
 <?php
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -35,8 +35,8 @@ if ($_ENV['PWD'] !== null) {
    set_include_path($_ENV['PWD'] . PATH_SEPARATOR . get_include_path());
 }
 
-if (!file_exists($_ENV['PWD'].'/system/bootstrap.php')) {
-    die ("Failed to locate prggmr $_ENV[PWD]/system/bootstrap.php file, check your bootstrap file in $_ENV[PWD]/system/bootstrap.php");
+if (!file_exists($_ENV['PWD'].'/var/bootstrap.php')) {
+    die ("Failed to locate prggmr $_ENV[PWD]/var/bootstrap.php file, check your bootstrap file in $_ENV[PWD]/var/bootstrap.php");
 }
 
-include $_ENV['PWD'].'/system/bootstrap.php';
+include $_ENV['PWD'].'/var/bootstrap.php';

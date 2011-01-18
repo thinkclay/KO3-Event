@@ -42,31 +42,32 @@ use \prggmr\record\sql as sql;
  *
  * Base class for all Prggmr models.
  *
- * Models are defined as:
+ * Models are defined as
  *
+ * """
+ *   use \prggmr\record as record,
+ *   \prggmr\record\model as model;
  *
-    use \prggmr\record as record,
-    \prggmr\record\model as model;
-
-    class Cars_Model extends record\Model {
-
-        public $columns = array(
-            'id' => array(
-                 'type' => model\Column::INTEGER,
-                 'length' => 11,
-                 'pk' => true
-            ),
-            'name' => array(
-                 'type' => model\Column::STRING,
-                 'length' => 20,
-                 'null' => false
-            ),
-             'number' => array(
-                 'type' => model\Column::INTEGER,
-                 'length' => 2
-            )
-        );
-    }
+ *   class Cars_Model extends record\Model {
+ *
+ *       public $columns = array(
+ *           'id' => array(
+ *                'type' => model\Column::INTEGER,
+ *                'length' => 11,
+ *                'pk' => true
+ *           ),
+ *           'name' => array(
+ *                'type' => model\Column::STRING,
+ *                'length' => 20,
+ *                'null' => false
+ *           ),
+ *            'number' => array(
+ *                'type' => model\Column::INTEGER,
+ *                'length' => 2
+ *           )
+ *       );
+ *   }
+ * """
  */
 
 class Model

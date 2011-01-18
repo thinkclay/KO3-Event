@@ -6,7 +6,7 @@ namespace prggmr\cli\event;
  * Command Line Interface handler for prggmr.
  *
  * Details provided at a later time.
- */ 
+ */
 class Handler
 {
     /**
@@ -18,7 +18,7 @@ class Handler
     private $_messages = array(
         'help' => array(
             'main' => <<<HELP_TEXT
-            
+
 Prggmr - PHP EMV Framework
 
 usage: prggmr [--processor] [--help] COMMAND [ARGS]
@@ -35,7 +35,7 @@ See 'prggmr help COMMAND' for more information on a specific command.
 HELP_TEXT
             ,
             'route' => <<<ROUTE_HELP
-            
+
 usage: prggmr [--processor] route [ARGS]
 
 Triggers the prggmr event startup and provides the given URI and outputs
@@ -55,7 +55,7 @@ prggmr --processor=json route "/code/view/code-sample" :
 ROUTE_HELP
 ,
             'test' => <<<ROUTE_HELP
-            
+
 usage: test [testname]
 
 Runs prggmr's phpunit testing, provide no arguments to run the full test suite.
@@ -73,7 +73,7 @@ prggmr test PrggmrEventsTests
 ROUTE_HELP
         )
     );
-    
+
     /**
      * Foreground command line color codes
      *
@@ -97,7 +97,7 @@ ROUTE_HELP
 			'light_gray'  =>'0;37',
 			'white'       =>'1;37'
         );
-    
+
     /**
      * Background command line color codes
      *
@@ -113,7 +113,7 @@ ROUTE_HELP
 			'cyan'       => '46',
 			'light_gray' => '47'
         );
-    
+
     /**
      * Command line arguments
      *
@@ -121,12 +121,12 @@ ROUTE_HELP
      */
     public $argv = null;
 
-    
+
     /**
      * Sets up our basic command line tool and checks all environment
      * variables.
      */
-    
+
     public function __construct($arg)
     {
         $environment = array(
@@ -138,25 +138,25 @@ ROUTE_HELP
             'routes' => '/system/var/app/routes/',
             'log_file' => '/system/var/log/cli.log'
         );
-        
+
         $path = \prggmr::get('prggmr.config.paths.system_path');
-        
+
         if (!$path) {
             exit(
 "Failed to load prggmr config. Please check your paths and ensure \"system/var/config/prggmr_(sys)_dev.ini\" exists.
 "
             );
         }
-        
+
         $errors = array();
-        
+
         foreach ($environment as $k => $val) {
             if (!is_dir($path.$val) &&
                 (is_file($path.$val) && !is_writeable($path.$val))) {
                 $errors[] = $val;
             }
         }
-        
+
         if (count($errors) != 0) {
             die(sprintf(
 "
@@ -166,7 +166,7 @@ Failed to initilize environment please check the following paths and permissions
             , $this->color(implode('
 ', $errors),'red')));
         }
-        
+
         unset($arg[0]);
         $opt = array();
         foreach ($arg as $k => $v) {
@@ -176,11 +176,11 @@ Failed to initilize environment please check the following paths and permissions
                 unset($arg[$k]);
             }
         }
-        
+
         $this->options = $opt;
         $this->args = array_values($arg);
     }
-    
+
     /**
      * Returns a string color coded for the CLI.
      *
@@ -203,7 +203,7 @@ Failed to initilize environment please check the following paths and permissions
 
         return $return;
     }
-    
+
     /**
      * Runs the Command Line Interface commands.
      * Uses switch...better solution?
@@ -213,7 +213,7 @@ Failed to initilize environment please check the following paths and permissions
         if (count($this->args) == 0) {
             die($this->_messages['help']['main']);
         }
-        
+
         // We've made it here so lets check our arguments
         switch ($this->args[0]) {
             case 'route':
@@ -224,7 +224,7 @@ Failed to initilize environment please check the following paths and permissions
                 return $this->args[1];
                 break;
             case 'version':
-                die("prggmr version ".PRGGMR_VERSION."
+                die("Prggmr v.".PRGGMR_VERSION."
 ");
                 break;
             case 'help':
@@ -238,5 +238,5 @@ Failed to initilize environment please check the following paths and permissions
                 break;
         }
     }
-    
+
 }
