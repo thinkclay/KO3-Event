@@ -31,11 +31,12 @@ namespace prggmr\util;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+require_once 'listenable.php';
 
 /**
  * Singleton implementation.
  */
-abstract class Singleton extends Listenable
+abstract class Singleton extends \prggmr\util\Listenable
 {
     /**
      * @var  array  Instances of the singleton.

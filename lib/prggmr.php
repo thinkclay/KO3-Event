@@ -48,6 +48,7 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 
 define('PRGGMR_VERSION', '0.01-alpha');
 
+require 'prggmr/util/listenable.php';
 require 'prggmr/util/singleton.php';
 require 'prggmr/util/data/datastatic.php';
 require 'prggmr/util/data/datainstance.php';

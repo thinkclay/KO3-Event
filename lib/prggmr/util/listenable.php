@@ -44,7 +44,7 @@ namespace prggmr\util;
  * """
  *   use \prggmr\util as util;
  *
- *   class MyObject extends util\Attachable {
+ *   class MyObject extends util\Listenable {
  *
  *         public function callListeners() {
  *             $results = $this->trigger('my_event'));
@@ -88,7 +88,7 @@ class Listenable
      */
     public function listen($event, $function, $options = array()) {
         $defaults = array('shift' => false,
-                          'namespace' => get_class_name($this),
+                          'namespace' => strtolower(get_class($this)),
                           'name' => str_random(12)
                          );
         $options += $defaults;
@@ -157,7 +157,7 @@ class Listenable
      *          listeners triggered.
      */
     public function trigger($event, $params = array(), $options = array()) {
-        $defaults  = array('namespace' => get_class_name($this),
+        $defaults  = array('namespace' => strtolower(get_class($this)),
                            'errors' => false);
         $options += $defaults;
         $results = \prggmr::trigger($event, $params, $options);
