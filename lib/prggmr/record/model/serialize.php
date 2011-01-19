@@ -101,18 +101,19 @@ class Serialize extends util\Singleton
         $defaults = array('options' => true, 'cache' => false);
         $options += $defaults;
         $name = get_class_name($model);
-
         $serializers = array(
             'json' => function($model) use (&$options) {
-
+                return json_encode($model);
             },
             'xml' => function($model) use (&$options) {
-
+                trigger_error('XML Model serialization is not yet supported', E_USER_NOTICE);
             },
             'php' => function($model) use (&$options) {
-
+                return serialize($model);
             }
         );
+
+        $this->trigger('pre_serialize', array(&$model, $mode, $options));
 
         if (!isset($serializers[$mode])) {
             throw new \InvalidArgumentException(
@@ -123,15 +124,123 @@ class Serialize extends util\Singleton
                 )
             );
         }
+
+        if ($options['cache'] && isset($this->_cache[$mode][$name])) {
+            // Cache allways returns the first result when a listener returns results.
+            $cache = $this->trigger('serialize_cache', array(&$model, $mode, $options));
+            if (isset($cache[0])) {
+                return $cache[0];
+            }
+            return $this->_cache[$mode][$name];
+        }
+
+        $parsed = $this->_parse($model, $options);
+        $return = $serializers[$mode]($parsed);
+
+        if ($options['cache']) {
+            $this->_cache[$mode][$name] = $return;
+        }
+
+        $this->trigger('post_serialize', array(
+                                               $parsed,
+                                               $return,
+                                               &$model,
+                                               $mode,
+                                               $options
+                                            )
+                       );
+
+        return $return;
     }
 
     /**
-     * Parses a serialized \prggmr\record\Model object, returning a new
+     * Parses a model object into a stdClass object for serialization.
+     *
+     * @param  object  $model  \prggmr\record\Model
+     * @param  array  $options  Array of options to use while parsing.
+     *
+     * @return  object  \stdClass object
+     */
+    protected function _parse(record\Model $model, $options = array()) {
+        $table = $model->table();
+        $cols = $table->getColumns();
+        $stdClass = new \stdClass();
+
+        if ($options['options']) {
+            $stdClass->isreadonly = $model->isReadOnly();
+            $stdClass->isnew      = $model->isNew();
+            $stdClass->isdirty    = $model->isDirty();
+        }
+
+        $stdClass->model = class_name($model);
+        $stdClass->table = $table->getName();
+        $stdClass->columns = array();
+
+        foreach ($cols as $_name => $_column) {
+            $stdClass->columns[$_name] = array(
+                'name'    => $_column->getName(),
+                'type'    => $_column->getType(),
+                'pk'      => $_column->isPk(),
+                'length'  => $_column->getLength(),
+                'value'   => $_column->getValue(),
+                'default' => $_column->getDefault()
+            );
+        }
+
+        return $stdClass;
+    }
+
+    /**
+     * Parses a serialized \prggmr\record\Model object, returning the parsed
      * \prggmr\record\Model object.
      *
-     * @param
+     * @param  mixed  $str  Serialized model string.
+     * @param  string  $mode  Mode to use when deserializing. Leave blank
+     *         to auto-detect.
+     *
+     * @throws
+     *
+     * @return  object  \prggmr\record\Model object
      */
-    public function deserialize() {
+    public function deserialize($str, $mode = 'json') {
+        $this->trigger('pre_deserialize', array($str, $mode));
+        switch ($mode) {
+            case 'json':
+            default:
+                $decoded = json_decode($str);
+                if (false === $decoded) {
+                    throw new RuntimeException(
+                        sprintf(
+                            'Failed to parse JSON serialized model
+                            due to error "%s"',
+                            intval(json_last_error())
+                        )
+                    );
+                }
+                break;
+            case 'php':
+                $decoded = unserialize($str);
+                if (false === $decoded) {
+                    throw new RuntimeException(
+                        'Failed to parse PHP serialized model'
+                    );
+                }
+                break;
+            case 'xml':
+                trigger_error('XML Model deserialization is not yet supported',
+                              E_USER_NOTICE);
+                break;
+        }
 
+        if ($decoded instanceof \stdClass) {
+            throw new \RuntimeException(
+                'Serialized model object provided was not a valid
+                serial representation, failed to generate model from source.'
+            );
+        }
+
+        $this->trigger('post_deserialize', array($decoded, $str, $mode));
+
+        return $decoded;
     }
 }

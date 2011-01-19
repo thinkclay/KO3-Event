@@ -603,7 +603,7 @@ class prggmr extends data\DataStatic {
                     );
                 }
                 $i++;
-                $return[$name] = $results;
+                $return[] = $results;
                 // Adds support for listeners to return "false" and halts
                 // any other listeners from triggering.
                 if ($results === false) {

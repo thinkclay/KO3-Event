@@ -291,6 +291,16 @@ class Model
     }
 
     /**
+     * Returns the dirty status.
+     *
+     * @return  boolean  True on readonly | False otherhwise
+     */
+    public function isDirty()
+    {
+        return $this->_isDirty;
+    }
+
+    /**
      * Returns the new row status.
      *
      * @return  boolean  True on new row | False otherwise
