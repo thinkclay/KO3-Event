@@ -99,6 +99,10 @@ class Pool extends util\Singleton
         if (!$this->_hasDefault) {
            $this->_connections[$id]->isDefault(true);
         }
+
+        $this->trigger('db.pool.add', array($this, $connection, $id), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
     }
 
     /**
@@ -155,7 +159,9 @@ class Pool extends util\Singleton
         if ($this->exists($id)) {
             $this->getConnection()->isDefault(false);
             $this->_connections[$id]->isDefault(true);
-            \prggmr::trigger('record_connection_default', array($this->_connections[$id]));
+            $this->trigger('db.pool.setdefault', array($this->_connections[$id]), array(
+                'namespace' => \prggmr::GLOBAL_DEFAULT
+            ));
             return true;
         } else {
             throw new \InvalidArgumentException(
@@ -200,7 +206,9 @@ class Pool extends util\Singleton
                 $this->_connections[$keys[0]]->isDefault(true);
             }
 
-            \prggmr::trigger('record_connection_close', array($conn));
+            $this->trigger('db.pool.close', array($conn), array(
+                'namespace' => \prggmr::GLOBAL_DEFAULT
+            ));
 
             unset($conn);
         }

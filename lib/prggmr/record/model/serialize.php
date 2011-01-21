@@ -172,19 +172,24 @@ class Serialize extends util\Singleton
             $stdClass->isdirty    = $model->isDirty();
         }
 
-        $stdClass->model = class_name($model);
+        $stdClass->model = \get_class($model);
         $stdClass->table = $table->getName();
         $stdClass->columns = array();
 
         foreach ($cols as $_name => $_column) {
             $stdClass->columns[$_name] = array(
                 'name'    => $_column->getName(),
-                'type'    => $_column->getType(),
-                'pk'      => $_column->isPk(),
-                'length'  => $_column->getLength(),
-                'value'   => $_column->getValue(),
-                'default' => $_column->getDefault()
+                'value'   => $_column->getValue()
             );
+
+            if ($options['options']) {
+                $stdClass->columns[$_name] += array(
+                    'type'    => $_column->getType(),
+                    'pk'      => $_column->isPk(),
+                    'length'  => $_column->getLength(),
+                    'default' => $_column->getDefault()
+                );
+            }
         }
 
         return $stdClass;

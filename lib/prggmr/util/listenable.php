@@ -88,7 +88,6 @@ class Listenable
      */
     public function listen($event, $function, $options = array()) {
         $defaults = array('shift' => false,
-                          'namespace' => strtolower(get_class($this)),
                           'name' => str_random(12)
                          );
         $options += $defaults;
@@ -157,10 +156,9 @@ class Listenable
      *          listeners triggered.
      */
     public function trigger($event, $params = array(), $options = array()) {
-        $defaults  = array('namespace' => strtolower(get_class($this)),
-                           'errors' => false);
+        $defaults  = array('errors' => false);
         $options += $defaults;
-        $results = \prggmr::trigger($event, $params, $options);
+        $results = (array) \prggmr::trigger($event, $params, $options);
         if ($options['errors']) {
             foreach ($results as $_listener => $_results) {
                 if (false === $_results) {

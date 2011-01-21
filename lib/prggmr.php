@@ -115,7 +115,7 @@ class prggmr extends data\DataStatic {
 	 * Default constant is defined for methods that will
 	 * use a driver and allow a global default.
 	 */
-	const GLOBAL_DEFAULT = 'default';
+	const GLOBAL_DEFAULT = 'prggmr';
 
     /**
      * Loads a PHP file defined by `$class`. Looks through the list of
@@ -517,7 +517,7 @@ class prggmr extends data\DataStatic {
      *
      * @return  boolean  False if non-existant | True otherwise.
      */
-    public function hasListener($listener, $event, $namespace) {
+    public static function hasListener($listener, $event, $namespace) {
         if (isset(static::$__events[$namespace][$event][$listener])) {
             return true;
         }
@@ -903,6 +903,7 @@ class prggmr extends data\DataStatic {
 
 		static::analyze('bench_begin', array('name' => 'prggmr benchmark'));
 
+
 		// Setup our system paths
 		// Library Files
 		static::library('prggmr', array(
@@ -933,9 +934,9 @@ class prggmr extends data\DataStatic {
 			return $front;
 		});
 
-		if (static::get('prggmr.config.system.debug')) {
-			$cli = new cli\Handler($_SERVER['argv']);
-			static::router('dispatch', $cli->run());
-		}
+		//if (static::get('prggmr.config.system.debug')) {
+		//	$cli = new cli\Handler($_SERVER['argv']);
+		//	static::router('dispatch', $cli->run());
+		//}
 	}
 }

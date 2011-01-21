@@ -31,10 +31,12 @@ namespace prggmr\record\connection\adapter;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+use \prggmr\util as util;
+
 /**
  * Connection Instance
  */
-abstract class Instance {
+abstract class Instance extends util\Listenable {
 
     /**
      * @var  object  PDO Connection instance {@link PDO}
@@ -99,11 +101,7 @@ abstract class Instance {
      * @param  string  $pwd  The user's password
      * @param  array   $options  Array of options for this connection.
      *
-     * @event  prggmr\record_connection_add
-     *      @param  object  prggmr\record\connection\adapter\Instance
-     *
-     * @return  Instance
-     *
+     * @return  object
      */
     public function __construct($dsn, $usr = null, $pwd = null, $options = null)
     {
@@ -117,9 +115,6 @@ abstract class Instance {
         } else {
             $this->port = $port[0];
         }
-
-        \prggmr::trigger('record_connection_add', array($this));
-
         return true;
     }
 
@@ -208,7 +203,9 @@ abstract class Instance {
             throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
         }
-        \prggmr::trigger('record_connection_adapter_transaction', array($this));
+        $this->trigger('db.transaction', array($this), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
         return true;
     }
 
@@ -227,7 +224,9 @@ abstract class Instance {
             throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
         }
-        \prggmr::trigger('record_connection_adapter_commit', array($this));
+        $this->trigger('db.commit', array($this), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
         return true;
     }
 
@@ -235,13 +234,17 @@ abstract class Instance {
      * Tests and establishes the database connection, otherwise result of
      * previous test will be returned.
      *
-     * @event  record_connection_adapter_test
+     * @event  test
      *      @param  object  $obj  Adapter object performing the test
      * @throws  RuntimeException
      * @return  boolean  True on success | False on failure
      */
     public function connect()
     {
+        $this->trigger('db.connection.test', array($this), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
+
         if (null === $this->_tested) {
             // Connection not tested, test the connection
             try {
@@ -250,12 +253,17 @@ abstract class Instance {
                                             $this->password,
                                             $this->options);
             } catch (Exception $e) {
+                $this->trigger('db.connection.failure', array($this), array(
+                    'namespace' => \prggmr::GLOBAL_DEFAULT
+                ));
                 throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
             }
             $this->_tested = true;
         }
-
+        $this->trigger('db.connection.success', array($this), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
         return $this->_tested;
     }
 
@@ -270,7 +278,12 @@ abstract class Instance {
      *         PDO::FETCH_CLASS
      * @see  http://us.php.net/manual/en/pdo.query.php
      *
-     * @event  record_connection_adapter_raw
+     * @event  db_raw_query_before  Triggered on call, returning false will
+     *         cause method to halt.
+     *     @param  object  Connection Instance
+     *     @param  string  SQL Statement Executed
+     *
+     * @event  db_raw_query_after
      *     @param  object  Connection Instance
      *     @param  string  SQL Statement Executed
      *     @param  object  Any results returned from the query
@@ -281,13 +294,23 @@ abstract class Instance {
     public function raw($statement, $pdo_fetch = null, $arg2 = null, $arg3 = null)
     {
         try {
+            $this->trigger('db.raw.query.before', array($this, $statement), array(
+                'errors' => true,
+                'namespace' => \prggmr::GLOBAL_DEFAULT
+            ));
+        } catch (\RuntimeException $e) {
+            return false;
+        }
+        try {
             $query = $this->connection->query($statement, $pdo_fetch, $arg2, $arg3);
         } catch (PDOException $e) {
             throw new RuntimeException($this->connection->errorInfo,
                                        intval($this->connection->errorCode));
         }
+        $this->trigger('db.raw.query.after', array($this, $statement, clone (object) $query), array(
+            'namespace' => \prggmr::GLOBAL_DEFAULT
+        ));
         $this->querystring = $statement;
-        \prggmr::trigger('record_connection_adapter_raw', array($this, $statement, clone $query));
         return $query;
     }
 

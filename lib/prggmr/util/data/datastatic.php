@@ -2,7 +2,7 @@
 namespace prggmr\util\data;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\util\data;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  Render
@@ -50,8 +50,8 @@ class DataStatic
      * @var  array  Array of `key` -> `value` mappings for registry contents.
      */
     protected static $__registry = array();
-    
-    /** 
+
+    /**
      *  Sets a variable within the prggmr registry.
      *  Variables can be set using three different configurations, they can be
      *  set as an ordinary `$key`, `$value` pair, an array of `$key` => `$value`
@@ -63,33 +63,33 @@ class DataStatic
      *          or a "." delimited string.
      *  @param  mixed  $value  Value of the `$key`.
      *  @param  boolean  $overwrite  Overwrite existing key if exists
-     *  
+     *
      *  @return  boolean
      */
     public static function set($key, $value = null, $overwrite = true) {
-		
+
 		if (null === $key) {
 			return false;
 		}
-		
+
         if (is_array($key)) {
             foreach ($key as $k => $v) {
                 static::set($k, $v, $overwrite);
             }
             return true;
         }
-		
+
         /**
          * Event call which will be used for cache.
          */
-        $event = \prggmr::trigger('registry_set', array($key, $value, $overwrite), array(
+        $event = \prggmr::trigger('registry.set', array($key, $value, $overwrite), array(
                     'namespace' => get_class_name(get_called_class())));
         if (is_array($event)) {
             if ($event[0] === false) {
                 return true;
             }
         }
-        
+
         if (true === static::has($key) && !$overwrite) {
             return false;
         }
@@ -110,10 +110,10 @@ class DataStatic
 		} else {
             static::$__registry[$key] = $value;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Returns a variable from `prggmr::$__registry`. The variable name can be
      * provided as a single string of the variable or a "." delimited string
@@ -127,7 +127,7 @@ class DataStatic
      *         `default` - Default value to return if `$key` is not found.
      *
      *         `tree` - Not Implemented
-     *         
+     *
      * @return  mixed
      */
     public static function get($key, $options = array()) {
@@ -136,7 +136,7 @@ class DataStatic
         /**
          * Event call which will be used for cache.
          */
-        $event = \prggmr::trigger('registry_get', array($key, $options), array(
+        $event = \prggmr::trigger('registry.get', array($key, $options), array(
                     'namespace' =>  get_class_name(get_called_class())));
         if (is_array($event)) {
             return $event[0];
@@ -164,17 +164,17 @@ class DataStatic
                     return $data;
                 }
             }
-            
+
             return (!isset(static::$__registry[$key])) ? $options['default'] : static::$__registry[$key];
         }
-        
+
         throw new \InvalidArgumentException(
             sprintf(
                 'Invalid arugment "$key" expected "string" received "%s"', gettype($key)
             )
         );
     }
-    
+
     /**
      * Returns if a variable identified by `$key` exists in the registry.
      * `has` works just as `get` and allows for identical `$key`
@@ -189,7 +189,7 @@ class DataStatic
         /**
          * Event call which will be used for cache.
          */
-        $event = \prggmr::trigger('registry_has', array($key), array(
+        $event = \prggmr::trigger('registry.has', array($key), array(
                     'namespace' =>  get_class_name(get_called_class())));
         if (is_array($event)) {
             return $event[0];
