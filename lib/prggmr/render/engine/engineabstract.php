@@ -2,7 +2,7 @@
 namespace prggmr\render\engine;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\render\engine;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  Render
@@ -38,34 +38,34 @@ namespace prggmr\render\engine;
  * as they are provided 4 main methods, compile a template, assigning a
  * template variable, building the environment and return the templates
  * object for performing more complex operations which cannot be standardized.
- * 
+ *
  */
 abstract class EngineAbstract {
-    
+
     /**
      * Sets a variable for use when compiling templates.
      *
      * @param  mixed  $key  The variable name, an array of varibles.
      * @param  mixed  $value  The value of the variable
-     * @param  array  $options  Array of options to use when setting this var.     
+     * @param  array  $options  Array of options to use when setting this var.
      *
      * @return  boolean
      */
-    abstract public function assign($key, $value = null, $options = array());
-    
+    abstract public function assign($key, $value = null, array $options = array());
+
     /**
      * Setup the environment for the template engine.
      * This must return a boolean true of the engine will not be added to
      * the engines stack.
-     * 
+     *
      *
      * @param  array  $options   Array of options passed to the engine.
      * @param  object  $view  View object which called this engine.
      *
-     * @return  boolean 
+     * @return  boolean
      */
     abstract public function buildEnvironment($options, $view);
-    
+
     /**
      * Returns an instance of the template engines object which will allow
      * for more engine specific tasks to be performed.
@@ -73,7 +73,7 @@ abstract class EngineAbstract {
      * @return  object
      */
     abstract public function getEngine();
-    
+
     /**
      * Compiles the provided template using the template engines compiler
      * and returns the results.
@@ -87,5 +87,5 @@ abstract class EngineAbstract {
      *
      * @return  string  The compiled template.
      */
-    abstract public function compile($template, $vars = array(), $options = array());
+    abstract public function compile($template, array $vars = array(), array $options = array());
 }

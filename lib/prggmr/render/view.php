@@ -2,7 +2,7 @@
 namespace prggmr\render;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\render;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  Render
@@ -35,7 +35,7 @@ use prggmr\render\engine as engine;
 
 /**
  * Prggmr View
- * 
+ *
  * The view layer is responsible for handling the output of a prggmr cycle
  * and is typically the last operating performed during a cycle, which will
  * allow the view to "validate" various objects via a common interface before
@@ -44,31 +44,31 @@ use prggmr\render\engine as engine;
  * data.
  */
 class View {
-    
+
     /**
      * An array which stores our current engines stack.
      *
      * @var  array  Engines Stack
      */
     protected $_engines = array();
-    
+
     /**
      * An array of variables which will be used when compiling templates.
      *
      * @var  array  View template variables
      */
     protected $_attributes = array();
-    
+
     /**
      * An array of callable filters.
      *
      * @var  array  View filters
      */
     protected $_filters = array();
-    
+
     /**
      * Constructor.
-     * 
+     *
      */
     public function __construct()
     {
@@ -76,7 +76,7 @@ class View {
         $engine = new engine\Standard();
         $this->addEngine($engine, array('default' => true));
     }
-    
+
     /**
      * Sets a variable for use when compiling templates.
      * Triggers the 'view_assign' event.
@@ -90,38 +90,38 @@ class View {
      * @param  array  $options  Array of options to use when setting this var.
      *
      *         `event` - Boolean to trigger the "view_assign" event.
-     *         
+     *
      *
      * @return  boolean
      */
-    public function assign($key, $value = null, $options = array())
+    public function assign($key, $value = null, array $options = array())
     {
         $defaults = array('event' => true);
         $options += $defaults;
         if (null === $key) return false;
-        
+
         if(is_array($key)) {
             foreach ($key as $k => $v) {
                 $this->assign($k, $v);
             }
             return true;
         }
-        
+
         $this->_attributes[$key] = $value;
-        
+
         if ($this->hasEngines()) {
             foreach ($this->_engines as $name => $engine) {
                 $engine['object']->assign($key, $value);
             }
         }
-        
+
         if ($options['event'] === true) {
             \prggmr::trigger('var_assign', array($key, $value, &$this), array(
                 'namespace' => 'view'
             ));
         }
     }
-    
+
     /**
      * __set overloading assigns template variables.
      *
@@ -131,7 +131,7 @@ class View {
     {
         return $this->assign($name, $value);
     }
-    
+
     /**
      *__get overloading returns template variables.
      *
@@ -144,7 +144,7 @@ class View {
         }
         return false;
     }
-    
+
     /**
      * Determain if the view has engines in its stack.
      *
@@ -154,7 +154,7 @@ class View {
     {
         return (count($this->_engines) == 0) ? false : true;
     }
-    
+
     /**
      * Returns the avaliable template engines.
      *
@@ -165,7 +165,7 @@ class View {
         if ($this->hasEngines()) return $this->_engines;
         return false;
     }
-    
+
     /**
      * Adds a new template engine to the engine stack.
      *
@@ -183,32 +183,32 @@ class View {
      *             not extend the EngineAbstract Class.
      * @return  boolean  True on success, False Failure
      */
-    public function addEngine($object, $options = array())
+    public function addEngine(engine\EngineAbstract $object, array $options = array())
     {
         $defaults = array('name' => get_class_name($object), 'default' => false,
                           'options' => null);
         $options += $defaults;
-        if (!$object instanceof engine\EngineAbstract) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Template engine %s must extend the EngineAbstract class'
-                , get_class($object)
-            ));
-        }
-        
+        //if (!$object instanceof engine\EngineAbstract) {
+        //    throw new InvalidArgumentException(
+        //        sprintf(
+        //            'Template engine %s must extend the EngineAbstract class'
+        //        , get_class($object)
+        //    ));
+        //}
+
         if ($object->buildEnvironment($options['options'], $this) !== true) {
             return false;
         }
-        
+
         $this->_engines[$options['name']]['object'] = $object;
-        
+
         if ($options['default']) {
             $this->setDefaultEngine($options['name']);
         }
-        
+
         return true;
     }
-    
+
     /**
      * Sets the default template engine compiler.
      *
@@ -228,12 +228,12 @@ class View {
                     , get_class($object)
                 ));
             }
-            
+
             $name = get_class_name($engine);
         } else {
             $name = $engine;
         }
-        
+
         if ($this->engineExists($name)) {
             foreach ($this->_engines as $k => $v) {
                 $this->_engines[$k]['default'] = false;
@@ -244,7 +244,7 @@ class View {
             return false;
         }
     }
-    
+
     /**
      * Checks if the given engine name exists in the engine stack.
      *
@@ -256,7 +256,7 @@ class View {
     {
         return (isset($this->_engines[$name]));
     }
-    
+
     /**
      * Returns the template variables.
      *

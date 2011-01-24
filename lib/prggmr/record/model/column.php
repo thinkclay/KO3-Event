@@ -367,7 +367,7 @@ class Column
      * @throws  InvalidArgumentException
      * @return  boolean  True on success | False otherwise
      */
-    public function set($value, $connection = null)
+    public function set($value, adapter\Instance $connection = null)
     {
         if (null === $value) {
             $default = $this->getDefault();

@@ -2,7 +2,7 @@
 namespace prggmr\render\engine;
 /******************************************************************************
  ******************************************************************************
- *   ##########  ##########  ##########  ##########  ####    ####  ########## 
+ *   ##########  ##########  ##########  ##########  ####    ####  ##########
  *   ##      ##  ##      ##  ##          ##          ## ##  ## ##  ##      ##
  *   ##########  ##########  ##    ####  ##    ####  ##   ##   ##  ##########
  *   ##          ##    ##    ##########  ##########  ##        ##  ##    ##
@@ -24,7 +24,7 @@ namespace prggmr\render\engine;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * 
+ *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
  * @category  Render
@@ -40,14 +40,14 @@ use \InvalidArgumentException;
  * This can also be used as a template for adding additional template engines.
  */
 class Standard extends EngineAbstract {
-    
+
     /**
      * Prggmr view paths.
      *
      * @var  array  Array of absolute paths to template files.
      */
     protected $_paths = array();
-    
+
     /**
      * Prggmr Engine options.
      *
@@ -56,7 +56,7 @@ class Standard extends EngineAbstract {
     protected $_options = array(
         'extension' => 'phtml'
     );
-    
+
     /**
      * Modifies a engine option, or sets it if it does not exist.
      *
@@ -71,11 +71,11 @@ class Standard extends EngineAbstract {
             $this->_options[$option] = $value;
             return true;
         }
-        
+
         $this->_options[$option] = $value;
         return true;
     }
-    
+
     /**
      * Returns an engine option.
      *
@@ -88,10 +88,10 @@ class Standard extends EngineAbstract {
         if (isset($this->_options[$option])) {
             return $this->_options[$option];
         }
-        
+
         return false;
     }
-    
+
     /**
      * Adds a path used for transvering directores when compiling templates.
      *
@@ -102,10 +102,10 @@ class Standard extends EngineAbstract {
      *         `shift` - Push this path to the top of the path stack.
      *
      * @throws  InvalidArgumentException  Thrown when path cannot be found
-     * 
+     *
      * @return  boolean  True on success | False on failure
      */
-    public function path($path, $options = array())
+    public function path($path, array $options = array())
     {
         $defaults = array('shift' => false);
         $options += $defaults;
@@ -114,7 +114,7 @@ class Standard extends EngineAbstract {
                 $this->path($v);
             }
         }
-        
+
         if (!file_exists($path)) {
             throw new \InvalidArgumentException(
                 sprintf(
@@ -123,14 +123,14 @@ class Standard extends EngineAbstract {
                 )
             );
         }
-        
+
         if (true === $options['shift']) {
-            array_unshift($this->_paths, $path);   
+            array_unshift($this->_paths, $path);
         } else {
             $this->_paths[] = $path;
-        }   
+        }
     }
-    
+
     /**
      * Returns the current template include paths.
      *
@@ -140,14 +140,14 @@ class Standard extends EngineAbstract {
     {
         return $this->_paths;
     }
-    
+
     /**
      * Alias to `path`
      *
      * Adds a path used for transvering directores when compiling templates.
      *
      * @see prggmr\render\engine\Standard::path()
-     * 
+     *
      * @param  mixed  $path  Absolute path | Array of paths
      * @param  array  $options  Array of options to use when adding the path
      *         Avaliable options.
@@ -155,17 +155,17 @@ class Standard extends EngineAbstract {
      *         `shift` - Push this path to the top of the path stack.
      *
      * @throws  InvalidArgumentException  Thrown when path cannot be found
-     * 
+     *
      * @return  boolean  True on success | False on failure
      */
-    public function addTemplatePath($path, $options = array())
+    public function addTemplatePath($path, array $options = array())
     {
         return $this->path($path, $options);
     }
-    
+
     /**
      * Alias to `paths`
-     * 
+     *
      * Returns the current template include paths.
      *
      * @see prggmr\render\engine\Standard::paths()
@@ -176,17 +176,17 @@ class Standard extends EngineAbstract {
     {
         return $this->_paths;
     }
-    
+
     /**
      * Sets a variable for use when compiling templates.
      *
      * @param  mixed  $key  The variable name, an array of varibles.
      * @param  mixed  $value  The value of the variable
-     * @param  array  $options  Array of options to use when setting this var.     
+     * @param  array  $options  Array of options to use when setting this var.
      *
      * @return  boolean
      */
-    public function assign($key, $value = null, $options = array())
+    public function assign($key, $value = null, array $options = array())
     {
         if (is_array($key)) {
             foreach ($key as $k => $v) {
@@ -194,28 +194,28 @@ class Standard extends EngineAbstract {
             }
             return true;
         }
-        
+
         $this->$key = $value;
         return true;
     }
-    
+
     /**
      * Setup the environment for the template engine.
      * This must return a boolean true of the engine will not be added to
      * the engines stack.
-     * 
+     *
      *
      * @param  array  $options   Array of options passed to the engine.
      * @param  object  $view  View object which called this engine.
      *
-     * @return  boolean 
+     * @return  boolean
      */
     public function buildEnvironment($options, $view)
     {
         // we return true to ensure our engine is added to the stack
         return true;
     }
-    
+
     /**
      * Returns an instance of the template engines object which will allow
      * for more engine specific tasks to be performed.
@@ -226,7 +226,7 @@ class Standard extends EngineAbstract {
     {
         return $this;
     }
-    
+
     /**
      * Compiles the provided template using the template engines compiler
      * and returns the results.
@@ -243,25 +243,25 @@ class Standard extends EngineAbstract {
      *
      * @return  string  The compiled template.
      */
-    public function compile($template, $vars = array(), $options = array())
+    public function compile($template, array $vars = array(), array $options = array())
     {
         $defaults = $this->_options;
         $options += $defaults;
-        
+
         if (count($vars) != 0) {
             $this->assign($vars);
         }
-        
+
         $found = false;
-        
+
         if (false === strpos($template, '.')) {
             $template = $template . '.' . $options['extension'];
         }
-        
+
         // Transverse all template directories and locate the template
         // the first instance found will be used, if no template directorys
         // have been set the autoload paths will be used
-        
+
         if (count($this->_paths) == 0) {
             if (!file_exists($template)) {
                 $paths = \prggmr::load($template, array('return_path' => true));
@@ -286,7 +286,7 @@ class Standard extends EngineAbstract {
                 }
             }
         }
-        
+
         if (false === $found) {
             throw new \InvalidArgumentException(
                 sprintf(
@@ -295,13 +295,13 @@ class Standard extends EngineAbstract {
                 )
             );
         }
-        
+
         // Parse the template
         ob_start();
             include $template;
             $content = ob_get_clean();
         ob_clean();
-        
+
         return $content;
     }
 }

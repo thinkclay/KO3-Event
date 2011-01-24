@@ -42,7 +42,7 @@
  *
  * @return  array  Newly formed array
  */
-function array_unshift_key($key, $value, &$array) {
+function array_unshift_key($key, $value, array &$array) {
     $key = (string) $key;
     if (!is_array($array)){
         return false;

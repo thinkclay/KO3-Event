@@ -158,7 +158,7 @@ class Model
      * @throws  InvalidArgumentException
      * @return  object  prggmr\record\Model
      */
-    public function __construct($attr = array(), $conn = null, $options = array())
+    public function __construct(array $attr = array(), $conn = null, array $options = array())
     {
         $defaults = array('readonly' => false, 'new' => true, 'table' => function($obj){
             return get_class_name($obj);

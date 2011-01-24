@@ -142,7 +142,7 @@ class prggmr extends data\DataStatic {
      *          require is true
      * @return  boolean  True on success, otherwise an exception is thrown
      */
-    public static function load($class, $options = array()) {
+    public static function load($class, array $options = array()) {
         $defaults = array('return_path' => false, 'require' => false);
         $options += $defaults;
         $namespace = null;
@@ -241,7 +241,7 @@ class prggmr extends data\DataStatic {
      *
      * @return  boolean  Returns true when library is succesfully added.
      */
-    public static function library($name, $options = array()) {
+    public static function library($name, array $options = array()) {
         $defaults = array(
             'path'        => PRGGMR_LIBRARY_PATH,
             'prefix'      => null,
@@ -353,7 +353,7 @@ class prggmr extends data\DataStatic {
      * @throws  LogicException, RuntimeException, InvalidArgumentException
      * @return  boolean
      */
-    public static function router($op, $arg = null, $options = array()) {
+    public static function router($op, $arg = null, array $options = array()) {
         $defaults = array('shift' => false, 'force' => false, 'flags' => null, 'offset' => null, 'params' => array());
         $options += $defaults;
         switch ($op) {
@@ -466,7 +466,7 @@ class prggmr extends data\DataStatic {
      * @return  boolean
      *
      */
-    public static function listen($event, \Closure $function, $options = array()) {
+    public static function listen($event, \Closure $function, array $options = array()) {
         $defaults = array('shift' => false,
                           'name' => str_random(12),
                           'force' => false,
@@ -546,7 +546,7 @@ class prggmr extends data\DataStatic {
      * @throws  LogicException  Exception encountered during listener exec
      * @return  array|boolean
      */
-    public static function trigger($event, $params = array(), $options = array()) {
+    public static function trigger($event, array $params = array(), array $options = array()) {
         $defaults  = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => false, 'flags' => null, 'offset' => null);
         $options  += $defaults;
         $org       = $event;
@@ -755,7 +755,7 @@ class prggmr extends data\DataStatic {
      *
      *         `name` - Name of benchmark. Required Parameter
      */
-    public static function analyze($op, $options = array())
+    public static function analyze($op, array $options = array())
     {
         if (false == PRGGMR_DEBUG) {
             return true;
@@ -853,7 +853,7 @@ class prggmr extends data\DataStatic {
      * @throws  LogicException  Exception encountered during listener exec
      * @return  array|boolean
      */
-    public static function __callStatic($event, $params = array()) {
+    public static function __callStatic($event, array $params = array()) {
         $defaults = array(0 => array(), 1 => array());
         $params += $defaults;
         return static::trigger($event, $params[0], $params[1]);

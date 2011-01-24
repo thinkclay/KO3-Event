@@ -97,7 +97,7 @@ class Serialize extends util\Singleton
      * @throws  InvalidArgumentException
      * @returns  string  Serialized model string representation.
      */
-    public function serialize(record\Model $model, $mode = 'json', $options = array()) {
+    public function serialize(record\Model $model, $mode = 'json', array $options = array()) {
         $defaults = array('options' => true, 'cache' => false);
         $options += $defaults;
         $name = get_class_name($model);
@@ -161,7 +161,7 @@ class Serialize extends util\Singleton
      *
      * @return  object  \stdClass object
      */
-    protected function _parse(record\Model $model, $options = array()) {
+    protected function _parse(record\Model $model, array $options = array()) {
         $table = $model->table();
         $cols = $table->getColumns();
         $stdClass = new \stdClass();
@@ -208,7 +208,7 @@ class Serialize extends util\Singleton
      * @return  object  \prggmr\record\Model object
      */
     public function deserialize($str, $mode = 'json') {
-        $this->trigger('pre_deserialize', array($str, $mode));
+        $this->trigger('model.deserialize.before', array($str, $mode));
         switch ($mode) {
             case 'json':
             default:
@@ -244,7 +244,7 @@ class Serialize extends util\Singleton
             );
         }
 
-        $this->trigger('post_deserialize', array($decoded, $str, $mode));
+        $this->trigger('model.deserialize.after', array($decoded, $str, $mode));
 
         return $decoded;
     }

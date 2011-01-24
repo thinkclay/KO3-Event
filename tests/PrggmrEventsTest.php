@@ -57,7 +57,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         prggmr::listen('simple-event-test', function(){
             throw new Exception('This should be caught!');
         });
-        $this->assertEvent('simple-event-test', null, null);
+        $this->assertEvent('simple-event-test', array(), null);
     }
 
     public function testMulitpleEventReturns()
@@ -83,7 +83,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
             return $p . '2';
         });
 
-        $this->assertEvent('multi-regex-test', null, array(0=>'test',1=>'test2'));
+        $this->assertEvent('multi-regex-test', array(), array(0=>'test',1=>'test2'));
     }
 
     public function testRegexMulitpleEventsMultipleParams()
@@ -156,7 +156,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
            return 'I will not be reached';
         });
 
-        $this->assertEvent('event_hault', null, array(0=>'test1',1=>false));
+        $this->assertEvent('event_hault', array(), array(0=>'test1',1=>false));
     }
 
     public function testEventShift()
@@ -173,6 +173,6 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
             return 'test3';
         }, array('shift' => true, 'name' => 'shift_3'));
 
-        $this->assertEvent('event_shift', null, array('test3','test2','test1'));
+        $this->assertEvent('event_shift', array(), array('test3','test2','test1'));
     }
 }

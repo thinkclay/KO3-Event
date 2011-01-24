@@ -86,7 +86,7 @@ class Listenable
      * @throws  InvalidArgumentException,RuntimeException
      * @return  boolean
      */
-    public function listen($event, $function, $options = array()) {
+    public function listen($event, \Closure $function, array $options = array()) {
         $defaults = array('shift' => false,
                           'name' => str_random(12)
                          );
@@ -155,7 +155,7 @@ class Listenable
      * @return  array|boolean  Array of listeners' results, `true` when no
      *          listeners triggered.
      */
-    public function trigger($event, $params = array(), $options = array()) {
+    public function trigger($event, array $params = array(), array $options = array()) {
         $defaults  = array('errors' => false);
         $options += $defaults;
         $results = (array) \prggmr::trigger($event, $params, $options);
@@ -184,5 +184,17 @@ class Listenable
     public function getListeners()
     {
         return $this->_listeners;
+    }
+
+    /**
+     * __call overload method will attempt to call an event currently attatched
+     * to the listenable object.
+     * @see  \prggmr\util\listenable::trigger()
+     */
+    public function __call($event, array $args = array())
+    {
+        $defaults = array(0 => array(), 1 => array());
+        $args += $defaults;
+        return $this->trigger($event, $args[0], $args[1]);
     }
 }

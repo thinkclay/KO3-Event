@@ -161,7 +161,7 @@ abstract class Instance extends util\Listenable {
      *
      * @return  string  Database date format
      */
-    public function date($date)
+    public function date(\DateTime $date)
     {
         return $date->format('Y-m-d');
     }
@@ -173,7 +173,7 @@ abstract class Instance extends util\Listenable {
      *
      * @return  string  Database date format
      */
-    public function datetime($date)
+    public function datetime(\DateTime $date)
     {
         return $date->format('Y-m-d H:i:s T');
     }
