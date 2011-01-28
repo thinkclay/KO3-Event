@@ -189,7 +189,7 @@ class prggmr extends data\DataStatic {
                 if (!$options['return_path']) {
                     if (file_exists($path)) {
                         include $path;
-                        return true;
+                        return true; 
                     }
                 }
             }
