@@ -156,6 +156,12 @@ class Listenable
      *          listeners triggered.
      */
     public function trigger($event, array $params = array(), array $options = array()) {
+
+        if (!$event instanceof Event) {
+            $name = $event;
+            $event = new Event($name, $params);
+        }
+
         $defaults  = array('errors' => false);
         $options += $defaults;
         $results = (array) \prggmr::trigger($event, $params, $options);
@@ -176,7 +182,25 @@ class Listenable
     }
 
     /**
-     * Returns the array stack of current event listeners attatched
+     * Checks if a listener with the given name currently exists in the
+     * listeners stack.
+     *
+     * @param  string  $listener  Name of the event listener.
+     * @param  string  $event  Event which the listener will execute on.
+     * @param  string  $namespace  Namespace listener belongs to.
+     *         [Default: static::GLOBAL_DEFAULT]
+     *
+     * @return  boolean  False if non-existant | True otherwise.
+     */
+    public function hasListener($listener, $event, $namespace) {
+        if (isset($this->_events[$event][$listener])) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the array stack of current event listeners attached
      * to this object.
      *
      * @return  array  Stack of event listeners.
