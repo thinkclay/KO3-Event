@@ -159,12 +159,12 @@ class Listenable
 
         if (!$event instanceof Event) {
             $name = $event;
-            $event = new Event($name, $params);
+            $event = new Event($name);
         }
 
         $defaults  = array('errors' => false);
         $options += $defaults;
-        $results = (array) \prggmr::trigger($event, $params, $options);
+        $results = \prggmr::trigger($event, $params, $options);
         if ($options['errors']) {
             foreach ($results as $_listener => $_results) {
                 if (false === $_results) {
@@ -179,6 +179,7 @@ class Listenable
                 }
             }
         }
+        return $results;
     }
 
     /**

@@ -40,6 +40,7 @@ prggmr\request\event as request,
 prggmr\render\event as render,
 prggmr\cli\event as cli,
 prggmr\record\connection as connection,
+prggmr\util as util,
 prggmr\util\data as data;
 
 if (!defined('PRGGMR_LIBRARY_PATH')) {
@@ -49,12 +50,14 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 define('PRGGMR_VERSION', '0.01-alpha');
 
 require 'prggmr/util/listenable.php';
+require 'prggmr/util/event.php';
 require 'prggmr/util/singleton.php';
 require 'prggmr/util/data/datastatic.php';
 require 'prggmr/util/data/datainstance.php';
 require 'prggmr/util/functions.php';
 
 class prggmr extends data\DataStatic {
+
     /**
      * The system routes table. Stores the routes which will be
      * transversed to locate the current route.
@@ -189,7 +192,7 @@ class prggmr extends data\DataStatic {
                 if (!$options['return_path']) {
                     if (file_exists($path)) {
                         include $path;
-                        return true; 
+                        return true;
                     }
                 }
             }
@@ -543,14 +546,38 @@ class prggmr extends data\DataStatic {
      *
      *         `offset` - Specify the alternate place from which to start the search.
      *
-     * @throws  LogicException  Exception encountered during listener exec
-     * @return  array|boolean
+     *         `object` - Return the event object.
+     *
+     *         `suppress` - Suppress exceptions when an event is encountered in a STATE_ERROR.
+     *
+     * @throws  LogicException when an error is encountered during listener
+     *          execution
+     *          RuntimeException when attempting to execute an event in
+     *          an unexecutable state
+     *
+     * @return  object  prggmr\util\Event
      */
     public static function trigger($event, array $params = array(), array $options = array()) {
-        $defaults  = array('namespace' => static::GLOBAL_DEFAULT, 'benchmark' => false, 'flags' => null, 'offset' => null);
+        $defaults  = array(
+                           'namespace' => static::GLOBAL_DEFAULT,
+                           'benchmark' => false,
+                           'flags' => null,
+                           'offset' => null,
+                           'object' => false,
+                           'suppress' => false
+                        );
         $options  += $defaults;
-        $org       = $event;
-        $event     = strtolower($event);
+        if ($event instanceof util\Event) {
+            // Check the state of this event
+            $event->setState(util\Event::STATE_ACTIVE);
+            $eventObj = $event;
+            $event = $event->getListener();
+            $org = $event;
+        } else {
+            $org   = $event;
+            $event = strtolower($event);
+            $eventObj = new util\Event($event);
+        }
         $evreg     = '#' . $event . '$#i';
         $listeners = null;
         if (!is_array($params)) $params = array();
@@ -574,6 +601,7 @@ class prggmr extends data\DataStatic {
                 }
             }
         }
+        array_unshift($params, &$eventObj);
         if ($listeners != null) {
             $return = array();
             $i = 0;
@@ -583,12 +611,26 @@ class prggmr extends data\DataStatic {
                     $debug = true;
                     static::analyze('bench_begin', array('name' => 'event_'.$name.'_'.$i));
                 }
+                $halt = $eventObj->isHalted();
+                // halt the event bubble
+                if ($halt) {
+                    break;
+                }
+                // run the listener
                 try {
                     $results = call_user_func_array($function, $params);
                 } catch (\Exception $e) {
                     throw new \LogicException(
                         sprintf(
                             'Event (%s) Listener "%s" execution failed due to exception "%s" with message "%s"', $event, $name, get_class($e), $e->getMessage()
+                        )
+                    );
+                }
+                // Check our event state / halt and print exception unless suppress
+                if ($eventObj->getState() === util\Event::STATE_ERROR && !$options['suppress']) {
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Error State detected in event (%s) listener "%s" with message (%s)', $event, $name, get_class($e), $eventObj->getStateMessage()
                         )
                     );
                 }
@@ -603,14 +645,23 @@ class prggmr extends data\DataStatic {
                     );
                 }
                 $i++;
-                $return[] = $results;
-                // Adds support for listeners to return "false" and halts
-                // any other listeners from triggering.
+                // Adds support for listeners to return "false" and halts sequence
                 if ($results === false) {
                     break;
                 }
+                $eventObj->setResults($results);
+                if (!$halt && $eventObj->hasChain()) {
+                    $chain = $eventObj->triggerChain();
+                    if ($eventObj->isResultsStackable()) {
+                        $eventObj->setResults($chain);
+                    }
+                }
             }
-            return $return;
+            if ($options['object']) {
+                return $eventObj;
+            } else {
+                return $eventObj->getResults();
+            }
         }
         return true;
     }

@@ -36,17 +36,7 @@ use \prggmr\util\data as data;
 /**
  * Event Object
  *
- * The event object is a simple event class which provides the following
- * features.
- *
- * Event States
- *
- * Automatic Event Chaining based on parent and children events
- *
- * Immediate interruption of an event stack and all subsequent chained events
- *
- * Configurable result type allowing for a single result or an array.
- *
+ * Represents an executed event.
  *
  */
 class Event extends Listenable
@@ -101,13 +91,6 @@ class Event extends Listenable
     protected $_halt = false;
 
     /**
-     * Internal name of this event.
-     *
-     * @var  string  Name of the event.
-     */
-    protected $_name = null;
-
-    /**
      * Listener in which this event will fire upon.
      *
      * @var  string  Name of event listener.
@@ -117,10 +100,11 @@ class Event extends Listenable
     /**
      * Flag that allows an event to return an array of results rather
      * than a single value.
+     * Default: true
      *
      * @var  boolean  True | False
      */
-    protected $_stackableResults = false;
+    protected $_stackableResults = true;
 
     /**
      * Parameters that will be passed to the event listeners.
@@ -130,29 +114,35 @@ class Event extends Listenable
     protected $_params = array();
 
     /**
+     * Message associated with the current event state.
+     *
+     * @var  string  Message that is associated with current event state.
+     */
+    protected $_stateMessage = null;
+
+    /**
      * Constructs a new event object.
      */
-    public function __construct($event, array $params = array(), $name = null, Event $parent = null)
+    public function __construct($event, Event $parent = null)
     {
         if (null !== $parent) {
             $this->_parent = $parent;
         }
-
-        $this->_params = $params;
-
         $this->setState(self::STATE_INACTIVE);
+        $this->_listener = $event;
     }
 
     /**
      * Sets the event state.
      *
      * @param  integer  $state  State this event is currently in.
+     * @param  string  $msg  Message to associate with this event state.
      *
      * @throws  InvalidArgumentException when invalid state is given.
      *
      * @return  boolean  True on success
      */
-    public function setState($state)
+    public function setState($state, $msg = null)
     {
         if ($state > 104 || $state < 100) {
             throw new \InvalidArgumentException(
@@ -164,7 +154,18 @@ class Event extends Listenable
             );
         }
         $this->_state = $state;
+        $this->_stateMessage = $msg;
         return true;
+    }
+
+    /**
+     * Returns the current event state message.
+     *
+     * @return  mixed  Current event state message, NULL otherwise.
+     */
+    public function getStateMessage()
+    {
+        return $this->_stateMessage;
     }
 
     /**
@@ -190,7 +191,7 @@ class Event extends Listenable
         if ($this->getState() === self::STATE_ACTIVE) {
             $this->_halt = true;
         } else {
-            throw new LogicException(
+            throw new \LogicException(
                 sprintf(
                     "Event sequence cannot be halted while event is not in an active state"
                 )
@@ -254,7 +255,7 @@ class Event extends Listenable
             return false;
         }
         $this->_stackableResults = $flag;
-        return null;
+        return true;
     }
 
     /**
@@ -270,7 +271,11 @@ class Event extends Listenable
             if (null === $this->_return) {
                 $this->_return = array();
             }
-            $this->_return[] = $return;
+            if (!is_array($this->_return)) {
+                (array) $this->_return[] = $return;
+            } else {
+                $this->_return[] = $return;
+            }
         } else {
             // Blindly overwrite the return of this event
             $this->_return = $return;
@@ -302,7 +307,7 @@ class Event extends Listenable
     /**
      * Triggers the event chains attached to this event.
      *
-     * @return  void
+     * @return  mixed  Results of the chain execution.
      */
     public function triggerChain()
     {
@@ -316,9 +321,48 @@ class Event extends Listenable
             if (self::STATE_ACTIVE !== $this->getState()) {
                 $this->setState(self::STATE_ACTIVE);
             }
-
-            $this->_parent->setResultsStackable(true);
-            $this->_parent->trigger($this->_parent);
+            $this->_parent->trigger();
+            return $this->_parent->getResults();
         }
+    }
+
+    /**
+     * Determains if this event has a parent sequence to init a chained event.
+     *
+     * @return  boolean  True | False
+     */
+    public function hasChain()
+    {
+        return (null !== $this->_parent);
+    }
+
+    /**
+     * Triggers this event to notify all listeners.
+     *
+     * @param  string  $event  Name of the event to trigger
+     * @param  array  $params  Parameters to directly pass to the event listener
+     * @param  array  $options  Array of options. Avaliable options.
+
+     *         `namespace` - Namespace for event.
+     *         [Default: Class name]
+     *
+     *         `benchmark` - Benchmark this events execution.
+     *
+     *         `flags`  - Flags to pass to the `preg_match` function used for
+     *         matching a regex event.
+     *
+     *         `offset` - Specify the alternate place from which to start the
+     *         regex search.
+     *
+     *         `errors` - Throws an exception if any listener returns false.
+     *
+     * @throws  RuntimeException  if `errors` option is `true` and a listener
+     *          returns false.
+     *
+     * @return  array|boolean  Array of listeners' results, `true` when no
+     *          listeners triggered.
+     */
+    public function trigger(array $params = array(), array $options = array()) {
+        return parent::trigger($this, $params, $options);
     }
 }

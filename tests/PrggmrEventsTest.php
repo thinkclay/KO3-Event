@@ -1,5 +1,7 @@
 <?php
 
+use \prggmr\util as util;
+
 include_once 'bootstrap.php';
 
 class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
@@ -16,7 +18,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testSimpleEvent()
     {
-        prggmr::listen('simpleevent', function($a){
+        prggmr::listen('simpleevent', function($event, $a){
             return $a;
         });
         $this->assertEvent('simpleevent', array('test'), array(0 => 'test'));
@@ -24,7 +26,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testRegexEvent()
     {
-        prggmr::listen('regex-([a-z]+)', function($slug){
+        prggmr::listen('regex-([a-z]+)', function($event, $slug){
             return $slug;
         });
         $this->assertEvent('regex-test', array(), array(0 => 'test'));
@@ -32,7 +34,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testRegexEventWithParams()
     {
-        prggmr::listen('regex2-([a-z]+)', function($slug, $p, $p2){
+        prggmr::listen('regex2-([a-z]+)', function($event, $slug, $p, $p2){
             return $slug.$p.$p2;
         });
         $this->assertEvent('regex2-test', array('one', 'two'), array(0 => 'testonetwo'));
@@ -43,7 +45,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidParamsException()
     {
-        prggmr::listen('regex2-([a-z]+)', function($slug, $p, $p2){
+        prggmr::listen('regex2-([a-z]+)', function($event, $slug, $p, $p2){
             return $slug.$p.$p2;
         });
         $this->assertEvent('regex2-test', array('one'), null);
@@ -62,11 +64,11 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testMulitpleEventReturns()
     {
-        prggmr::listen('mutiple-returns', function($i){
+        prggmr::listen('mutiple-returns', function($event, $i){
             return strtoupper($i);
         });
 
-        prggmr::listen('mutiple-returns', function($i){
+        prggmr::listen('mutiple-returns', function($event, $i){
             return strtolower($i);
         });
 
@@ -75,11 +77,11 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testRegexMulitpleEvents()
     {
-        prggmr::listen('multi-regex-([a-z]+)', function($p){
+        prggmr::listen('multi-regex-([a-z]+)', function($event, $p){
             return $p;
         });
 
-        prggmr::listen('multi-regex-([a-z]+)', function($p){
+        prggmr::listen('multi-regex-([a-z]+)', function($event, $p){
             return $p . '2';
         });
 
@@ -88,11 +90,11 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testRegexMulitpleEventsMultipleParams()
     {
-        prggmr::listen('multi-regex-params-([a-z]+)', function($p, $p2){
+        prggmr::listen('multi-regex-params-([a-z]+)', function($event, $p, $p2){
             return $p.$p2;
         });
 
-        prggmr::listen('multi-regex-params-([a-z]+)', function($p){
+        prggmr::listen('multi-regex-params-([a-z]+)', function($event, $p){
             return $p . '2';
         });
 
@@ -101,11 +103,11 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testParamReference()
     {
-        prggmr::listen('reference', function(&$i){
+        prggmr::listen('reference', function($event, &$i){
             $i->node = 'Test';
         });
 
-        prggmr::listen('reference', function(&$i){
+        prggmr::listen('reference', function($event, &$i){
             $i->node = $i->node . 'ing';
             return $i->node;
         });
@@ -117,7 +119,7 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testStaticInvoke()
     {
-        prggmr::listen('magic_invoke', function($param) {
+        prggmr::listen('magic_invoke', function($event, $param) {
             return $param;
         });
 
@@ -127,12 +129,12 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testStaticInvokeReferences()
     {
-        prggmr::listen('magic_ref_invoke', function(&$obj){
+        prggmr::listen('magic_ref_invoke', function($event, &$obj){
             $obj->test = 'Hello';
             return $obj->test;
         });
 
-        prggmr::listen('magic_ref_invoke', function(&$obj){
+        prggmr::listen('magic_ref_invoke', function($event, &$obj){
             $obj->test .= ' Im Nick';
             return $obj->test;
         });
@@ -144,35 +146,124 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
 
     public function testEventHault()
     {
-        prggmr::listen('event_hault', function(){
+        prggmr::listen('event_hault', function($event){
             return 'test1';
         });
 
-        prggmr::listen('event_hault', function(){
+        prggmr::listen('event_hault', function($event){
             return false;
         });
 
-        prggmr::listen('event_hault', function(){
+        prggmr::listen('event_hault', function($event){
            return 'I will not be reached';
         });
 
-        $this->assertEvent('event_hault', array(), array(0=>'test1',1=>false));
+        $this->assertEvent('event_hault', array(), array(0=>'test1'));
     }
 
     public function testEventShift()
     {
-        prggmr::listen('event_shift', function(){
+        prggmr::listen('event_shift', function($event){
             return 'test1';
         });
 
-        prggmr::listen('event_shift', function(){
+        prggmr::listen('event_shift', function($event){
             return 'test2';
         }, array('shift' => true, 'name' => 'shift_2'));
 
-        prggmr::listen('event_shift', function(){
+        prggmr::listen('event_shift', function($event){
             return 'test3';
         }, array('shift' => true, 'name' => 'shift_3'));
 
         $this->assertEvent('event_shift', array(), array('test3','test2','test1'));
+    }
+
+    public function testEventObjectTrigger()
+    {
+        prggmr::listen('event_object_trigger', function($event) {
+            return $event->getState();
+        });
+        $event = new util\Event('event_object_trigger');
+        $event->trigger();
+        $this->assertEquals(array(0 => util\Event::STATE_ACTIVE), $event->getResults());
+    }
+
+    public function testEventNonStackableResult()
+    {
+        prggmr::listen('event_nonstackable', function($event){
+            return 1;
+        });
+        prggmr::listen('event_nonstackable', function($event){
+            return 2;
+        });
+        $event = new util\Event('event_nonstackable');
+        $event->setResultsStackable(false);
+        $event->trigger();
+        $this->assertEquals(2, $event->getResults());
+    }
+
+    public function testEventChaining()
+    {
+        prggmr::listen('event_chain', function($event){
+           return 1;
+        });
+        prggmr::listen('event_chain_parent', function($event){
+           return $event->getState();
+        });
+        $parent = new util\Event('event_chain_parent');
+        $event  = new util\Event('event_chain', $parent);
+        $event->trigger();
+        $this->assertEquals(array(0 => 1, 1 => array(0 => util\Event::STATE_ACTIVE)), $event->getResults());
+    }
+
+    public function testEventChainingUnstackable()
+    {
+        prggmr::listen('event_chain_unstack', function($event){
+           return 1;
+        });
+        prggmr::listen('event_chain_parent_unstack', function($event){
+           return $event->getState();
+        });
+        $parent = new util\Event('event_chain_parent_unstack');
+        $event  = new util\Event('event_chain_unstack', $parent);
+        $event->setResultsStackable(false);
+        $event->trigger();
+        $this->assertEquals(1, $event->getResults());
+        $this->assertEquals(array(0 => util\Event::STATE_ACTIVE), $parent->getResults());
+    }
+
+    public function testEventReturnObject()
+    {
+        prggmr::listen('event_return_object', function($event){
+            return 0;
+        });
+
+        $event  = new util\Event('event_return_object');
+        $this->assertSame($event, $event->trigger(array(), array('object' => true)));
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testEventErrorState()
+    {
+        prggmr::listen('event_error_state', function($event){
+            $event->setState(util\Event::STATE_ERROR);
+        });
+
+        $event  = new util\Event('event_error_state');
+        $event->trigger();
+    }
+
+    public function testEventErrorStateSuppression()
+    {
+        prggmr::listen('event_error_state_suppress', function($event){
+            $event->setState(util\Event::STATE_ERROR);
+            return 0;
+        });
+
+        $event  = new util\Event('event_error_state_suppress');
+        $event->setResultsStackable(false);
+        $this->assertEquals(0, $event->trigger(array(), array('suppress' => true)));
     }
 }

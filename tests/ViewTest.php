@@ -49,7 +49,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     public function testVarAssignmentsEventManipulation()
     {
-        prggmr::listen('var_assign', function($key, $value, $view) {
+        prggmr::listen('var_assign', function($event, $key, $value, $view) {
             $view->assign($key, $value . ' Added In Event', array('event' => false));
         }, array('namespace' => 'view'));
 
