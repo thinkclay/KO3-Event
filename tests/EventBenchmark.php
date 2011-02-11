@@ -7,8 +7,8 @@ require 'bootstrap.php';
  */
 
 $results = array();
-$num_events = 100;
-$num_listeners = 1;
+$num_events = 1000;
+$num_listeners = 10;
 
 prggmr::analyze('bench_begin', array('name' => 'add_event'));
 for($i=0;$i!=$num_events;$i++) {
@@ -43,4 +43,3 @@ foreach ($results as $k => $v) {
     }
     echo "\n\n";
 }
-

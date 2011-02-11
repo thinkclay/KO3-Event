@@ -36,7 +36,7 @@ use \prggmr\util\data as data;
 /**
  * Event Object
  *
- * Represents an executed event.
+ * Represents an executed/executable event.
  *
  */
 class Event extends Listenable
@@ -51,11 +51,6 @@ class Event extends Listenable
      * Event is inactive and awaiting for its trigger.
      */
     const STATE_INACTIVE = 101;
-
-    /**
-     * Event has been called and finished execution.
-     */
-    const STATE_COMPLETE = 102;
 
     /**
      * Event has encountered a failure
@@ -98,9 +93,9 @@ class Event extends Listenable
     protected $_listener = null;
 
     /**
-     * Flag that allows an event to return an array of results rather
-     * than a single value.
-     * Default: true
+     * Flag that determains if an event is to return an array of results or
+     * a single value.
+     * Default: true : array
      *
      * @var  boolean  True | False
      */
@@ -181,8 +176,8 @@ class Event extends Listenable
     /**
      * Halts the current event stack, along with any subsequent event chains.
      *
-     * @throws  LogicException  when attempting to set sequence halt while event is
-     *          in an inactive state.
+     * @throws  LogicException  when attempting to set sequence halt while
+     *          event is in an inactive state.
      *
      * @return  null
      */
@@ -227,7 +222,7 @@ class Event extends Listenable
     /**
      * Returns if this event can have a result stack rather than a single
      * returnable result.
-     * This can set by calling `makeResultsStackable()` method before
+     * This can set by calling `setResultsStackable()` method before
      * triggering an event.
      *
      * @return  boolean  True | False

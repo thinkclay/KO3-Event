@@ -630,7 +630,7 @@ class prggmr extends data\DataStatic {
                 if ($eventObj->getState() === util\Event::STATE_ERROR && !$options['suppress']) {
                     throw new \RuntimeException(
                         sprintf(
-                            'Error State detected in event (%s) listener "%s" with message (%s)', $event, $name, get_class($e), $eventObj->getStateMessage()
+                            'Error State detected in event (%s) listener "%s" with message (%s)', $event, $name, $eventObj->getStateMessage()
                         )
                     );
                 }
