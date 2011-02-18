@@ -1,7 +1,6 @@
 <?php
 namespace prggmr\util;
 
-
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -29,7 +28,7 @@ require_once 'listenable.php';
 /**
  * Singleton implementation.
  */
-abstract class Singleton extends \prggmr\util\Listenable
+abstract class Singleton extends Listenable
 {
     /**
      * @var  array  Instances of the singleton.

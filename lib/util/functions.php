@@ -1,7 +1,4 @@
 <?php
-
-
-
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -20,7 +17,7 @@
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Record
+ * @category  Utilities
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 

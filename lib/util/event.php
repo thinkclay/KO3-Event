@@ -1,7 +1,6 @@
 <?php
 namespace prggmr\util;
 
-
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -20,7 +19,7 @@ namespace prggmr\util;
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Record
+ * @category  Utilities
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
@@ -30,11 +29,9 @@ use \prggmr\util\data as data;
  * Event Object
  *
  * Represents an executed/executable event.
- *
  */
 class Event extends Listenable
 {
-
     /**
      * Event is actively being called.
      */
@@ -93,13 +90,6 @@ class Event extends Listenable
      * @var  boolean  True | False
      */
     protected $_stackableResults = true;
-
-    /**
-     * Parameters that will be passed to the event listeners.
-     *
-     * @var  array  Array of parameters to pass to event listeners.
-     */
-    protected $_params = array();
 
     /**
      * Message associated with the current event state.
@@ -282,7 +272,7 @@ class Event extends Listenable
     }
 
     /**
-     * Triggers the event chains attached to this event.
+     * Triggers the event chains attached for this event.
      *
      * @return  mixed  Results of the chain execution.
      */
@@ -304,7 +294,7 @@ class Event extends Listenable
     }
 
     /**
-     * Determains if this event has a parent sequence to init a chained event.
+     * Determains if this event has a parent sequence to call a chained event.
      *
      * @return  boolean  True | False
      */
@@ -314,30 +304,33 @@ class Event extends Listenable
     }
 
     /**
-     * Triggers this event to notify all listeners.
+     * Triggers an event within the current scope.
      *
-     * @param  string  $event  Name of the event to trigger
      * @param  array  $params  Parameters to directly pass to the event listener
-     * @param  array  $options  Array of options. Avaliable options.
-
-     *         `namespace` - Namespace for event.
-     *         [Default: Class name]
+     * @param  array  $options  Array of options. Avaliable options
+     *
+     *         `namespace` - `namespace` - Namespace for event.
+     *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
      *         `flags`  - Flags to pass to the `preg_match` function used for
      *         matching a regex event.
      *
-     *         `offset` - Specify the alternate place from which to start the
-     *         regex search.
+     *         `offset` - Specify the alternate place from which to start the search.
      *
-     *         `errors` - Throws an exception if any listener returns false.
+     *         `object` - Return the event object.
      *
-     * @throws  RuntimeException  if `errors` option is `true` and a listener
-     *          returns false.
+     *         `suppress` - Suppress exceptions when an event is encountered in
+     *         a STATE_ERROR.
      *
-     * @return  array|boolean  Array of listeners' results, `true` when no
-     *          listeners triggered.
+     * @throws  LogicException when an error is encountered during listener
+     *          execution
+     *          RuntimeException when attempting to execute an event in
+     *          an unexecutable state
+     *
+     * @return  object  prggmr\util\Event
+     * @see  prggmr::trigger
      */
     public function trigger(array $params = array(), array $options = array()) {
         return parent::trigger($this, $params, $options);

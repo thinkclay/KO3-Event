@@ -1,7 +1,6 @@
 <?php
 namespace prggmr\util;
 
-
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -20,34 +19,18 @@ namespace prggmr\util;
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Record
+ * @category  Utilities
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
 
 /**
- * Listenable event object.
+ * Listenable
  *
- * Provides abstraction layer for performing prggmr events within
- * an object using method calls within the object, which will automatically
- * parse the event into prggmr's internal event handling system.
- *
- * Usage Examples
- *
- * """
- *   use \prggmr\util as util;
- *
- *   class MyObject extends util\Listenable {
- *
- *         public function callListeners() {
- *             $results = $this->trigger('my_event'));
- *             foreach ($results as $_key => $_result) {
- *                  echo $_result;
- *              }
- *          }
- *      }
+ * The listenable class provides an abstraction layer for registering
+ * objects as a simple publishing/subscriber interface to the event engine.
  */
-class Listenable
+class Listenable extends data\DataInstance
 {
     /**
      * Stack of event listeners listening to this object.
@@ -57,9 +40,7 @@ class Listenable
     protected $_listeners = array();
 
     /**
-     * Adds a new listener to the event queue.
-     * Listeners are anonymous functions that are executed via a triggered
-     * event in which they are listening for.
+     * Register a new callable event to the event stack.
      *
      * @param  string  $event  Name of the event to trigger the listener
      * @param  closure  $function  Anonymous function to execute when the
@@ -78,6 +59,7 @@ class Listenable
      *
      * @throws  InvalidArgumentException,RuntimeException
      * @return  boolean
+     *
      */
     public function listen($event, \Closure $function, array $options = array()) {
         $defaults = array('shift' => false,
@@ -121,32 +103,33 @@ class Listenable
     }
 
     /**
-     * Triggers event listeners and returns the results; the results are
-     * always returned in an array for use with events with multiple
-     * listeners returning results.
+     * Triggers an event within the current scope.
      *
-     * @param  string  $event  Name of the event to trigger
      * @param  array  $params  Parameters to directly pass to the event listener
-     * @param  array  $options  Array of options. Avaliable options.
-
-     *         `namespace` - Namespace for event.
-     *         [Default: Class name]
+     * @param  array  $options  Array of options. Avaliable options
+     *
+     *         `namespace` - `namespace` - Namespace for event.
+     *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
      *         `flags`  - Flags to pass to the `preg_match` function used for
      *         matching a regex event.
      *
-     *         `offset` - Specify the alternate place from which to start the
-     *         regex search.
+     *         `offset` - Specify the alternate place from which to start the search.
      *
-     *         `errors` - Throws an exception if any listener returns false.
+     *         `object` - Return the event object.
      *
-     * @throws  RuntimeException  if `errors` option is `true` and a listener
-     *          returns false.
+     *         `suppress` - Suppress exceptions when an event is encountered in
+     *         a STATE_ERROR.
      *
-     * @return  array|boolean  Array of listeners' results, `true` when no
-     *          listeners triggered.
+     * @throws  LogicException when an error is encountered during listener
+     *          execution
+     *          RuntimeException when attempting to execute an event in
+     *          an unexecutable state
+     *
+     * @return  object  prggmr\util\Event
+     * @see  prggmr::trigger
      */
     public function trigger($event, array $params = array(), array $options = array()) {
 

@@ -26,23 +26,24 @@
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  Record
+ * @category  Prggmr
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
 /**
- * Prggmr EMV Framework
+ * Prggmr Event Framework
  *
- * Prggmr in short is a EDA wrapped into a MVC mirrored architecture,
- * Prggmr uses a simple event processing due to the nature of how
- * the framework is intended to be used, this of course can and may change.
+ * Prggmr in short is a EDA wrapped into a solution in PHP.
+ * Prggmr uses a simple event processing as its current processing que
+ * while a complex event processing system is being planned, this is not
+ * to say the engine is not powerful.
  *
  * The prggmr class acts as a few major components of the framework, which
  * may go aganist each object serving a single distanct purpose, the reason for
  * this is to minimize the application code within the framework.
  *
  * The main responsiblity for this class is to act as the event engine, class
- * loading engine and system debugger.
+ * loader and system debugger.
  *
  */
 
@@ -62,13 +63,13 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
     define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
 }
 
-define('PRGGMR_VERSION', '0.01-alpha');
+define('PRGGMR_VERSION', '0.1.0beta');
 
+require 'util/data/datastatic.php';
+require 'util/data/datainstance.php';
 require 'util/listenable.php';
 require 'util/event.php';
 require 'util/singleton.php';
-require 'util/data/datastatic.php';
-require 'util/data/datainstance.php';
 require 'util/functions.php';
 
 class prggmr extends data\DataStatic {
@@ -124,7 +125,7 @@ class prggmr extends data\DataStatic {
 	 * Default constant is defined for methods that will
 	 * use a driver and allow a global default.
 	 */
-	const GLOBAL_DEFAULT = 'prggmr';
+	const GLOBAL_DEFAULT = 'DEFAULT';
 
     /**
      * Loads a PHP file defined by `$class`. Looks through the list of
@@ -319,9 +320,7 @@ class prggmr extends data\DataStatic {
     }
 
 	/**
-     * Adds a new listener to the event queue.
-     * Listeners are anonymous functions that are executed via a triggered
-     * event in which they are listening for.
+     * Register a new callable event to the event stack.
      *
      * @param  string  $event  Name of the event to trigger the listener
      * @param  closure  $function  Anonymous function to execute when the
@@ -401,27 +400,27 @@ class prggmr extends data\DataStatic {
     }
 
     /**
-     * Triggers event listeners and returns the results; the results are
-     * always returned in an array for use with events with multiple
-     * listeners returning results.
+     * Triggers an event.
      *
-     * @param  string  $event  Name of the event to trigger
+     * @param  mixed  $event  String name of the event to trigger
+     *         or a prggmr\util\Event object
      * @param  array  $params  Parameters to directly pass to the event listener
-     * @param  array  $options  Array of options. Avaliable options.
-
+     * @param  array  $options  Array of options. Avaliable options
+     *
      *         `namespace` - `namespace` - Namespace for event.
      *         Defaults to \prggmr::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
-     *         `flags`  - Flags to pass to the `preg_match` function used for matching a
-     *         regex event.
+     *         `flags`  - Flags to pass to the `preg_match` function used for
+     *         matching a regex event.
      *
      *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
      *
-     *         `suppress` - Suppress exceptions when an event is encountered in a STATE_ERROR.
+     *         `suppress` - Suppress exceptions when an event is encountered in
+     *         a STATE_ERROR.
      *
      * @throws  LogicException when an error is encountered during listener
      *          execution
@@ -755,26 +754,13 @@ class prggmr extends data\DataStatic {
     }
 
     /**
-     * Triggers event listeners and returns the results; the results are
-     * always returned in an array for use with events with multiple
-     * listeners returning results.
+     * Allows for statically overloading event triggers.
      *
-     * @param  string  $event  Name of the event to trigger
-     * @param  array  $params  Parameters to directly pass to the event listener
-     * @param  array  $options  Array of options. Avaliable options.
-
-     *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to \prggmr::GLOBAL_DEFAULT.
+     * @param  mixed  $event  Name of event to trigger
+     * @param  array  $params  Array of parameters that will be passed to the
+     *         event handler.
      *
-     *         `benchmark` - Benchmark this events execution.
-     *
-     *         `flags`  - Flags to pass to the `preg_match` function used for matching a
-     *         regex event.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
-     *
-     * @throws  LogicException  Exception encountered during listener exec
-     * @return  array|boolean
+     * @return  object  prggmr\util\Event
      */
     public static function __callStatic($event, array $params = array()) {
         $defaults = array(0 => array(), 1 => array());
@@ -797,7 +783,7 @@ class prggmr extends data\DataStatic {
 	 *
 	 * @param  string  $config  Path to configuration file.
 	 */
-	public static function initalize()
+	public static function initalize(/* ... */)
 	{
         if (!defined('PRGGMR_DEBUG')) {
             define('PRGGMR_DEBUG', 0);
