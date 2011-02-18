@@ -4,22 +4,14 @@ include_once 'bootstrap.php';
 
 class ConfigurationTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConfig()
-    {
-        $config = \prggmr::get('prggmr.config');
-        $this->assertArrayHasKey('mysql', $config);
-        $this->assertArrayHasKey('system', $config);
-        $this->assertArrayHasKey('paths', $config);
-        $this->assertArrayHasKey('files', $config);
-    }
-
     public function testLibraryLoader()
     {
+        $cwd = getcwd().'/';
         \prggmr::library('prggmr.phpunit', array(
-            'path'   => \prggmr::get('prggmr.config.paths.system_path'),
+            'path'   => $cwd,
         ));
         \prggmr::library('prggmr.phpunit', array(
-            'path'   => \prggmr::get('prggmr.config.paths.system_path').'/lib/',
+            'path'   => $cwd.'../lib/',
             'merge'  => true
         ));
         $library = \prggmr::registry('object')->__libraries['prggmr.phpunit'];

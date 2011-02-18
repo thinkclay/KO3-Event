@@ -30,6 +30,21 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+/**
+ * Prggmr EMV Framework
+ *
+ * Prggmr in short is a EDA wrapped into a MVC mirrored architecture,
+ * Prggmr uses a simple event processing due to the nature of how
+ * the framework is intended to be used, this of course can and may change.
+ *
+ * The prggmr class acts as a few major components of the framework, which
+ * may go aganist each object serving a single distanct purpose, the reason for
+ * this is to minimize the application code within the framework.
+ *
+ * The main responsiblity for this class is to act as the event engine, class
+ * loading engine and system debugger.
+ *
+ */
 
 use \Exception,
 \InvalidArgumentException,
@@ -49,23 +64,14 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 
 define('PRGGMR_VERSION', '0.01-alpha');
 
-require 'prggmr/util/listenable.php';
-require 'prggmr/util/event.php';
-require 'prggmr/util/singleton.php';
-require 'prggmr/util/data/datastatic.php';
-require 'prggmr/util/data/datainstance.php';
-require 'prggmr/util/functions.php';
+require 'util/listenable.php';
+require 'util/event.php';
+require 'util/singleton.php';
+require 'util/data/datastatic.php';
+require 'util/data/datainstance.php';
+require 'util/functions.php';
 
 class prggmr extends data\DataStatic {
-
-    /**
-     * The system routes table. Stores the routes which will be
-     * transversed to locate the current route.
-     *
-     * @var  array  Table of routes.
-     */
-    protected static $__routes = array();
-
 
     /**
      * prggmr registry property, information is stored as a `key` -> `value` pair.
@@ -312,139 +318,6 @@ class prggmr extends data\DataStatic {
         return true;
     }
 
-    /**
-     * Router operations are performed as anonymous functions tied to an array
-     * set at `static::$__routes`.
-     * The router operates by providing either a system route or a router operation
-     * as the first parameter. Routes are regular expressions supporting named
-     * subpatterns which are matched in a chain, triggering the action that is tied
-     * to a route, which are anonymous functions that must always return `true`
-     * or a RuntimeException will be thrown.
-     * """
-     * example
-     * Trigger a route to `blog/test-post` and call the Blog()->view() method.
-     * prggmr::router('^blog/(?P<slug>[a-zA-Z-0-9]+)/$', function($slug) { return Blog::view($slug); });
-     * """
-     *
-     * @param  string  $op  A system route or a router operation. Avaliable operations.
-     *
-     *          `regex` - A regular expression string to match.
-     *
-     *          `dispatch` - Dispatch the system router.
-     *
-     *          `routes` - Return the current system routes table.
-     *
-     * @param  object  $arg  The operation that will be performed if the `regex`
-     *         is matched, the anonymous function that returns the string to match for the route,
-     *         or the string to use for matching the routes.
-     *
-     * @param  array  $options  Array of options to use for this route. Avaliable options
-     *
-     *         `shift` - Prepend route to the beginning of the routes table if set to true.
-     *
-     *         `force` - Overwrites previous route is same exists if set to true.
-     *
-     *         `params` - Set of additional parameters to provide the route action.
-     *         See [[http://www.nwhiting.com]] for examples.
-     *
-     *         `flags`  - Flags to pass to the `preg_match` function used for matching the
-     *         routes table.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
-     *
-     *
-     * @throws  LogicException, RuntimeException, InvalidArgumentException
-     * @return  boolean
-     */
-    public static function router($op, $arg = null, array $options = array()) {
-        $defaults = array('shift' => false, 'force' => false, 'flags' => null, 'offset' => null, 'params' => array());
-        $options += $defaults;
-        switch ($op) {
-            case 'routes':
-                return static::$__routes;
-                break;
-            case 'dispatch':
-                if ($arg !== null) {
-                    if ($arg instanceof Closure) {
-                        $arg = $arg();
-                    } elseif (!is_string($arg)) {
-                        throw new \InvalidArgumentException(
-                            sprintf(
-                                'Dispatch expected string or closure for route lookup; received "%s"', gettype($arg)
-                            )
-                        );
-                    }
-                } else {
-                    $arg = $_SERVER['REQUEST_URI'];
-                }
-                static::set('prggmr.router.uri', $arg);
-                /**
-                * Event based system
-                */
-                $event = static::trigger('router.dispatch.startup', array('uri' => $arg));
-                if (count($event) != 0) {
-                    (array) $options['params'] += $event;
-                }
-                try {
-                    $operation = array_walk(static::$__routes, function($action, $route) use ($arg, $options) {
-                        $route = '#' . $route . '$#i';
-                        if (preg_match($route, $arg, $matches, $options['flags'], $options['offset'])) {
-                            unset($matches[0]);
-                            extract($action, EXTR_OVERWRITE);
-                            extract($options, EXTR_OVERWRITE);
-                            if (count($params) != 0) {
-                                $matches += $params;
-                            }
-                            $array = array();
-                            array_walk($matches, function($value, $key) use (&$array) {
-                                if (is_int($key)) {
-                                    $array[$key] = $value;
-                                }
-                            });
-                            return call_user_func_array($function, $array);
-                        }
-                    });
-                } catch (Exception $e) {
-                    throw new \LogicException(
-                        sprintf(
-                            'Dispatch execution failed due to exception "%s" with message "%s"', get_class($e), $e->getMessage()
-                        )
-                    );
-                }
-                break;
-            default:
-                if (!is_object($arg)) {
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'prggmr route "%s" action is invalid; expected object received "%s"', gettype($arg)
-                        )
-                    );
-                }
-                if (!$arg instanceof Closure) {
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'prggmr route "%s" action is invalid; expected closure received "%s"', get_class($arg)
-                        )
-                    );
-                }
-                if (isset(static::$__routes[$op]) && $options['force'] !== true) {
-                    throw new \RuntimeException(
-                        sprintf(
-                            'prggmr route "%s" already exists; Provide "force" option to overwrite', $regex
-                        )
-                    );
-                }
-                $arg = array('function' => $arg, 'params' => $options['params']);
-                if ($options['shift'] === true) {
-                    array_unshift_key($op, $arg, static::$__routes);
-                } else {
-                    static::$__routes[$op] = $arg;
-                }
-                break;
-        }
-        return true;
-    }
-
 	/**
      * Adds a new listener to the event queue.
      * Listeners are anonymous functions that are executed via a triggered
@@ -679,7 +552,6 @@ class prggmr extends data\DataStatic {
 			case 'array':
 			default:
 				return array(
-					'__routes'    => static::$__routes,
 					'__data'      => static::$__registry,
 					'__libraries' => static::$__libraries,
 					'__events'	  => static::$__events,
@@ -921,49 +793,25 @@ class prggmr extends data\DataStatic {
     }
 
 	/**
-	 * Initials prggmr framework, loads the configuration file, establishes
-	 * our default library paths, includes our functions file.
+	 * Initials prggmr framework.
 	 *
 	 * @param  string  $config  Path to configuration file.
 	 */
-	public static function initalize($config = null)
+	public static function initalize()
 	{
-		if (null === $config) {
-			throw new InvalidArgumentException(
-				'No configuration file provided. Please provide a prggmr config file path'
-			);
-		}
-
-		$config = \parse_ini_file($config, true);
-
-		if (!is_array($config) || count($config) == 0) {
-			throw new InvalidArgumentException(
-				sprintf(
-						'Invalid configuration file (%s)',
-						$config
-				)
-			);
-		}
-
-        // Set our configuration values
-		static::set('prggmr.config', $config);
-
         if (!defined('PRGGMR_DEBUG')) {
-            define('PRGGMR_DEBUG', $config['system']['debug']);
+            define('PRGGMR_DEBUG', 0);
         }
 
-		static::analyze('bench_begin', array('name' => 'prggmr benchmark'));
-
-
-		// Setup our system paths
 		// Library Files
 		static::library('prggmr', array(
-			'path'   => $config['paths']['system_path'].'/lib/',
+			'path'   => PRGGMR_LIBRARY_PATH.'/lib/',
 			'prefix' => null,
 			'ext'    => '.php',
 			'transformer' => function($class, $namespace, $options) {
 				$namespace = ($namespace == null) ? '' : str_replace('\\', DIRECTORY_SEPARATOR, $namespace).DIRECTORY_SEPARATOR;
-				$class = str_replace('_', DIRECTORY_SEPARATOR, $class);
+                $namespace = str_replace('prggmr'.DIRECTORY_SEPARATOR, '', $namespace);
+				$class = str_replace('prggmr'.DIRECTORY_SEPARATOR, '', str_replace('_', DIRECTORY_SEPARATOR, $class));
 				$filepath = strtolower($namespace.$class);
 				return $filepath;
 			}
@@ -971,23 +819,10 @@ class prggmr extends data\DataStatic {
 
 		// External Library files ( Uses PECL style formatting )
 		static::library('prggmr.external', array(
-			'path' => $config['paths']['system_path'].'/lib/'
+			'path' => PRGGMR_LIBRARY_PATH.'/lib/'
 		));
 
 		// Setup our system library in php
 		spl_autoload_register('\prggmr::load');
-
-		// Listen for prggmr's dispatcher
-		static::listen('router.dispatch.startup', function($uri) {
-			$front = new request\Dispatch(new render\Output);
-			$front->attach(array('uri'=>$uri));
-			$front->dispatch();
-			return $front;
-		});
-
-		//if (static::get('prggmr.config.system.debug')) {
-		//	$cli = new cli\Handler($_SERVER['argv']);
-		//	static::router('dispatch', $cli->run());
-		//}
 	}
 }

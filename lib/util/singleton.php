@@ -1,5 +1,5 @@
 <?php
-namespace models;
+namespace prggmr\util;
 
 
 /**
@@ -20,29 +20,38 @@ namespace models;
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  System
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-use \prggmr\record as record,
-    \prggmr\record\model as model;
+require_once 'listenable.php';
 
-class Cars_Model extends record\Model {
+/**
+ * Singleton implementation.
+ */
+abstract class Singleton extends \prggmr\util\Listenable
+{
+    /**
+     * @var  array  Instances of the singleton.
+     */
+    private static $_instances = array();
 
-    public $columns = array(
-           'id' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 11,
-                'pk' => true
-               ),
-           'name' => array(
-                'type' => model\Column::STRING,
-                'length' => 20,
-                'null' => false
-              ),
-            'number' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 2
-            )
-       );
+    /**
+     * Returns instance of the called class.
+     */
+    final public static function instance()
+    {
+        $class = get_called_class();
+
+        if (!isset(self::$_instances[$class])) {
+            self::$_instances[$class] = new $class;
+        }
+
+        return self::$_instances[$class];
+    }
+
+    /**
+     * Disallow cloning of a singleton
+     */
+    final private function __clone(){}
 }

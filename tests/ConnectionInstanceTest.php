@@ -7,14 +7,13 @@ class ConnectionInstanceTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->config = \prggmr::get('mysql');
-        $this->instance = new record\adapter\MySQL($this->config['dsn'], $this->config['username'], $this->config['password']);
+        $this->instance = new record\adapter\MySQL('mysql:dname=no_connection', 'root', '');
     }
 
     public function testProperties()
     {
-        $this->assertEquals($this->config['user'], $this->instance->user);
-        $this->assertEquals($this->config['pass'], $this->instance->password);
+        $this->assertEquals('root', $this->instance->user);
+        $this->assertEquals('', $this->instance->password);
         $this->assertEquals($this->instance->getDefaultPort(), $this->instance->port);
     }
 

@@ -1,5 +1,5 @@
 <?php
-namespace models;
+namespace prggmr\record\sql;
 
 
 /**
@@ -20,29 +20,26 @@ namespace models;
  *
  * @author  Nickolas Whiting  <me@nwhiting.com>
  * @package  Prggmr
- * @category  System
+ * @category  Record
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-use \prggmr\record as record,
-    \prggmr\record\model as model;
+use \prggmr\record as record;
+use \prggmr\record\sql\adapter as adapter;
 
-class Cars_Model extends record\Model {
+class QueryBuilder
+{
+    /**
+     * Model which we are building a query upon.
+     *
+     * @var  object  prggmr\record\Model
+     */
+    protected $_model = null;
 
-    public $columns = array(
-           'id' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 11,
-                'pk' => true
-               ),
-           'name' => array(
-                'type' => model\Column::STRING,
-                'length' => 20,
-                'null' => false
-              ),
-            'number' => array(
-                'type' => model\Column::INTEGER,
-                'length' => 2
-            )
-       );
+
+
+    public function __construct(record\Model $model)
+    {
+
+    }
 }
