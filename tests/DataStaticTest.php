@@ -2,7 +2,7 @@
 
 include_once 'bootstrap.php';
 
-use \prggmr\util\data as data;
+use \prggmr\util as data;
 
 class DataStaticTest extends \PHPUnit_Framework_TestCase
 {

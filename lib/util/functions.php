@@ -71,7 +71,7 @@ function get_class_name($object = null)
  */
 function str_random($length = 8) {
     $range = range('a','z');
-    $rand = array_rand($range, 8);
+    $rand = array_rand($range, $length);
     $str = '';
     for ($i=0;$i!=$length;$i++){
         $str .= $range[$rand[$i]];

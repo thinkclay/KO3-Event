@@ -183,9 +183,10 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         prggmr::listen('event_object_trigger', function($event) {
             return $event->getState();
         });
-        $event = new util\Event('event_object_trigger');
+        $event = new \prggmr\Event();
+        $event->setListener('event_object_trigger');
         $event->trigger();
-        $this->assertEquals(array(0 => util\Event::STATE_ACTIVE), $event->getResults());
+        $this->assertEquals(array(0 => \prggmr\Event::STATE_ACTIVE), $event->getResults());
     }
 
     public function testEventNonStackableResult()
@@ -196,7 +197,8 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         prggmr::listen('event_nonstackable', function($event){
             return 2;
         });
-        $event = new util\Event('event_nonstackable');
+        $event = new \prggmr\Event();
+        $event->setListener('event_nonstackable');
         $event->setResultsStackable(false);
         $event->trigger();
         $this->assertEquals(2, $event->getResults());
@@ -210,10 +212,12 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         prggmr::listen('event_chain_parent', function($event){
            return $event->getState();
         });
-        $parent = new util\Event('event_chain_parent');
-        $event  = new util\Event('event_chain', $parent);
+        $parent = new \prggmr\Event();
+        $parent->setListener('event_chain_parent');
+        $event  = new \prggmr\Event($parent);
+        $event->setListener('event_chain');
         $event->trigger();
-        $this->assertEquals(array(0 => 1, 1 => array(0 => util\Event::STATE_ACTIVE)), $event->getResults());
+        $this->assertEquals(array(0 => 1, 1 => array(0 => \prggmr\Event::STATE_ACTIVE)), $event->getResults());
     }
 
     public function testEventChainingUnstackable()
@@ -224,12 +228,14 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
         prggmr::listen('event_chain_parent_unstack', function($event){
            return $event->getState();
         });
-        $parent = new util\Event('event_chain_parent_unstack');
-        $event  = new util\Event('event_chain_unstack', $parent);
+        $parent = new \prggmr\Event();
+        $parent->setListener('event_chain_parent_unstack');
+        $event  = new \prggmr\Event($parent);
+        $event->setListener('event_chain_unstack');
         $event->setResultsStackable(false);
         $event->trigger();
         $this->assertEquals(1, $event->getResults());
-        $this->assertEquals(array(0 => util\Event::STATE_ACTIVE), $parent->getResults());
+        $this->assertEquals(array(0 => \prggmr\Event::STATE_ACTIVE), $parent->getResults());
     }
 
     public function testEventReturnObject()
@@ -238,7 +244,8 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
             return 0;
         });
 
-        $event  = new util\Event('event_return_object');
+        $event  = new \prggmr\Event();
+        $event->setListener('event_return_object');
         $this->assertSame($event, $event->trigger(array(), array('object' => true)));
     }
 
@@ -248,21 +255,23 @@ class PrggmrEventsTest extends \PHPUnit_Framework_TestCase
     public function testEventErrorState()
     {
         prggmr::listen('event_error_state', function($event){
-            $event->setState(util\Event::STATE_ERROR);
+            $event->setState(\prggmr\Event::STATE_ERROR);
         });
 
-        $event  = new util\Event('event_error_state');
+        $event  = new \prggmr\Event();
+        $event->setListener('event_error_state');
         $event->trigger();
     }
 
     public function testEventErrorStateSuppression()
     {
         prggmr::listen('event_error_state_suppress', function($event){
-            $event->setState(util\Event::STATE_ERROR);
+            $event->setState(\prggmr\Event::STATE_ERROR);
             return 0;
         });
 
-        $event  = new util\Event('event_error_state_suppress');
+        $event  = new \prggmr\Event();
+        $event->setListener('event_error_state_suppress');
         $event->setResultsStackable(false);
         $this->assertEquals(0, $event->trigger(array(), array('suppress' => true)));
     }

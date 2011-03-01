@@ -47,17 +47,12 @@
  *
  */
 
-use \Exception,
+use prggmr\util as util,
+\Exception,
 \InvalidArgumentException,
 \Closure,
 \BadMethodCallException,
-\RuntimeException,
-prggmr\request\event as request,
-prggmr\render\event as render,
-prggmr\cli\event as cli,
-prggmr\record\connection as connection,
-prggmr\util as util,
-prggmr\util\data as data;
+\RuntimeException;
 
 if (!defined('PRGGMR_LIBRARY_PATH')) {
     define('PRGGMR_LIBRARY_PATH', dirname(__DIR__));
@@ -65,14 +60,14 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 
 define('PRGGMR_VERSION', '0.1.0beta');
 
-require 'util/data/datastatic.php';
-require 'util/data/datainstance.php';
-require 'util/listenable.php';
-require 'util/event.php';
-require 'util/singleton.php';
+require 'util/datastatic.php';
+require 'util/datainstance.php';
+require 'listenable.php';
+require 'event.php';
+require 'singleton.php';
 require 'util/functions.php';
 
-class prggmr extends data\DataStatic {
+class prggmr extends util\DataStatic {
 
     /**
      * prggmr registry property, information is stored as a `key` -> `value` pair.
@@ -439,16 +434,17 @@ class prggmr extends data\DataStatic {
                            'suppress' => false
                         );
         $options  += $defaults;
-        if ($event instanceof util\Event) {
+        if ($event instanceof prggmr\Event) {
             // Check the state of this event
-            $event->setState(util\Event::STATE_ACTIVE);
+            $event->setState(prggmr\Event::STATE_ACTIVE);
             $eventObj = $event;
             $event = $event->getListener();
             $org = $event;
         } else {
             $org   = $event;
             $event = strtolower($event);
-            $eventObj = new util\Event($event);
+            $eventObj = new prggmr\Event();
+            $eventObj->setListener($event);
         }
         $evreg     = '#' . $event . '$#i';
         $listeners = null;
@@ -473,7 +469,7 @@ class prggmr extends data\DataStatic {
                 }
             }
         }
-        array_unshift($params, &$eventObj);
+        array_unshift($params, $eventObj);
         if ($listeners != null) {
             $return = array();
             $i = 0;
@@ -499,7 +495,7 @@ class prggmr extends data\DataStatic {
                     );
                 }
                 // Check our event state / halt and print exception unless suppress
-                if ($eventObj->getState() === util\Event::STATE_ERROR && !$options['suppress']) {
+                if ($eventObj->getState() === prggmr\Event::STATE_ERROR && !$options['suppress']) {
                     throw new \RuntimeException(
                         sprintf(
                             'Error State detected in event (%s) listener "%s" with message (%s)', $event, $name, $eventObj->getStateMessage()
@@ -779,36 +775,12 @@ class prggmr extends data\DataStatic {
     }
 
 	/**
-	 * Initials prggmr framework.
-	 *
-	 * @param  string  $config  Path to configuration file.
+	 * Startup the prggmr framework, here we go boys and girls!
 	 */
-	public static function initalize(/* ... */)
+	public static function initialize(/* ... */)
 	{
         if (!defined('PRGGMR_DEBUG')) {
             define('PRGGMR_DEBUG', 0);
         }
-
-		// Library Files
-		static::library('prggmr', array(
-			'path'   => PRGGMR_LIBRARY_PATH.'/lib/',
-			'prefix' => null,
-			'ext'    => '.php',
-			'transformer' => function($class, $namespace, $options) {
-				$namespace = ($namespace == null) ? '' : str_replace('\\', DIRECTORY_SEPARATOR, $namespace).DIRECTORY_SEPARATOR;
-                $namespace = str_replace('prggmr'.DIRECTORY_SEPARATOR, '', $namespace);
-				$class = str_replace('prggmr'.DIRECTORY_SEPARATOR, '', str_replace('_', DIRECTORY_SEPARATOR, $class));
-				$filepath = strtolower($namespace.$class);
-				return $filepath;
-			}
-		));
-
-		// External Library files ( Uses PECL style formatting )
-		static::library('prggmr.external', array(
-			'path' => PRGGMR_LIBRARY_PATH.'/lib/'
-		));
-
-		// Setup our system library in php
-		spl_autoload_register('\prggmr::load');
 	}
 }

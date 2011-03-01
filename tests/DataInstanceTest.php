@@ -2,7 +2,7 @@
 
 include_once 'bootstrap.php';
 
-use \prggmr\util\data as data;
+use \prggmr\util as data;
 
 class DataInstanceTest extends \PHPUnit_Framework_TestCase
 {
@@ -10,13 +10,13 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
     {
         $this->instance = new data\DataInstance();
     }
-    
+
     public function testSimpleSetGet()
     {
         $this->instance->set('simplevar', 'value');
         $this->assertEquals('value', $this->instance->get('simplevar'));
     }
-    
+
     public function testArraySetGet()
     {
         $this->instance->set(array(
@@ -24,14 +24,14 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertEquals('value', $this->instance->get('simplevar'));
     }
-    
+
     public function testDelimitSetGet()
     {
         $this->instance->set('simple.var', 'value');
         $this->assertArrayHasKey('var', $this->instance->get('simple'));
         $this->assertEquals('value', $this->instance->get('simple.var'));
     }
-    
+
     public function testTieredSetGet()
     {
         $this->instance->set('simple.var', array(
@@ -42,7 +42,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('value', $this->instance->get('simple.var.nested'));
         $this->assertEquals('test', $this->instance->get('simple.var.nested.value'));
     }
-    
+
     public function testComplexIncorrectGetSet()
     {
         $this->instance->set('simple', array(
@@ -52,7 +52,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertArrayNotHasKey('nest', $this->instance->get('simple.var.nested'));
     }
-    
+
     public function testComplexGetSet()
     {
         $this->instance->set(array(
@@ -67,33 +67,33 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('val', $this->instance->get('simple.var.nested'));
         $this->assertEquals('value', $this->instance->get('simple.var.nested.nest.val.matrix'));
     }
-    
+
     public function testOverwriteDefault()
     {
         $this->instance->set('test', 1);
         $this->instance->set('test', 2);
         $this->assertEquals(2, $this->instance->get('test'));
     }
-    
+
     public function testOverwriteNone()
     {
         $this->instance->set('test', 1);
         $this->instance->set('test', 2, false);
         $this->assertEquals(1, $this->instance->get('test'));
     }
-    
+
     public function testOverwriteComplex()
     {
         $this->instance->set('test.val', '1');
         $this->instance->set('test.val.isarray', '2');
         $this->assertArrayHasKey('isarray', $this->instance->get('test.val'));
     }
-    
+
     public function testNullKeySet()
     {
         $this->assertFalse($this->instance->set(null, 'none'));
     }
-    
+
     public function testArrayTraversalMethods()
     {
         $data = new data\DataInstance();
@@ -107,7 +107,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('TAR', $data->prev());
         $this->assertTrue($data->valid());
     }
-    
+
     public function testArrayFilterMethod()
     {
         $data = new data\DataInstance();
@@ -120,7 +120,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         });
         $this->assertEquals(array('bar' => 'BAR','tar' => 'TAR'), $filter);
     }
-    
+
     public function testArrayEachMethod()
     {
         $data = new data\DataInstance();
@@ -130,7 +130,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
         });
         $this->assertEquals(array('foo' => 'foo','bar' => 'bar','lib' => 'lib','tar' => 'tar'), $each);
     }
-    
+
     public function testIteratorLoops()
     {
         $data = new data\DataInstance();
@@ -140,7 +140,7 @@ class DataInstanceTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals($array[$k], $v);
         }
     }
-    
+
     public function testCountable()
     {
         $data = new data\DataInstance();
