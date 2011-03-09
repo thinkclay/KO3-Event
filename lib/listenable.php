@@ -80,8 +80,8 @@ class Listenable extends util\DataInstance
 			$options['name'] = $name;
 		} else {
 			if (\prggmr::hasListener($event,
-                                     $options['name'],
-                                     $options['namespace']) && !$options['force']) {
+                                    $options['name'],
+                                    $options['namespace']) && !$options['force']) {
 				throw new \RuntimeException(
 					sprintf(
 						'prggmr listener "%s" already exists;

@@ -259,7 +259,7 @@ class Event extends Listenable
     {
         return $this->_listener;
     }
-    
+
     /**
      * Sets the listener for this event.
      */
@@ -267,7 +267,7 @@ class Event extends Listenable
     {
         $this->_listener = $listener;
     }
-    
+
 
     /**
      * Returns the parameters to pass to the event listeners
@@ -315,27 +315,29 @@ class Event extends Listenable
      * Triggers an event within the current scope.
      *
      * @param  array  $params  Parameters to directly pass to the event listener
-     * @param  array  $options  Array of options. Avaliable options
-     *
-     *         `namespace` - `namespace` - Namespace for event.
+     * @param  array  $options  Array of options usen trigger the event.
+     * <ul>
+     *         <li><strong>namespace</strong> - Namespace for event.
      *         Defaults to \prggmr::GLOBAL_DEFAULT.
+     *         </li>
      *
-     *         `benchmark` - Benchmark this events execution.
+     *         <li><strong>benchmark</strong> - Benchmark this events execution.</li>
      *
-     *         `flags`  - Flags to pass to the `preg_match` function used for
-     *         matching a regex event.
+     *         <li><strong>flags</strong>  - Flags to pass to the `preg_match` function used for
+     *         matching a regex event.</li>
      *
-     *         `offset` - Specify the alternate place from which to start the search.
+     *         <li><strong>offset</strong> - Specify the alternate place from which to start the search.
      *
-     *         `object` - Return the event object.
+     *         <li><strong>object</strong> - Return the event object.</li>
      *
-     *         `suppress` - Suppress exceptions when an event is encountered in
-     *         a STATE_ERROR.
-     *
-     * @throws  LogicException when an error is encountered during listener
-     *          execution
-     *          RuntimeException when attempting to execute an event in
-     *          an unexecutable state
+     *         <li><strong>suppress</strong> - Suppress exceptions when an event is encountered in
+     *         a STATE_ERROR.</li>
+     * </ul>
+     * @throws <ul><li>
+     *          <strong>LogicException</strong> when an error is encountered during listener
+     *          execution.</li>
+     *          <li><strong>RuntimeException</strong> when attempting to execute an event in
+     *          an unexecutable state.</li>
      *
      * @return  object  prggmr\util\Event
      * @see  prggmr::trigger
@@ -343,7 +345,7 @@ class Event extends Listenable
     public function trigger(array $params = array(), array $options = array()) {
         return parent::trigger($this, $params, $options);
     }
-    
+
     /**
      * __call overload method will attempt to call an event currently attatched
      * to the listenable object.
@@ -355,5 +357,15 @@ class Event extends Listenable
         $args += $defaults;
         $this->setListener($event);
         return $this->trigger($args[0], $args[1]);
+    }
+
+    /**
+     * Empties the current return results.
+     *
+     * @return  void
+     */
+    public function clearResults()
+    {
+        $this->_return = null;
     }
 }
