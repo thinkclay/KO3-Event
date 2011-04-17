@@ -20,6 +20,7 @@
 *.tar
 *.zip
 *.kpf
+*.komodoproject
 
 # Logs and databases #
 ######################
