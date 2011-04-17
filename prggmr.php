@@ -162,7 +162,7 @@ class DataStatic
     }
 
     /**
-     * Returns a variable from `engine::$__registry`. The variable name can be
+     * Returns a variable from `Engine::$__registry`. The variable name can be
      * provided as a single string of the variable or a "." delimited string
      * which maps to the array tree storing this variable.
      *
@@ -222,7 +222,7 @@ class DataStatic
      * `has` works just as `get` and allows for identical `$key`
      * configuration.
      * This is a mirrored shorthand of
-     * (engine::get($key, array('default' => false)) !== false);
+     * (Engine::get($key, array('default' => false)) !== false);
      *
      * @param  $key  A string of the variable name or a "." delimited
      *         string containing the route of the array tree.
@@ -239,17 +239,17 @@ class DataStatic
  * Prggmr in short is a EDA wrapped into a solution in PHP.
  * Prggmr uses a simple event processing as its current processing que
  * while a complex event processing system is being planned, this is not
- * to say the engine is not powerful.
+ * to say the Engine is not powerful.
  *
- * The prggmr object works as the event engine, system debugger, php autoloader
+ * The prggmr object works as the event Engine, system debugger, php autoloader
  * and a performance benchmarking tool.
  *
  */
-class engine extends DataStatic {
+class Engine extends DataStatic {
 
     /**
      * List of libraries from which classes are loaded.
-     * Libraries can be added via `engine::library()`
+     * Libraries can be added via `Engine::library()`
      *
      * @var  array  Avaliable libraries for loading classes and files.
      */
@@ -296,9 +296,9 @@ class engine extends DataStatic {
     /**
      * Loads a PHP file defined by `$class`. Looks through the list of
      * paths set at `static::$__libraries`.
-     * Paths can be added by calling `engine::library()`.
+     * Paths can be added by calling `Engine::library()`.
      * Loading is also possible by providing the exact path in the form of a
-     * decimal delimited string. e.g.. `engine::load('library.mylib.orm.sqlite')`
+     * decimal delimited string. e.g.. `Engine::load('library.mylib.orm.sqlite')`
      *
      * @param  string  $class  Either a fully-namespaced classname or a decimal
      *         string containing the full path to a specific file.
@@ -391,7 +391,7 @@ class engine extends DataStatic {
     }
 
     /**
-     * Adds a library for which a file can be found via `engine::load()`.
+     * Adds a library for which a file can be found via `Engine::load()`.
      *
      * @param  string  $name  Name of the library e.g. `prggmr`, `Zend`, `Pear`
      * @param  array  $options  Array of options that allow manipulation of the
@@ -509,7 +509,7 @@ class engine extends DataStatic {
      *         `force` - force this subscriber if name collision exists.
      *
      *         `namespace` - Namespace for event.
-     *         Defaults to \engine::GLOBAL_DEFAULT.
+     *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
      * 
@@ -582,7 +582,7 @@ class engine extends DataStatic {
      * @param  array  $options  Array of options. Avaliable options
      *
      *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to engine::GLOBAL_DEFAULT.
+     *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
@@ -788,8 +788,8 @@ class engine extends DataStatic {
 			case is_bool($op):
                 if ($op) {
                     error_reporting(E_ALL ^ E_STRICT);
-                    set_error_handler('\prggmr\engine::debug');
-                    set_exception_handler('\prggmr\engine::debug');
+                    set_error_handler('\prggmr\Engine::debug');
+                    set_exception_handler('\prggmr\Engine::debug');
                 } else {
                     error_reporting(0);
                 }
@@ -1021,7 +1021,7 @@ interface AdapterInterface
      *         `force` - force this subscriber if name collision exists.
      *
      *         `namespace` - Namespace for event.
-     *         Defaults to \engine::GLOBAL_DEFAULT.
+     *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
      * 
@@ -1036,7 +1036,7 @@ interface AdapterInterface
      * @param  array  $options  Array of options. Avaliable options
      *
      *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to engine::GLOBAL_DEFAULT.
+     *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
@@ -1056,7 +1056,7 @@ interface AdapterInterface
      *          an unexecutable state
      *
      * @return  mixed  Results of event
-     * @see  engine::bubble
+     * @see  Engine::bubble
      */
     public function bubble($event, array $params = array(), array $options = array());
 }
@@ -1066,7 +1066,7 @@ interface AdapterInterface
  * Adapter
  *
  * The default prggmr Engine adapter, this class provides no additional adapter
- * functionality, only providing a bridge to the prggmr engine.
+ * functionality, only providing a bridge to the prggmr Engine.
  */
 class Adapter implements AdapterInterface
 {
@@ -1086,14 +1086,14 @@ class Adapter implements AdapterInterface
      *         `force` - force this subscriber if name collision exists.
      *
      *         `namespace` - Namespace for event.
-     *         Defaults to \engine::GLOBAL_DEFAULT.
+     *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
      * 
      * @return  boolean
      */
     public function subscribe($event, \Closure $function, array $options = array()) {
-        return engine::subscribe($event, $function, $options);
+        return Engine::subscribe($event, $function, $options);
     }
 
     /**
@@ -1103,7 +1103,7 @@ class Adapter implements AdapterInterface
      * @param  array  $options  Array of options. Avaliable options
      *
      *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to engine::GLOBAL_DEFAULT.
+     *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
@@ -1123,10 +1123,10 @@ class Adapter implements AdapterInterface
      *          an unexecutable state
      *
      * @return  mixed  Results of event
-     * @see  engine::bubble
+     * @see  Engine::bubble
      */
     public function bubble($event, array $params = array(), array $options = array()) {
-       return engine::bubble($event, $params, $options);
+       return Engine::bubble($event, $params, $options);
     }
 
     /**
@@ -1141,13 +1141,13 @@ class Adapter implements AdapterInterface
      * @return  boolean  False | True otherwise.
      */
     public function hasSubscriber($subscriber, $event, $namespace) {
-        return engine::hasSubscriber($subscriber, $event, $namespace);
+        return Engine::hasSubscriber($subscriber, $event, $namespace);
     }
 
     /**
-     * __call directs itself to the engine bubble.
+     * __call directs itself to the Engine bubble.
      * 
-     * @see  engine::bubble
+     * @see  Engine::bubble
      */
     public function __call($event, array $args = array())
     {
@@ -1453,7 +1453,7 @@ class Event extends Adapter
      * @param  array  $options  Array of options. Avaliable options
      *
      *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to engine::GLOBAL_DEFAULT.
+     *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
      *
@@ -1475,7 +1475,7 @@ class Event extends Adapter
      *          an unexecutable state
      *
      * @return  mixed  Results of event
-     * @see  engine::bubble
+     * @see  Engine::bubble
      */
     public function bubble(array $params = array(), array $options = array()) {
 		$defaults = array('stateCheck' => true);
@@ -1510,7 +1510,7 @@ class Event extends Adapter
 }
 
 /**
- * Singleton implementation which provides prggmr engine adapter functionality.
+ * Singleton implementation which provides prggmr Engine adapter functionality.
  */
 abstract class Singleton extends Adapter
 {
@@ -1557,14 +1557,14 @@ abstract class Singleton extends Adapter
  *         `force` - force this subscriber if name collision exists.
  *
  *         `namespace` - Namespace for event.
- *         Defaults to \engine::GLOBAL_DEFAULT.
+ *         Defaults to \Engine::GLOBAL_DEFAULT.
  *
  * @throws  InvalidArgumentException,RuntimeException
  * 
  * @return  void
  */
 function subscribe($event, \Closure $function, array $options = array()) {
-	return engine::subscribe($event, $function, $options);
+	return Engine::subscribe($event, $function, $options);
 }
 
 /**
@@ -1574,7 +1574,7 @@ function subscribe($event, \Closure $function, array $options = array()) {
  * @param  array  $options  Array of options. Avaliable options
  *
  *         `namespace` - `namespace` - Namespace for event.
- *         Defaults to engine::GLOBAL_DEFAULT.
+ *         Defaults to Engine::GLOBAL_DEFAULT.
  *
  *         `benchmark` - Benchmark this events execution.
  *
@@ -1594,10 +1594,10 @@ function subscribe($event, \Closure $function, array $options = array()) {
  *          an unexecutable state
  *
  * @return  mixed  Results of event
- * @see  engine::bubble
+ * @see  Engine::bubble
  */
 function bubble($event, array $params = array(), array $options = array()) {
-	return engine::bubble($event, $params, $options);
+	return Engine::bubble($event, $params, $options);
 }
 
 /**
@@ -1623,5 +1623,5 @@ function bubble($event, array $params = array(), array $options = array()) {
 */
 function analyze($op, array $options = array())
 {
-	return engine::analyze($op, $options);
+	return Engine::analyze($op, $options);
 }
