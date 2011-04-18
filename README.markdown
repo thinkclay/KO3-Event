@@ -10,7 +10,9 @@ prggmr is currently being developed as a method of writing applications using an
 
 * Asynchornous events are currently and most likely will stay impossible within the realm PHP.
 * Timeout and Interval methods are not realistically possible in PHP.
-* Stacks are flushed with each event, providing no stacktrace on Exceptions inside events. This can be demonstrated with the following code.
+* Stacks are flushed with each event, providing no stacktrace on Exceptions inside events. 
+
+This can be demonstrated with the following code.
 
     use prggmr;
     include 'prggmr.php';
