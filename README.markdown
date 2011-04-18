@@ -4,7 +4,7 @@ prggmr is a event library currently written in PHP, it is nothing more and nothi
 
 ## Introduction
 
-prggmr is currently being developed as a method of developing web applications using an event driven process.
+prggmr is currently being developed as a method of writing applications using an event driven process.
 
 ## Limitations & Issues
 
@@ -12,7 +12,6 @@ prggmr is currently being developed as a method of developing web applications u
 * Timeout and Interval methods are not realistically possible in PHP.
 * Stacks are flushed with each event, providing no stacktrace on Exceptions inside events. This can be demonstrated with the following code.
 
-    <?php
     use prggmr;
     include 'prggmr.php';
 
