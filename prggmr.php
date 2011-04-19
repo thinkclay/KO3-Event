@@ -35,7 +35,7 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 define('PRGGMR_VERSION', '0.1.1');
 
 ##################################################################
-# 
+#
 # Functions
 #
 ##################################################################
@@ -99,7 +99,7 @@ function str_random($length = 8) {
 }
 
 ##################################################################
-# 
+#
 # Static Data Class
 #
 ##################################################################
@@ -151,7 +151,7 @@ class DataStatic
         if (true === static::has($key) && !$overwrite) {
             return false;
         }
-		
+
         if (false !== strpos($key, '.')) {
 			$nodes  = explode('.', $key);
 			$data =& static::$__registry;
@@ -246,7 +246,7 @@ class DataStatic
 }
 
 ##################################################################
-# 
+#
 # Engine Class
 #
 ##################################################################
@@ -530,7 +530,7 @@ class Engine extends DataStatic {
      *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
-     * 
+     *
      * @return  boolean
      */
     public static function subscribe($event, \Closure $function, array $options = array()) {
@@ -543,21 +543,19 @@ class Engine extends DataStatic {
 			$fd = false;
 			do {
 				$name = $options['name']();
-				if (!static::hasSubscriber($event, $name, $options['namespace'])) {
+				if (!static::hasSubscriber($name, $event, $options['namespace'])) {
 					$fd = true;
 				}
 			} while(!$fd);
 			$options['name'] = $name;
 		} else {
-			if (static::hasSubscriber($event,
-						$options['name'],
-						$options['namespace']) && !$options['force']
+			if (static::hasSubscriber(
+                    $options['name'],
+                    $event,
+                    $options['namespace']
+                ) && false === $options['force']
 			) {
-				throw new \RuntimeException(
-					sprintf(
-						'prggmr subscriber "%s" already exists; Provide "force" option to overwrite', $options['name']
-					)
-				);
+				return false;
 			}
 		}
         if (!isset(static::$__events[$options['namespace']])) {
@@ -604,8 +602,6 @@ class Engine extends DataStatic {
      *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
      *
@@ -663,14 +659,14 @@ class Engine extends DataStatic {
 				$regex = str_replace('\(', '(', $regex);
 				$regex = str_replace('\)', ')', $regex);
                 $regex = '#' . $regex . '$#i';
-                if (preg_match($regex, $org, $matches, null, $options['offset'])) {
+                if (preg_match($regex, $org, $matches)) {
                     $listeners = static::$__events[$options['namespace']][$name];
                     $mc = count($matches);
                     if ($mc != 0) {
                         if ($mc != 1) unset($matches[0]);
 						/**
 						 * @todo There really has to be a better way
-						 */ 
+						 */
 						foreach ($matches as $_k => $_v) {
 							if (is_string($_k)) {
 								unset($matches[$_k]);
@@ -701,7 +697,7 @@ class Engine extends DataStatic {
                 }
                 // run the listener
                 try {
-					
+
                     $results = call_user_func_array($function, $params);
                 } catch (\Exception $e) {
                     throw new \LogicException(
@@ -760,7 +756,7 @@ class Engine extends DataStatic {
         }
         return true;
     }
-	
+
 	/**
 	 * Flushes the engine, cleaning all subscribers.
 	 *
@@ -1041,7 +1037,7 @@ class Engine extends DataStatic {
 }
 
 ##################################################################
-# 
+#
 # Adapter Interface
 #
 ##################################################################
@@ -1069,11 +1065,11 @@ interface AdapterInterface
      *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
-     * 
+     *
      * @return  boolean
      */
     public function subscribe($event, \Closure $function, array $options = array());
-	
+
 	/**
      * Bubbles an event.
      *
@@ -1084,8 +1080,6 @@ interface AdapterInterface
      *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
      *
@@ -1104,7 +1098,7 @@ interface AdapterInterface
 }
 
 ##################################################################
-# 
+#
 # Adapter Class
 #
 ##################################################################
@@ -1137,7 +1131,7 @@ class Adapter implements AdapterInterface
      *         Defaults to \Engine::GLOBAL_DEFAULT.
      *
      * @throws  InvalidArgumentException,RuntimeException
-     * 
+     *
      * @return  boolean
      */
     public function subscribe($event, \Closure $function, array $options = array()) {
@@ -1154,8 +1148,6 @@ class Adapter implements AdapterInterface
      *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
      *
@@ -1191,7 +1183,7 @@ class Adapter implements AdapterInterface
 
     /**
      * __call directs itself to the Engine bubble.
-     * 
+     *
      * @see  Engine::bubble
      */
     public function __call($event, array $args = array())
@@ -1203,7 +1195,7 @@ class Adapter implements AdapterInterface
 }
 
 ##################################################################
-# 
+#
 # Event Class
 #
 ##################################################################
@@ -1435,20 +1427,20 @@ class Event
      * Sets the subscription string for this event.
      *
      * @param  string  $str  String name to subscribe this event.
-     * 
+     *
      * @return  void
      */
     public function setSubscription($str)
     {
         $this->_subscription = $str;
     }
-	
+
 	/**
 	 * Sets the event chain.
 	 *
 	 * @todo  Possibly a method of establishing event chains based on dynamic
 	 * 		  data related to the event/chain sequence.
-	 * 
+	 *
 	 *
 	 * @param  object  $event  Event object to bubble in chain
 	 *
@@ -1467,7 +1459,7 @@ class Event
      * 		   false will skip the check allowing for a chained event sequence
      * 		   while the event is in any state. Otherwise the event will be
      * 		   forced into an active state.
-     * 
+     *
      * @return  mixed  Results of the chain execution.
      */
     public function executeChain($stateCheck = true)
@@ -1515,7 +1507,7 @@ class Event
      *         `suppress` - Suppress exceptions when an event is encountered in
      *         a STATE_ERROR.
      *
-     *         `stateCheck` - 
+     *         `stateCheck` -
      *
      * @throws  LogicException when an error is encountered during subscriber
      *          execution
@@ -1558,7 +1550,7 @@ class Event
 }
 
 ##################################################################
-# 
+#
 # Singleton Class
 #
 ##################################################################
@@ -1594,13 +1586,13 @@ abstract class Singleton extends Adapter
 }
 
 ##################################################################
-# 
+#
 # Prggmr API Functions
 #
 ##################################################################
 
 /**
- * Subscribes to a prggmr event. 
+ * Subscribes to a prggmr event.
  *
  * @param  string  $event  Name of the event to subscribe
  * @param  closure  $function  Anonymous function to bubble.
@@ -1610,14 +1602,14 @@ abstract class Singleton extends Adapter
  *
  *         `name` - name to be given to the subscriber; Leave blank to have
  *          a random name given. ( recommended to avoid collisions ).
- *  
+ *
  *         `force` - force this subscriber if name collision exists.
  *
  *         `namespace` - Namespace for event.
  *         Defaults to \Engine::GLOBAL_DEFAULT.
  *
  * @throws  InvalidArgumentException,RuntimeException
- * 
+ *
  * @return  void
  */
 function subscribe($event, \Closure $function, array $options = array()) {
@@ -1634,8 +1626,6 @@ function subscribe($event, \Closure $function, array $options = array()) {
  *         Defaults to Engine::GLOBAL_DEFAULT.
  *
  *         `benchmark` - Benchmark this events execution.
- *
- *         `offset` - Specify the alternate place from which to start the search.
  *
  *         `object` - Return the event object.
  *

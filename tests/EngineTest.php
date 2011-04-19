@@ -30,6 +30,11 @@ include_once 'bootstrap.php';
 
 class EngineTest extends \PHPUnit_Framework_TestCase
 {
+    public function tearDown()
+    {
+        \prggmr\Engine::flush();
+    }
+
     public function assertEvent($event, $params, $expected, $options = array())
     {
         $defaults = array('stackResults' => false);
@@ -37,7 +42,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $event = \prggmr\Engine::bubble($event, $params, $options);
         $this->assertEquals($expected, $event);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscribe
@@ -49,7 +54,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         \prggmr\Engine::subscribe('subscriber', function($event){}, array('name' => 'testSubscribe'));
         $this->assertTrue(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -64,7 +69,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventSingleParameter'));
         $this->assertEvent('subscribe-parameter-single', array('helloworld'), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -79,7 +84,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithMultipleParameter'));
         $this->assertEvent('multiparam', array('hello', 'world'), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -94,7 +99,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventSingleRegexParameter'));
         $this->assertEvent('regexparam/helloworld', null, 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -109,7 +114,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithMultipleRegexParameter'));
         $this->assertEvent('multiregexparam/hello/world', array(), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -125,7 +130,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithMultipleRegexAndMultipleSuppliedParamters'));
         $this->assertEvent('multiparam2/wor/ld', array('hel','lo'), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -140,7 +145,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testRegexEventWithSimpleRegex'));
         $this->assertEvent('simpleregex/helloworld', array(), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -155,7 +160,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithMultipleSimpleRegex'));
         $this->assertEvent('multisimpleregex/hello/world', array(), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -171,7 +176,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithMultipleSimpleRegexAndSuppliedParameters'));
         $this->assertEvent('multisimpleregexparamsupplied/hel/wor', array('lo','ld'), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -187,7 +192,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithSimpleRegexAndRegexParameters'));
         $this->assertEvent('simpleandregex/hello/world', array(), 'helloworld');
     }
-    
+
     /**
      * Methods Covered
      * @Engine\Subscription
@@ -203,8 +208,8 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testEventWithSimpleRegexRegexAndSuppliedParameters'));
         $this->assertEvent('simpleregexsupplied/hel/ld', array('lowor'), 'helloworld');
     }
-    
-    
+
+
     /**
      * @expectedException LogicException
      */
@@ -215,7 +220,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testException'));
         $this->assertEvent('exceptiontest', array(), array());
     }
-    
+
     /**
      * Methods Covered
      * @Engine\version
@@ -224,7 +229,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(\prggmr\Engine::version(), PRGGMR_VERSION);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\flush
@@ -234,7 +239,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         \prggmr\Engine::flush();
         $this->assertFalse(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
     }
-    
+
     /**
      * Methods Covered
      * @Engine\registry
@@ -249,7 +254,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('__debug', $registry);
         $this->assertArrayHasKey('__stats', $registry);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\registry
@@ -263,5 +268,103 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('__events', $registry);
         $this->assertObjectHasAttribute('__debug', $registry);
         $this->assertObjectHasAttribute('__stats', $registry);
+    }
+
+    /**
+     * Methods Covered
+     * @Engine\subscribe
+     *      @with option shift = true
+     * @Engine\bubble
+     *      @with option stackResults = true
+     */
+    public function testSubscriptionShift()
+    {
+        \prggmr\Engine::subscribe('shift_test', function($event){
+            return 'Event1';
+        });
+
+        \prggmr\Engine::subscribe('shift_test', function($event){
+            return 'Event2';
+        });
+
+        $this->assertEvent('shift_test', null, array('Event1','Event2'), array(
+            'stackResults' => true
+        ));
+
+        \prggmr\Engine::flush();
+
+        \prggmr\Engine::subscribe('shift_test', function($event){
+            return 'Event1';
+        });
+
+        \prggmr\Engine::subscribe('shift_test', function($event){
+            return 'Event2';
+        }, array('shift' => true));
+
+        $this->assertEvent('shift_test', null, array('Event2','Event1'), array(
+            'stackResults' => true
+        ));
+    }
+
+    /**
+     * Methods Covered
+     * @Engine\subscribe
+     *      @with option force = true
+     */
+    public function testSubscriptionForce()
+    {
+        \prggmr\Engine::subscribe('force_test', function($event){
+            return 'Force1';
+        }, array('name' => 'ForceTest'));
+
+        \prggmr\Engine::subscribe('force_test', function($event){
+            return 'Force2';
+        }, array('name' => 'ForceTest'));
+
+        $this->assertEvent('force_test', null, 'Force1');
+
+        \prggmr\Engine::subscribe('force_test', function($event){
+            return 'Force2';
+        }, array('name' => 'ForceTest', 'force' => true));
+
+        $this->assertEvent('force_test', null, 'Force2');
+    }
+
+    /**
+     * Methods Covered
+     * @Engine\subscribe
+     *      @with option namespace
+     */
+    public function testNamespace()
+    {
+        \prggmr\Engine::subscribe('namespace_test', function($event){
+            return 'Namespace1';
+        }, array('name' => 'NamespaceTest'));
+
+        \prggmr\Engine::subscribe('namespace_test', function($event){
+            return 'UnitTest1';
+        }, array('name' => 'NamespaceTest', 'namespace' => 'UnitTest'));
+
+        $this->assertEvent('namespace_test', null, 'Namespace1');
+        $this->assertEvent('namespace_test', null, 'UnitTest1', array(
+            'namespace' => 'UnitTest'
+        ));
+    }
+
+    /**
+     * Methods Covered
+     * @Engine\subscribe
+     *      @with option event
+     */
+    public function testEventReturn()
+    {
+        \prggmr\Engine::subscribe('object_test', function($event){
+            return 'MyResults';
+        });
+
+        $bubble = \prggmr\Engine::bubble('object_test', null, array(
+            'object' => true
+        ));
+        $this->assertInstanceOf('\prggmr\Event', $bubble);
     }
 }
