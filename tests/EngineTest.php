@@ -46,8 +46,8 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testSubscribe()
     {
-        \prggmr\Engine::subscribe('subscriber', function($event){}, array('name' => 'firsttest'));
-        $this->assertTrue(\prggmr\Engine::hasSubscriber('firsttest', 'subscriber'));
+        \prggmr\Engine::subscribe('subscriber', function($event){}, array('name' => 'testSubscribe'));
+        $this->assertTrue(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
     }
     
     /**
@@ -61,7 +61,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         \prggmr\Engine::subscribe('subscribe-parameter-single', function($event, $param1){
             return $param1;
-        });
+        }, array('name' => 'testEventSingleParameter'));
         $this->assertEvent('subscribe-parameter-single', array('helloworld'), 'helloworld');
     }
     
@@ -76,7 +76,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         \prggmr\Engine::subscribe('multiparam', function($event, $param1, $param2){
             return $param1.$param2;
-        });
+        }, array('name' => 'testEventWithMultipleParameter'));
         $this->assertEvent('multiparam', array('hello', 'world'), 'helloworld');
     }
     
@@ -89,10 +89,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventSingleRegexParameter()
     {
-        \prggmr\Engine::subscribe('regexparam-([a-z]+)', function($event, $slug){
-            return $slug;
-        });
-        $this->assertEvent('regexparam-helloworld', array(), 'helloworld');
+        \prggmr\Engine::subscribe('regexparam/([a-z]+)', function($event, $param){
+            return $param;
+        }, array('name' => 'testEventSingleRegexParameter'));
+        $this->assertEvent('regexparam/helloworld', null, 'helloworld');
     }
     
     /**
@@ -104,10 +104,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleRegexParameter()
     {
-        \prggmr\Engine::subscribe('multiregexparam-([a-z]+)-([a-z]+)', function($event, $param1, $param2){
+        \prggmr\Engine::subscribe('multiregexparam/([a-z]+)/([a-z]+)', function($event, $param1, $param2){
             return $param1.$param2;
-        });
-        $this->assertEvent('multiregexparam-hello-world', array(), 'helloworld');
+        }, array('name' => 'testEventWithMultipleRegexParameter'));
+        $this->assertEvent('multiregexparam/hello/world', array(), 'helloworld');
     }
     
     /**
@@ -120,10 +120,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleRegexAndMultipleSuppliedParamters()
     {
-        \prggmr\Engine::subscribe('multiparam2-([a-z]+)-([a-z]+)', function($event, $param1, $param2, $regex1, $regex2){
+        \prggmr\Engine::subscribe('multiparam2/([a-z]+)/([a-z]+)', function($event, $param1, $param2, $regex1, $regex2){
             return $param1.$param2.$regex1.$regex2;
-        });
-        $this->assertEvent('multiparam2-hello-world', array('hel','llo'), 'helloworld');
+        }, array('name' => 'testEventWithMultipleRegexAndMultipleSuppliedParamters'));
+        $this->assertEvent('multiparam2/wor/ld', array('hel','lo'), 'helloworld');
     }
     
     /**
@@ -135,10 +135,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testRegexEventWithSimpleRegex()
     {
-        \prggmr\Engine::subscribe('simpleregex-:name', function($event, $name){
+        \prggmr\Engine::subscribe('simpleregex/:name', function($event, $name){
             return $name;
-        });
-        $this->assertEvent('simpleregex-helloworld', array(), 'helloworld');
+        }, array('name' => 'testRegexEventWithSimpleRegex'));
+        $this->assertEvent('simpleregex/helloworld', array(), 'helloworld');
     }
     
     /**
@@ -150,10 +150,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleSimpleRegex()
     {
-        \prggmr\Engine::subscribe('simpleregex-:name-:slug', function($event, $name, $slug){
+        \prggmr\Engine::subscribe('multisimpleregex/:name/:slug', function($event, $name, $slug){
             return $name.$slug;
-        });
-        $this->assertEvent('multisimpleregex-hello-world', array(), 'helloworld');
+        }, array('name' => 'testEventWithMultipleSimpleRegex'));
+        $this->assertEvent('multisimpleregex/hello/world', array(), 'helloworld');
     }
     
     /**
@@ -166,10 +166,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleSimpleRegexAndSuppliedParameters()
     {
-        \prggmr\Engine::subscribe('multisimpleregexparamsupplied-:name-:slug', function($event, $param1, $param2, $name, $slug){
-            return $param1.$name.$param2.$slug;
-        });
-        $this->assertEvent('multisimpleregexparamsupplied-hel-wor', array('lo','ld'), 'helloworld');
+        \prggmr\Engine::subscribe('multisimpleregexparamsupplied/:name/:slug', function($event, $param1, $param2, $name, $slug){
+            return $name.$param1.$slug.$param2;
+        }, array('name' => 'testEventWithMultipleSimpleRegexAndSuppliedParameters'));
+        $this->assertEvent('multisimpleregexparamsupplied/hel/wor', array('lo','ld'), 'helloworld');
     }
     
     /**
@@ -182,10 +182,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithSimpleRegexAndRegexParameters()
     {
-        \prggmr\Engine::subscribe('simpleandregex-:name-([a-z]+)', function($event, $param1, $param2){
+        \prggmr\Engine::subscribe('simpleandregex/:name/([a-z]+)', function($event, $param1, $param2){
             return $param1.$param2;
-        });
-        $this->assertEvent('simpleandregex-hello-world', array(), 'helloworld');
+        }, array('name' => 'testEventWithSimpleRegexAndRegexParameters'));
+        $this->assertEvent('simpleandregex/hello/world', array(), 'helloworld');
     }
     
     /**
@@ -198,10 +198,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithSimpleRegexRegexAndSuppliedParameters()
     {
-        \prggmr\Engine::subscribe('simpleandregex-:name-([a-z]+)', function($event, $param1, $param2, $param3){
-            return $param1.$param2.$param3;
-        });
-        $this->assertEvent('simpleandregex-hel-ld', array('lowor'), 'helloworld');
+        \prggmr\Engine::subscribe('simpleregexsupplied/:name/([a-z]+)', function($event, $param1, $param2, $param3){
+            return $param2.$param1.$param3;
+        }, array('name' => 'testEventWithSimpleRegexRegexAndSuppliedParameters'));
+        $this->assertEvent('simpleregexsupplied/hel/ld', array('lowor'), 'helloworld');
     }
     
     
@@ -212,8 +212,56 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         \prggmr\Engine::subscribe('exceptiontest', function($event){
             throw new Exception('This is a test!');
-        });
+        }, array('name' => 'testException'));
         $this->assertEvent('exceptiontest', array(), array());
     }
-  
+    
+    /**
+     * Methods Covered
+     * @Engine\version
+     */
+    public function testVersion()
+    {
+        $this->assertEquals(\prggmr\Engine::version(), PRGGMR_VERSION);
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\flush
+     */
+    public function testFlush()
+    {
+        \prggmr\Engine::flush();
+        $this->assertFalse(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\registry
+     *      @with array
+     */
+    public function testRegistryArray()
+    {
+        $registry = \prggmr\Engine::registry();
+        $this->assertArrayHasKey('__data', $registry);
+        $this->assertArrayHasKey('__libraries', $registry);
+        $this->assertArrayHasKey('__events', $registry);
+        $this->assertArrayHasKey('__debug', $registry);
+        $this->assertArrayHasKey('__stats', $registry);
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\registry
+     *      @with array
+     */
+    public function testRegistryObject()
+    {
+        $registry = \prggmr\Engine::registry('object');
+        $this->assertObjectHasAttribute('__data', $registry);
+        $this->assertObjectHasAttribute('__libraries', $registry);
+        $this->assertObjectHasAttribute('__events', $registry);
+        $this->assertObjectHasAttribute('__debug', $registry);
+        $this->assertObjectHasAttribute('__stats', $registry);
+    }
 }

@@ -1,10 +1,12 @@
 0.1.1
 -----------------------------------
+- Added stackResults option to bubble method
+- Removed flags option in bubble method to allow for engine level stacking config
+- Event object is no longer a child of Adapter
 - Revised codebase to fit a better 80 margin ... was it needed?
 - Removed all current UnitTests as they need to be rewritten to follow new structure
 - All classes, functions are under the "prggmr" namespace.
 - Removed the DataInstance class as it was redundant and served no real purpose.
-- All functions and classes now fall under the "prggmr" namespace only.
 - Added param (stateCheck) to Event::executeChain allowing the Event state check to be skipped.
 - Renamed Event::triggerChain to Event::executeChain
 - Renamed all listen and trigger method to subscribe and bubble throughout the entire codebase.
@@ -12,7 +14,7 @@
 - Event object chain (_parent) is now refered to as (_chain) for simplicity.
 - Refactored event chaining to allow the chain to be set dynamically rather than in the constructor.
 - Removed Event constructor parameter for parent event.
-- Moved all source into a single file.
+- Moved source into a single file.
 - Added the bubble, analyze and subscribe functions.
 - Changed Event state constants to 0xCF60 (active), 0x5250 (inactive), 0x2F4B (error)
 - Added AdapterInterface interface

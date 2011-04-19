@@ -40,6 +40,7 @@ This can be demonstrated with the following code.
 * Robust event subscription
 * Stateful events
 * Chaining events
+* Event Namespaces
 * Benchmarking tools
 * High performance oriented
 * High test coverage

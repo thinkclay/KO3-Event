@@ -34,6 +34,12 @@ if (!defined('PRGGMR_LIBRARY_PATH')) {
 
 define('PRGGMR_VERSION', '0.1.1');
 
+##################################################################
+# 
+# Functions
+#
+##################################################################
+
 /**
  * PHP 5.3+
  * Shifts the value onto the begginning of the array
@@ -91,6 +97,12 @@ function str_random($length = 8) {
     }
     return $str;
 }
+
+##################################################################
+# 
+# Static Data Class
+#
+##################################################################
 
 /**
  * Static Data Class
@@ -232,6 +244,12 @@ class DataStatic
         return (static::get($key, array('default' => false)) !== false);
     }
 }
+
+##################################################################
+# 
+# Engine Class
+#
+##################################################################
 
 /**
  * Engine
@@ -568,7 +586,8 @@ class Engine extends DataStatic {
      *
      * @return  boolean  False | True otherwise.
      */
-    public static function hasSubscriber($subscriber, $event, $namespace) {
+    public static function hasSubscriber($subscriber, $event, $namespace = null) {
+		if (null === $namespace) $namespace = static::GLOBAL_DEFAULT;
         if (isset(static::$__events[$namespace][$event][$subscriber])) {
             return true;
         }
@@ -586,15 +605,14 @@ class Engine extends DataStatic {
      *
      *         `benchmark` - Benchmark this events execution.
      *
-     *         `flags`  - Flags to pass to the `preg_match` function used for
-     *         matching a regex event.
-     *
      *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
      *
      *         `suppress` - Suppress exceptions when an event is encountered in
      *         a STATE_ERROR.
+     *
+     *         `stackResults` - Sets the event results to allow stacking.
      *
      * @throws  LogicException when an error is encountered during subscriber
      *          execution
@@ -603,18 +621,18 @@ class Engine extends DataStatic {
      *
      * @return  object  prggmr\Event
      */
-    public static function bubble($event, array $params = array(), array $options = array()) {
+    public static function bubble($event, $params = null, array $options = array()) {
         $defaults  = array(
                            'namespace' => static::GLOBAL_DEFAULT,
                            'benchmark' => false,
-                           'flags' => null,
                            'offset' => null,
                            'object' => false,
-                           'suppress' => false
+                           'suppress' => false,
+						   'stackResults' => null // allow or disallows for engine level stack
                         );
         $options  += $defaults;
         if ($event instanceof Event) {
-            // Check the state of this event
+            // Set the state of this event
             $event->setState(Event::STATE_ACTIVE);
             $eventObj = $event;
             $event = $event->getSubscription();
@@ -624,29 +642,37 @@ class Engine extends DataStatic {
             $eventObj = new Event();
             $eventObj->setSubscription($event);
         }
-        //$evreg     = '#' . $event . '$#i';
+		if (null !== $options['stackResults']) {
+			$eventObj->setResultsStackable($options['stackResults']);
+		}
         $listeners = null;
-        if (!is_array($params)) $params = array();
+        if (!is_array($params)) {
+			$params = array();
+		}
         if (isset(static::$__events[$options['namespace']][$event])) {
             $listeners = static::$__events[$options['namespace']][$event];
         } else if (isset(static::$__events[$options['namespace']])) {
             foreach (static::$__events[$options['namespace']] as $name => $op) {
 				// my_event_:param1_:param
 				$regex = $name;
-				$regex = preg_replace('#:([\w]+)#i', '\(?P<$1>[\w_-]+\)', $name);
+				/**
+				 * @todo  Should this be moved to the subscription?
+				 */
+				$regex = preg_replace('#:([\w]+)#i', '\(?P<$1>[\w_-]+\)', $regex);
+				// strange bug.....
 				$regex = str_replace('\(', '(', $regex);
 				$regex = str_replace('\)', ')', $regex);
                 $regex = '#' . $regex . '$#i';
-                if (preg_match($regex, $org, $matches, $options['flags'], $options['offset'])) {
+                if (preg_match($regex, $org, $matches, null, $options['offset'])) {
                     $listeners = static::$__events[$options['namespace']][$name];
                     $mc = count($matches);
                     if ($mc != 0) {
                         if ($mc != 1) unset($matches[0]);
 						/**
-						 * @todo  Fix this so dump out every other match
+						 * @todo There really has to be a better way
 						 */ 
 						foreach ($matches as $_k => $_v) {
-							if (!is_string($_k)) {
+							if (is_string($_k)) {
 								unset($matches[$_k]);
 							}
 						}
@@ -655,8 +681,6 @@ class Engine extends DataStatic {
                             $params[] = $v;
                         }
                     }
-                    #$params = $matches;
-                    #break;
                 }
             }
         }
@@ -677,6 +701,7 @@ class Engine extends DataStatic {
                 }
                 // run the listener
                 try {
+					
                     $results = call_user_func_array($function, $params);
                 } catch (\Exception $e) {
                     throw new \LogicException(
@@ -727,7 +752,7 @@ class Engine extends DataStatic {
                     }
                 }
             }
-            if ($options['object']) {
+            if ($options['object'] === true) {
                 return $eventObj;
             } else {
                 return $eventObj->getResults();
@@ -735,6 +760,17 @@ class Engine extends DataStatic {
         }
         return true;
     }
+	
+	/**
+	 * Flushes the engine, cleaning all subscribers.
+	 *
+	 * @return  void
+	 */
+	public static function flush(/* ... */)
+	{
+		static::$__events = array();
+		return null;
+	}
 
 	/**
 	 * Returns prggmr's core object registry.
@@ -866,27 +902,27 @@ class Engine extends DataStatic {
 		return true;
 	}
 
-    /**
-     * Analyzes current system runtime useage information for debugging
-     * purposes.
-     *
-     * @param  string  $op  Operation to perform.
-     *
-     *         `cpu' - Returns the current CPU Usuage.
-     *         Not Implement looking for reliable method. Suggestions?
-     *
-     *         `memory` - Returns the current memory usuage.
-     *
-     *         `bench_begin` - Begins a benchmark which captures CPU, Memory
-     *         and execution time. Used inconjunction with `bench_start`
-     *
-     *         `bench_stop` - Finalizes a benchmark.
-     *         Used in conjunction with `bench_start`
-     *
-     * @param  array  $options  Array of options. Avaliable options.
-     *
-     *         `name` - Name of benchmark. Required Parameter
-     */
+   /**
+	* Analyzes current system runtime useage information for debugging
+	* purposes.
+	*
+	* @param  string  $op  Operation to perform.
+	*
+	*         `cpu' - Returns the current CPU Usuage.
+	*         Not Implement looking for reliable method. Suggestions?
+	*
+	*         `memory` - Returns the current memory usuage.
+	*
+	*         `bench_begin` - Begins a benchmark which captures CPU, Memory
+	*         and execution time. Used inconjunction with `bench_stop`
+	*
+	*         `bench_stop` - Finalizes a benchmark.
+	*         Used in conjunction with `bench_begin`
+	*
+	* @param  array  $options  Array of options. Avaliable options.
+	*
+	*         `name` - Name of benchmark. Required Parameter
+	*/
     public static function analyze($op, array $options = array())
     {
         if (false === PRGGMR_DEBUG) {
@@ -998,8 +1034,17 @@ class Engine extends DataStatic {
         if (!defined('PRGGMR_DEBUG')) {
             define('PRGGMR_DEBUG', false);
         }
+		if (!defined('LINE_BREAK')) {
+			define('LINE_BREAK', "\n");
+		}
 	}
 }
+
+##################################################################
+# 
+# Adapter Interface
+#
+##################################################################
 
 /**
  * Adapter Interface defines the methods for a Prggmr Engine adapter.
@@ -1040,9 +1085,6 @@ interface AdapterInterface
      *
      *         `benchmark` - Benchmark this events execution.
      *
-     *         `flags`  - Flags to pass to the `preg_match` function used for
-     *         matching a regex event.
-     *
      *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
@@ -1060,6 +1102,12 @@ interface AdapterInterface
      */
     public function bubble($event, array $params = array(), array $options = array());
 }
+
+##################################################################
+# 
+# Adapter Class
+#
+##################################################################
 
 
 /**
@@ -1106,9 +1154,6 @@ class Adapter implements AdapterInterface
      *         Defaults to Engine::GLOBAL_DEFAULT.
      *
      *         `benchmark` - Benchmark this events execution.
-     *
-     *         `flags`  - Flags to pass to the `preg_match` function used for
-     *         matching a regex event.
      *
      *         `offset` - Specify the alternate place from which to start the search.
      *
@@ -1157,13 +1202,19 @@ class Adapter implements AdapterInterface
     }
 }
 
+##################################################################
+# 
+# Event Class
+#
+##################################################################
+
 
 /**
  * Event
  *
  * Represents an executed/executable prggmr event.
  */
-class Event extends Adapter
+class Event
 {
     /**
      * Event is actively being called.
@@ -1457,9 +1508,6 @@ class Event extends Adapter
      *
      *         `benchmark` - Benchmark this events execution.
      *
-     *         `flags`  - Flags to pass to the `preg_match` function used for
-     *         matching a regex event.
-     *
      *         `offset` - Specify the alternate place from which to start the search.
      *
      *         `object` - Return the event object.
@@ -1482,7 +1530,7 @@ class Event extends Adapter
 		$options += $defaults;
 		//bubble chain if exists
 		$this->executeChain($options['stateCheck']);
-        return parent::bubble($this, $params, $options);
+        return Engine::bubble($this, $params, $options);
     }
 
     /**
@@ -1508,6 +1556,12 @@ class Event extends Adapter
         $this->_return = null;
     }
 }
+
+##################################################################
+# 
+# Singleton Class
+#
+##################################################################
 
 /**
  * Singleton implementation which provides prggmr Engine adapter functionality.
@@ -1539,8 +1593,11 @@ abstract class Singleton extends Adapter
     final private function __clone(){}
 }
 
-// The following functions are a simplified API for communicating with prggmr
-// they provide no aditional functionality!
+##################################################################
+# 
+# Prggmr API Functions
+#
+##################################################################
 
 /**
  * Subscribes to a prggmr event. 
@@ -1578,9 +1635,6 @@ function subscribe($event, \Closure $function, array $options = array()) {
  *
  *         `benchmark` - Benchmark this events execution.
  *
- *         `flags`  - Flags to pass to the `preg_match` function used for
- *         matching a regex event.
- *
  *         `offset` - Specify the alternate place from which to start the search.
  *
  *         `object` - Return the event object.
@@ -1612,10 +1666,10 @@ function bubble($event, array $params = array(), array $options = array()) {
 *         `memory` - Returns the current memory usuage.
 *
 *         `bench_begin` - Begins a benchmark which captures CPU, Memory
-*         and execution time. Used inconjunction with `bench_start`
+*         and execution time. Used inconjunction with `bench_stop`
 *
 *         `bench_stop` - Finalizes a benchmark.
-*         Used in conjunction with `bench_start`
+*         Used in conjunction with `bench_begin`
 *
 * @param  array  $options  Array of options. Avaliable options.
 *
