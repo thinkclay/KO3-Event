@@ -52,6 +52,11 @@ This can be demonstrated with the following code.
     {#2} prggmr.php(1644): prggmr\Engine::bubble (event2, Array(), Array())
     {#3} prggmr.php(1644): prggmr\Engine::bubble (event3, Array(), Array())
 
+### Solutions?
+
+* Unfortantly Timeout and Internal methods do not currently have a reliable method of implementation without halting execution
+* The current method in plannnig is to manually construct a stacktrace on each event fire which would allow a backwards rebuild on exceptions.
+
 ## Features
 * Asynchronous event bubbling
 * Robust event subscription
