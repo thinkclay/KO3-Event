@@ -8,35 +8,52 @@ prggmr is currently being developed as a method of writing applications using an
 
 ## Limitations & Issues
 
-* Asynchornous events are currently and most likely will stay impossible within the realm PHP.
 * Timeout and Interval methods are not realistically possible in PHP.
 * Stacks are not maintained within events resulting in untraceable stacks.
 
 This can be demonstrated with the following code.
 
-    namespace prggmr;
     include 'prggmr.php';
-    
-    Engine::initialize();
-    Engine::debug(true);
-    
+
+    \prggmr\Engine::initialize();
+    \prggmr\Engine::debug(true);
+
     subscribe('event1', function(){
             bubble('event2');
     });
-    
+
     subscribe('event2', function(){
         bubble('event3');
     });
-    
+
     subscribe('event3', function(){
         throw new \Exception("I'm an error");
     });
-    
+
     bubble('event1');
 
+### Results
+
+    Message [Event (event1) Subscriber "dnpsuvxz" execution failed due to exception "LogicException" with message "Event (event2) Subscriber "fimnpsvx" execution failed due to exception "LogicException" with message "Event (event3) Subscriber "dfhjmpqs" execution failed due to exception "Exception" with message "I'm an error"""]
+    File [prggmr.php]
+    Line [703]
+    Trace Route
+    {#0} prggmr.php(1688): Unknown::prggmr\bubble (event1)
+    {#1} prggmr.php(1644): prggmr\Engine::bubble (event1, Array(), Array())
+
+### Expected
+
+    Message [Event (event1) Subscriber "dnpsuvxz" execution failed due to exception "LogicException" with message "Event (event2) Subscriber "fimnpsvx" execution failed due to exception "LogicException" with message "Event (event3) Subscriber "dfhjmpqs" execution failed due to exception "Exception" with message "I'm an error"""]
+    File [~/prggmr.php]
+    Line [703]
+    Trace Route
+    {#0} prggmr.php(1688): Unknown::prggmr\bubble (event1)
+    {#1} prggmr.php(1644): prggmr\Engine::bubble (event1, Array(), Array())
+    {#2} prggmr.php(1644): prggmr\Engine::bubble (event2, Array(), Array())
+    {#3} prggmr.php(1644): prggmr\Engine::bubble (event3, Array(), Array())
 
 ## Features
-
+* Asynchronous event bubbling
 * Robust event subscription
 * Stateful events
 * Chaining events
