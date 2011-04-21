@@ -229,6 +229,29 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(\prggmr\Engine::version(), PRGGMR_VERSION);
     }
+    
+    /**
+     * Methods Covered
+     * @Engine\analyze
+     *      @option benchmark
+     */
+    public function testBenchmark()
+    {
+        \prggmr\Engine::debug(true);
+        \prggmr\Engine::benchmark('start', 'benchmark_this');
+        for($i=0;$i!=1000;$i++);
+        \prggmr\Engine::benchmark('stop', 'benchmark_this');
+        $this->assertArrayHasKey('benchmark_this', \prggmr\Engine::$__stats['benchmarks']);
+        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['benchmarks']['benchmark_this']));
+        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('start', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
+        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']));
+        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']);
+        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']);
+    }
 
     /**
      * Methods Covered
@@ -236,8 +259,27 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testFlush()
     {
-        \prggmr\Engine::flush();
+        \prggmr\Engine::flush('subscribers');
         $this->assertFalse(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
+        \prggmr\Engine::subscribe('test_flush', function(){}, array('name' => 'test'));
+        $this->assertTrue(\prggmr\Engine::hasSubscriber('test', 'test_flush'));
+        \prggmr\Engine::flush('s');
+        $this->assertFalse(\prggmr\Engine::hasSubscriber('test', 'test_flush'));
+        \prggmr\Engine::set('test', true);
+        $this->assertTrue(\prggmr\Engine::has('test'));
+        \prggmr\Engine::flush('registry');
+        $this->assertFalse(\prggmr\Engine::has('test'));
+        \prggmr\Engine::set('test', true);
+        $this->assertTrue(\prggmr\Engine::has('test'));
+        \prggmr\Engine::flush('r');
+        $this->assertFalse(\prggmr\Engine::has('test'));
+        \prggmr\Engine::debug(true);
+        \prggmr\Engine::benchmark('start', 'benchmark_test');
+        for($i=0;$i!=1000;$i++);
+        \prggmr\Engine::benchmark('stop', 'benchmark_test');
+        $this->assertArrayHasKey('benchmark_test', \prggmr\Engine::$__stats['benchmarks']);
+        \prggmr\Engine::flush('stats');
+        $this->assertArrayNotHasKey('benchmark_test', \prggmr\Engine::$__stats['benchmarks']);
     }
 
     /**
@@ -249,7 +291,6 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $registry = \prggmr\Engine::registry();
         $this->assertArrayHasKey('__data', $registry);
-        $this->assertArrayHasKey('__libraries', $registry);
         $this->assertArrayHasKey('__events', $registry);
         $this->assertArrayHasKey('__debug', $registry);
         $this->assertArrayHasKey('__stats', $registry);
@@ -264,7 +305,6 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $registry = \prggmr\Engine::registry('object');
         $this->assertObjectHasAttribute('__data', $registry);
-        $this->assertObjectHasAttribute('__libraries', $registry);
         $this->assertObjectHasAttribute('__events', $registry);
         $this->assertObjectHasAttribute('__debug', $registry);
         $this->assertObjectHasAttribute('__stats', $registry);
@@ -291,7 +331,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
             'stackResults' => true
         ));
 
-        \prggmr\Engine::flush();
+        \prggmr\Engine::flush('s');
 
         \prggmr\Engine::subscribe('shift_test', function($event){
             return 'Event1';
@@ -332,7 +372,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Methods Covered
-     * @Engine\subscribe
+     * @Engine\bubble
      *      @with option namespace
      */
     public function testNamespace()
@@ -353,7 +393,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Methods Covered
-     * @Engine\subscribe
+     * @Engine\bubble
      *      @with option event
      */
     public function testEventReturn()
@@ -366,5 +406,36 @@ class EngineTest extends \PHPUnit_Framework_TestCase
             'object' => true
         ));
         $this->assertInstanceOf('\prggmr\Event', $bubble);
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\bubble
+     *      @with option benchmark
+     */
+    public function testEventBenchmark()
+    {
+        \prggmr\Engine::debug(true);
+        \prggmr\Engine::subscribe('benchmark_this', function($event){
+            // need something to stat?
+            for($i=0;$i!=1000;$i++){}
+        });
+        \prggmr\Engine::bubble('benchmark_this', null, array(
+            'benchmark' => true
+        ));
+        // wow this could be done better huh?
+        $this->assertArrayHasKey('benchmark_this', \prggmr\Engine::$__stats['events']);
+        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this']));
+        $this->assertArrayHasKey(0, \prggmr\Engine::$__stats['events']['benchmark_this']);
+        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this'][0]));
+        $this->assertArrayHasKey('stats', \prggmr\Engine::$__stats['events']['benchmark_this'][0]);
+        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
+        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
+        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
+        $this->assertArrayHasKey('start', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
+        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']));
+        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
+        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
+        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
     }
 }

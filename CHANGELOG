@@ -1,5 +1,11 @@
 0.1.1
 -----------------------------------
+- Refactored Engine::benchmark to only benchmark with first param (start, stop) second name of benchmark
+- Renamed Engine::analyze to Engine::benchmark
+- Removed Engine::initialise method
+- Engine::flush method added
+- Event benchmarks are now stored by the subscription and index by the subscriber name
+- Removed the library and loader class as they add to much bulk and be easily be added outside
 - Added stackResults option to bubble method
 - Removed flags option in bubble method to allow for engine level stacking config
 - Event object is no longer a child of Adapter
@@ -14,7 +20,7 @@
 - Event object chain (_parent) is now refered to as (_chain) for simplicity.
 - Refactored event chaining to allow the chain to be set dynamically rather than in the constructor.
 - Removed Event constructor parameter for parent event.
-- Moved source into a single file.
+- Refactored the directory structure to complement the modified/removed code.
 - Added the bubble, analyze and subscribe functions.
 - Changed Event state constants to 0xCF60 (active), 0x5250 (inactive), 0x2F4B (error)
 - Added AdapterInterface interface

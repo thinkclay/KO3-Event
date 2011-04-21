@@ -1,3 +1,3 @@
 <?php
 
-require_once '../prggmr.php';
+require_once '../lib/prggmr.php';

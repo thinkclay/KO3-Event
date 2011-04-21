@@ -66,7 +66,6 @@ This can be demonstrated with the following code.
 * Benchmarking tools
 * High performance oriented
 * High test coverage
-* Debugging & Performance tools
 
 ## About the Author
 
