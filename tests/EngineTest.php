@@ -309,6 +309,21 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('__debug', $registry);
         $this->assertObjectHasAttribute('__stats', $registry);
     }
+    
+    /**
+     * Methods Covered
+     * @Engine\bubble
+     *     @with option stackResults
+     */
+    public function testEngineStackResults()
+    {
+        \prggmr\Engine::subscribe('stacktest', function(){
+            return 'HelloWorld';
+        });
+        $this->assertEvent('stacktest', null, 'HelloWorld', array(
+            'stackResults' => false
+        ));
+    }
 
     /**
      * Methods Covered
@@ -437,5 +452,71 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
         $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
         $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\callStatic
+     */
+    public function testEventOverloadCall()
+    {
+        \prggmr\Engine::subscribe('HelloWorld', function(){
+            return 'HelloWorld';
+        });
+        $test = \prggmr\Engine::HelloWorld(null, array('stackResults' => false));
+        $this->assertEquals('HelloWorld', $test);
+    }
+    
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testEngineErrorState()
+    {
+        \prggmr\Engine::subscribe('stateerrortest', function($event){
+            $event->setState(\prggmr\Event::STATE_ERROR);
+        }, array('name' => 'testException'));
+        $this->assertEvent('stateerrortest', array(), array());
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\bubble
+     *      @with error
+     */
+    public function testEngineErrorSilence()
+    {
+        \prggmr\Engine::subscribe('imgonnafail', function($event){
+            $event->setState(\prggmr\Event::STATE_ERROR);
+        });
+        try {
+            $test = \prggmr\Engine::bubble('imgonnafail', null, array(
+                'silent' => true
+            ));
+        } catch (RuntimeException $e) {}
+        if (!$test) {
+            $this->addToAssertionCount(1);
+        } else {
+            $this->fail('Failed asserting that silent option supresses error state exception');
+        }
+    }
+    
+    /**
+     * Methods Covered
+     * @Engine\bubble
+     *      @with event halt
+     */
+    public function testEventHalt()
+    {
+        \prggmr\Engine::subscribe('halt', function(){
+            return 'Hello';
+        });
+        // this halts it :)
+        \prggmr\Engine::subscribe('halt', function(){
+            return false;
+        });
+        \prggmr\Engine::subscribe('halt', function(){
+            return 'World'; 
+        });
+        $this->assertEvent('halt', null, 'Hello');
     }
 }

@@ -165,7 +165,7 @@ class Engine extends Data {
      *
      *         `object` - Return the event object.
      *
-     *         `suppress` - Suppress exceptions when an event is encountered in
+     *         `silent` - Suppress exceptions when an event is encountered in
      *         a STATE_ERROR.
      *
      *         `stackResults` - Sets the event results to allow stacking.
@@ -181,9 +181,8 @@ class Engine extends Data {
         $defaults  = array(
                            'namespace' => static::GLOBAL_DEFAULT,
                            'benchmark' => false,
-                           'offset' => null,
                            'object' => false,
-                           'suppress' => false,
+                           'silent' => false,
 						   'stackResults' => null // allow or disallows for engine level stack
                         );
         $options  += $defaults;
@@ -270,8 +269,9 @@ class Engine extends Data {
                     );
                 }
                 // Check our event state / halt and print exception unless suppress
-                if ($eventObj->getState() === Event::STATE_ERROR
-					&& !$options['suppress']) {
+                if ($eventObj->getState() === Event::STATE_ERROR) {
+					// silently fail...for...might be useful at some point
+					if ($options['silent']) return false;
                     throw new \RuntimeException(
                         sprintf(
                             'Error State detected in event (%s) subscriber "%s" with message (%s)',
@@ -561,7 +561,7 @@ class Engine extends Data {
      * @return  object  Event
      */
     public static function __callStatic($event, array $params = array()) {
-        $defaults = array(0 => array(), 1 => array());
+        $defaults = array(0 => null, 1 => array());
         $params += $defaults;
         return static::bubble($event, $params[0], $params[1]);
     }
