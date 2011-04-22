@@ -32,7 +32,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
 {
     public function tearDown()
     {
-        \prggmr\Engine::flush();
+        //\prggmr\Engine::flush('s','r','e','stats');
     }
 
     public function assertEvent($event, $params, $expected, $options = array())
@@ -229,7 +229,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(\prggmr\Engine::version(), PRGGMR_VERSION);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\analyze
@@ -309,7 +309,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('__debug', $registry);
         $this->assertObjectHasAttribute('__stats', $registry);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\bubble
@@ -422,7 +422,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertInstanceOf('\prggmr\Event', $bubble);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\bubble
@@ -453,7 +453,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
         $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
     }
-    
+
     /**
      * Methods Covered
      * @Engine\callStatic
@@ -466,7 +466,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $test = \prggmr\Engine::HelloWorld(null, array('stackResults' => false));
         $this->assertEquals('HelloWorld', $test);
     }
-    
+
     /**
      * @expectedException RuntimeException
      */
@@ -477,7 +477,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         }, array('name' => 'testException'));
         $this->assertEvent('stateerrortest', array(), array());
     }
-    
+
     /**
      * Methods Covered
      * @Engine\bubble
@@ -499,7 +499,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
             $this->fail('Failed asserting that silent option supresses error state exception');
         }
     }
-    
+
     /**
      * Methods Covered
      * @Engine\bubble
@@ -515,7 +515,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
             return false;
         });
         \prggmr\Engine::subscribe('halt', function(){
-            return 'World'; 
+            return 'World';
         });
         $this->assertEvent('halt', null, 'Hello');
     }

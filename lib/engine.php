@@ -318,12 +318,11 @@ class Engine extends Data {
 	 * Options
 	 *
 	 * [subscribers,s] - full all event subscribers
-	 * [libraries, l] - flush the library loaders
 	 * [registry, r] - flush all registry
 	 * [stats] - flush all stats
 	 * [exception, e] - flush last exception
-	 * 
-	 * 
+	 *
+	 *
 	 * @return  void
 	 */
 	public static function flush(/* ... */)
@@ -354,7 +353,7 @@ class Engine extends Data {
 					continue;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -547,7 +546,7 @@ class Engine extends Data {
 				return null;
 			break;
         }
-		
+
 		return null;
     }
 
