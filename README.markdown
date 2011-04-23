@@ -1,14 +1,67 @@
 # prggmr
 
-prggmr is a event library currently written in PHP, it is nothing more and nothing less.
+lightweight, intuitive event-processing library for PHP 5.3+ applications
 
 ## Introduction
 
-prggmr is currently being developed as a method of writing applications using an event driven process.
+prggmr implements a fast event-processing engine for use with developing
+event driven applications in PHP 5.3+. It's incredibly simple, is driven by
+a robust engine that allows for event chaining, halting, states, namespaces,
+asynchronous execution and robust subscriptions. 
+
+## Features
+* Asynchronous event bubbling
+* Robust event subscription
+* Stateful events
+* Chaining events
+* Event Namespaces
+* Benchmarking tools
+* High performance oriented
+* High test coverage
+* Needs no configuration
+
+## HelloWorld Example
+
+prggmr uses [anonymous functions](http://www.php.net/Closures) as it's callback mechanism, the alternative method of array('function') and array('class', 'method') callbacks
+are not supported.
+
+    include 'prggmr.php';
+       
+    // all callbacks are allways passed the current event scope object as the first parameter
+    subscribe('helloworld', function($event){
+        echo 'Hello World';
+    });
+    
+    // Bubbling the helloworld event outputting "HelloWorld"
+    bubble('helloworld');
+    
+Simple no?
+    
+## Whats so great about events?
+
+The HelloWorld example can easily be written as a function and achieve the same results.
+
+    function helloworld() {
+        echo "HelloWorld";
+    }
+    
+    helloworld();
+    
+This really defeats the purpose of events, and simply put events allow code to react and interact with itself with infinite possibilities.
+    
+### So why use events
+
+Here is a real world example.
+
+I recently developed a program which sync's a users Google account into a local database, halfway through development new requirements came in and new information
+was required to be synced. The task was easy, I simple refactored production ready code, tested and published. The problem is I had to modify code
+which was already in a stable state, possibly introducing new bugs in the code. If I had written the system using events I could have added a new subscriber to the sync
+event and introduced the new information without modifing any of the existing codebase ... saving time and headaches.
+    
 
 ## Limitations & Issues
 
-* Timeout and Interval methods are not realistically possible in PHP.
+* Timeout and Interval methods are not realistically possible in PHP ... yet.
 * Stacks are not maintained within events resulting in untraceable stacks.
 
 This can be demonstrated with the following code.
@@ -54,18 +107,8 @@ This can be demonstrated with the following code.
 
 ### Solutions?
 
-* Unfortunately Timeout and Internal methods do not currently have a reliable method of implementation without halting execution
-* The current method in planning is to manually construct a stacktrace on each event fire which would allow a backwards rebuild on exceptions.
-
-## Features
-* Asynchronous event bubbling
-* Robust event subscription
-* Stateful events
-* Chaining events
-* Event Namespaces
-* Benchmarking tools
-* High performance oriented
-* High test coverage
+* Unfortunately Timeout and Internal methods do not currently have a reliable method of implementation without halting execution in some manner wether that is sleeping, looping or line counting.
+* Regarding the stacktrace, the current method in planning is to attach the event to a stacktrace on each fire which would allow a backwards rebuild.
 
 ## About the Author
 

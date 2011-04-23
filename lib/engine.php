@@ -431,20 +431,20 @@ class Engine extends Data {
 					$type 	  = (isset($v['type'])) 	? $v['type'] 	 : '::';
 					$function = (isset($v['function'])) ? $v['function'] : 'Unknown';
 					$args     = (isset($v['args'])) 	? $v['args'] 	 : null;
-					$argString = function() use ($args) {
-							if ($args == null) {
-								return 'none';
-							}
-							$return = '';
-							foreach ($args as $k => $v) {
-								if ($k == 0) {
-									$return .= print_r($v, true);
-								} else {
-									$return .= ', '.print_r($v, true);
-								}
-							}
-							return $return;
-						};
+					//$argString = function() use ($args) {
+					//		if ($args == null) {
+					//			return 'none';
+					//		}
+					//		$return = '';
+					//		foreach ($args as $k => $v) {
+					//			if ($k == 0) {
+					//				$return .= print_r($v, true);
+					//			} else {
+					//				$return .= ', '.print_r($v, true);
+					//			}
+					//		}
+					//		return $return;
+					//	};
 					$str = sprintf(
 						'{#%d} %s(%d): %s%s%s (%s)',
 						$num++,
@@ -452,8 +452,8 @@ class Engine extends Data {
 						$line,
 						$class,
 						$type,
-						$function,
-						$argString()
+						$function
+						//$argString()
 						);
 					return $str;
 				}, $traceRoute);

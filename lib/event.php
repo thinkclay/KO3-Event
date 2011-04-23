@@ -56,6 +56,13 @@ class Event
      * @var  mixed
      */
     protected $_return = null;
+    
+    /**
+     * Results from a chained event
+     *
+     * @var  mixed
+     */
+    protected $_chainReturn = null;
 
     /**
      * Event object to call when bubbling the event chain.
@@ -76,7 +83,7 @@ class Event
      *
      * @var  string  Name of event subscriber.
      */
-    protected $_subscriber = null;
+    protected $_subscription = null;
 
     /**
      * Flag that allows the results from each subscriber to stack and return
@@ -284,11 +291,11 @@ class Event
      */
     public function executeChain($stateCheck = true)
     {
-        if ($this->haltSequence()) {
+        if ($this->isHalted()) {
             return false;
         }
 
-        if (null !== $this->_chain) {
+        if ($this->hasChain()) {
 
             // Ensure we are in an active state
             if ($stateCheck && self::STATE_ACTIVE !== $this->getState()) {
@@ -341,7 +348,7 @@ class Event
 		$defaults = array('stateCheck' => true);
 		$options += $defaults;
 		//bubble chain if exists
-		$this->executeChain($options['stateCheck']);
+		$this->_chainReturn = $this->executeChain($options['stateCheck']);
         return Engine::bubble($this, $params, $options);
     }
 
@@ -366,5 +373,15 @@ class Event
     public function clearResults()
     {
         $this->_return = null;
+    }
+    
+    /**
+     * Retrieves the results of the executed event chain.
+     *
+     * @return  mixed
+     */
+    public function getChainResults()
+    {
+        return $this->_chainReturn;
     }
 }
