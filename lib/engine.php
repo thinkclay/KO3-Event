@@ -32,14 +32,14 @@ use
  * prggmrs event engine, because whats a event system without an engine ...
  * an observer implementation ... ?
  */
-class Engine extends Data {
+class Engine extends SplObjectStorage {
 
 	/**
      * Array of event subscriber
      *
      * @var  array  Array of anonymous functions waiting for an event.
      */
-    protected static $__events = array();
+    protected static $__events = null;
 
 	/**
 	 * Debug flag
@@ -95,7 +95,7 @@ class Engine extends Data {
      */
     public static function subscribe($event, \Closure $function, array $options = array()) {
         $defaults = array('shift' => false,
-                          'name' => str_random(8),
+                          'name' => rand(1, 99999999),
                           'force' => false,
                           'namespace' => static::GLOBAL_DEFAULT);
 		$options += $defaults;
@@ -118,6 +118,7 @@ class Engine extends Data {
 				return false;
 			}
 		}
+        $name = $options['name'];
         if (!isset(static::$__events[$options['namespace']])) {
             static::$__events[$options['namespace']] = array();
         }
@@ -130,6 +131,8 @@ class Engine extends Data {
 		} else {
 			static::$__events[$options['namespace']][$event][$options['name']] = $function;
 		}
+        var_dump($function);
+        die();
         return true;
     }
 
@@ -145,10 +148,10 @@ class Engine extends Data {
      * @return  boolean  False | True otherwise.
      */
     public static function hasSubscriber($subscriber, $event, $namespace = null) {
-		if (null === $namespace) $namespace = static::GLOBAL_DEFAULT;
-        if (isset(static::$__events[$namespace][$event][$subscriber])) {
-            return true;
-        }
+//		if (null === $namespace) $namespace = static::GLOBAL_DEFAULT;
+//        if (isset(static::$__events[$namespace][$event][$subscriber])) {
+//            return true;
+//        }
         return false;
     }
 
@@ -431,20 +434,20 @@ class Engine extends Data {
 					$type 	  = (isset($v['type'])) 	? $v['type'] 	 : '::';
 					$function = (isset($v['function'])) ? $v['function'] : 'Unknown';
 					$args     = (isset($v['args'])) 	? $v['args'] 	 : null;
-					//$argString = function() use ($args) {
-					//		if ($args == null) {
-					//			return 'none';
-					//		}
-					//		$return = '';
-					//		foreach ($args as $k => $v) {
-					//			if ($k == 0) {
-					//				$return .= print_r($v, true);
-					//			} else {
-					//				$return .= ', '.print_r($v, true);
-					//			}
-					//		}
-					//		return $return;
-					//	};
+					$argString = function() use ($args) {
+							if ($args == null) {
+								return 'none';
+							}
+							$return = '';
+							foreach ($args as $k => $v) {
+								if ($k == 0) {
+									$return .= print_r($v, true);
+								} else {
+									$return .= ', '.print_r($v, true);
+								}
+							}
+							return $return;
+						};
 					$str = sprintf(
 						'{#%d} %s(%d): %s%s%s (%s)',
 						$num++,
@@ -452,8 +455,8 @@ class Engine extends Data {
 						$line,
 						$class,
 						$type,
-						$function
-						//$argString()
+						$function,
+						$argString()
 						);
 					return $str;
 				}, $traceRoute);
@@ -486,69 +489,6 @@ class Engine extends Data {
 		// allways return true to disable php's internal handling
 		return true;
 	}
-
-   /**
-	* Benchmarks current system runtime useage information for debugging
-	* purposes.
-	*
-    * @param  string  $op  start - Begin benchmark, stop - End Benchmark
-	*
-	* @param  string  $name  Name of benchmark
-	*
-	* @return  mixed  Array of info on stop, boolean on start
-	*/
-    public static function benchmark($op, $name)
-    {
-        if (false === static::debug()) {
-            return true;
-        }
-        $microtime = function() {
-            $time = explode(" ",microtime());
-            return $time[0] + $time[1];
-        };
-
-        $memory = function() {
-            if (function_exists('memory_get_usage')) {
-                return memory_get_usage();
-            } else {
-                return 0;
-            }
-        };
-        switch ($op) {
-            case 'start':
-                $stats = array(
-                    'memory' => $memory(),
-                    'time'   => $microtime()
-                );
-                static::set('prggmr.stats.benchmark.'.$name, $stats);
-				return true;
-                break;
-            case 'stop':
-                $data = array(
-                              'memory' => $memory(),
-                              'time'   => $microtime(),
-                              'start'  => 0,
-                              'end'    => time()
-                              );
-                $stats = static::get('prggmr.stats.benchmark.'.$name);
-                if ($stats != false) {
-                    $data['memory'] = ($stats['memory'] > $data['memory'])
-					? $stats['memory'] - $data['memory'] :
-					$data['memory'] - $stats['memory'];
-                    $data['time'] = $data['time'] - $stats['time'];
-                    $data['start'] = $stats;
-                }
-                static::set('prggmr.stats.benchmark.'.$name, $data);
-                static::$__stats['benchmarks'][$name] = $data;
-                return $data;
-                break;
-			default:
-				return null;
-			break;
-        }
-
-		return null;
-    }
 
     /**
      * Allows for statically overloading event bubbles.

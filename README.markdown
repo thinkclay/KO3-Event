@@ -7,7 +7,7 @@ lightweight, intuitive event-processing library for PHP 5.3+ applications
 prggmr implements a fast event-processing engine for use with developing
 event driven applications in PHP 5.3+. It's incredibly simple, is driven by
 a robust engine that allows for event chaining, halting, states, namespaces,
-asynchronous execution and robust subscriptions. 
+asynchronous execution and robust subscriptions.
 
 ## Features
 * Asynchronous event bubbling
@@ -26,17 +26,17 @@ prggmr uses [anonymous functions](http://www.php.net/Closures) as it's callback 
 are not supported.
 
     include 'prggmr.php';
-       
+
     // all callbacks are allways passed the current event scope object as the first parameter
     subscribe('helloworld', function($event){
         echo 'Hello World';
     });
-    
+
     // Bubbling the helloworld event outputting "HelloWorld"
     bubble('helloworld');
-    
+
 Simple no?
-    
+
 ## Whats so great about events?
 
 The HelloWorld example can easily be written as a function and achieve the same results.
@@ -44,11 +44,11 @@ The HelloWorld example can easily be written as a function and achieve the same 
     function helloworld() {
         echo "HelloWorld";
     }
-    
+
     helloworld();
-    
+
 This really defeats the purpose of events, and simply put events allow code to react and interact with itself with infinite possibilities.
-    
+
 ### So why use events
 
 Here is a real world example.
@@ -57,7 +57,22 @@ I recently developed a program which sync's a users Google account into a local 
 was required to be synced. The task was easy, I simple refactored production ready code, tested and published. The problem is I had to modify code
 which was already in a stable state, possibly introducing new bugs in the code. If I had written the system using events I could have added a new subscriber to the sync
 event and introduced the new information without modifing any of the existing codebase ... saving time and headaches.
-    
+
+## Benchmark
+
+This benchmark was conducted on
+
+    Ubuntu 10.01
+    AMD Athlon II X3 435
+    6GB Memory
+
+The benchmark tested subscribing to 1,250 events with 5 subscribers per event, this number was chosen as a high estimate of the
+typical number of events subscribed and bubbled within a large application, with all benchmarks this is only a reflection of possible performance and it
+will vary dependent on system specifications.
+
+
+
+As the results show
 
 ## Limitations & Issues
 

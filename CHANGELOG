@@ -1,5 +1,11 @@
 0.1.1
 -----------------------------------
+- Engine class is now represented as a SplObjectStorage storing Space objects
+- Events functions are now stored as a queue within a Subscription class this new implementation removes the need to loop for subscribers.
+- Event subscription now generate a Subscription object which attaches itself to the Space object
+- Namespaces are implements as a SplQueue defined as the Space class
+- Events are now stored within the engine in an SplObjectStorage
+- Removed benchmark from engine and created its on class Benchmark
 - Refactored Engine::benchmark to only benchmark with first param (start, stop) second name of benchmark
 - Renamed Engine::analyze to Engine::benchmark
 - Removed Engine::initialise method

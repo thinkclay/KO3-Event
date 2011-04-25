@@ -78,7 +78,8 @@ function bubble($event, array $params = array(), array $options = array()) {
 	* Benchmarks current system runtime useage information for debugging
 	* purposes.
 	*
-    * @param  string  $op  start - Begin benchmark, stop - End Benchmark
+    * @param  string  $op  start - Begin benchmark
+    *                      stop - End Benchmark
 	*
 	* @param  string  $name  Name of benchmark
 	*
