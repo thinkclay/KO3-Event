@@ -1,4 +1,5 @@
 <?php
+namespace prggmr;
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -20,16 +21,28 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-define('PRGGMR_VERSION', '0.1.1');
+use \SplQueue;
 
-// start'er up
-require 'functions.php';
-require 'data.php';
-require 'engine.php';
-require 'adapterinterface.php';
-require 'adapter.php';
-require 'event.php';
-require 'singleton.php';
-require 'api.php';
-require 'queue.php';
-require 'subscription.php';
+
+/**
+ * Queue
+ *
+ * Represents a que of events within a namespace
+ */
+class Queue extends SplQueue {
+
+    /**
+     * Namespace of the queue
+     */
+    protected $_namespace = null;
+
+    /**
+     * Constructs a new queue object
+     *
+     * @param  string  $namespace  Namespace of the queue
+     */
+    public function __construct($namespace)
+    {
+        $this->_namespace = $namespace;
+    }
+}

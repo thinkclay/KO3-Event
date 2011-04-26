@@ -21,28 +21,28 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-use \SplSack;
+use \SplQueue;
 
 
 /**
- * Space
+ * Subscription
  *
- * Represents a namespace que of events.
+ * Represents a que of events within a subscribable event
  */
-class Space extends SplQueue {
+class Subscription extends SplQueue {
 
     /**
-     * Name of this namespace object
+     * Name of the event for which events will subscribe
      */
-    protected $_namespace = null;
+    protected $_event = null;
 
     /**
-     * Constructs a new space object
+     * Constructs a new queue object
      *
-     * @param  string  $namespace  Namespace of this object
+     * @param  string  $namespace  Namespace of the queue
      */
-    public function __construct($namespace)
+    public function __construct($event)
     {
-        $this->_namespace = $namespace;
+        $this->_event = $event;
     }
 }

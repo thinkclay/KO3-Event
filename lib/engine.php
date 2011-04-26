@@ -26,16 +26,16 @@ use
 \InvalidArgumentException,
 \Closure,
 \BadMethodCallException,
-\RuntimeException;
+\RuntimeException,
+\SplObjectStorage;
 
 /**
- * prggmrs event engine, because whats a event system without an engine ...
- * an observer implementation ... ?
+ * Event engine
  */
 class Engine extends SplObjectStorage {
 
 	/**
-     * Array of event subscriber
+     * Array of event subscribers
      *
      * @var  array  Array of anonymous functions waiting for an event.
      */

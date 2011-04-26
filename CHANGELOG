@@ -1,8 +1,8 @@
 0.1.1
 -----------------------------------
-- Engine class is now represented as a SplObjectStorage storing Space objects
+- Engine class is now represented as a SplObjectStorage storing Queue objects
 - Events functions are now stored as a queue within a Subscription class this new implementation removes the need to loop for subscribers.
-- Event subscription now generate a Subscription object which attaches itself to the Space object
+- Event subscriptions now generate a Subscription object which attaches itself to the Queue object
 - Namespaces are implements as a SplQueue defined as the Space class
 - Events are now stored within the engine in an SplObjectStorage
 - Removed benchmark from engine and created its on class Benchmark
