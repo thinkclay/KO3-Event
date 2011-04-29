@@ -27,22 +27,26 @@ use \SplQueue;
 /**
  * Queue
  *
- * Represents a que of events within a namespace
+ * Represents a que
  */
 class Queue extends SplQueue {
 
     /**
-     * Namespace of the queue
-     */
-    protected $_namespace = null;
-
-    /**
-     * Constructs a new queue object
+     * Lookup table associating strings to their index
      *
-     * @param  string  $namespace  Namespace of the queue
+     * @var array
      */
-    public function __construct($namespace)
+    public $_lookup = array();
+
+    public function offsetExists($index)
     {
-        $this->_namespace = $namespace;
+        if (is_string($index)) {
+            return isset($_lookup[$index]);
+        }
+        return parent::offsetExists($index);
     }
+
+    //mixed offsetGet ( mixed $index )
+    //void offsetSet ( mixed $index , mixed $newval )
+    //void offsetUnset ( mixed $index )
 }

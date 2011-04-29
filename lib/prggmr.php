@@ -31,5 +31,6 @@ require 'adapter.php';
 require 'event.php';
 require 'singleton.php';
 require 'api.php';
+require 'benchmark.php';
 require 'queue.php';
 require 'subscription.php';

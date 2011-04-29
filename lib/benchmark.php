@@ -25,6 +25,16 @@ namespace prggmr;
 class Benchmark extends Data {
 
     /**
+     * Provides runtime statistical data.
+     *
+     * @var  array  Array of runtime statistical information.
+     */
+    public static $__stats = array(
+        'events'     => array(),
+        'benchmarks' => array()
+    );
+
+    /**
 	* Benchmarks current system runtime useage information for debugging
 	* purposes.
 	*
@@ -36,7 +46,7 @@ class Benchmark extends Data {
 	*/
     public static function benchmark($op, $name)
     {
-        if (false === static::debug()) {
+        if (false === \prggmr\Engine::debug()) {
             return true;
         }
         $microtime = function() {
@@ -72,6 +82,7 @@ class Benchmark extends Data {
 					$data['memory'] - $stats['memory'];
                     $data['time'] = $data['time'] - $stats['time'];
                     $data['start'] = $stats;
+                    $data['memory_total'] = static::formatBytes($data['memory'], 2);
                 }
                 static::set('prggmr.stats.benchmark.'.$name, $data);
                 static::$__stats['benchmarks'][$name] = $data;
@@ -83,6 +94,14 @@ class Benchmark extends Data {
         }
 
 		return null;
+    }
+
+    public static function formatBytes($size, $precision = 2)
+    {
+        $base = log($size) / log(1024);
+        $suffixes = array('', 'k', 'M', 'G', 'T');
+
+        return round(pow(1024, $base - floor($base)), $precision) . $suffixes[floor($base)];
     }
 
 }

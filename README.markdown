@@ -56,23 +56,7 @@ Here is a real world example.
 I recently developed a program which sync's a users Google account into a local database, halfway through development new requirements came in and new information
 was required to be synced. The task was easy, I simple refactored production ready code, tested and published. The problem is I had to modify code
 which was already in a stable state, possibly introducing new bugs in the code. If I had written the system using events I could have added a new subscriber to the sync
-event and introduced the new information without modifing any of the existing codebase ... saving time and headaches.
-
-## Benchmark
-
-This benchmark was conducted on
-
-    Ubuntu 10.01
-    AMD Athlon II X3 435
-    6GB Memory
-
-The benchmark tested subscribing to 1,250 events with 5 subscribers per event, this number was chosen as a high estimate of the
-typical number of events subscribed and bubbled within a large application, with all benchmarks this is only a reflection of possible performance and it
-will vary dependent on system specifications.
-
-
-
-As the results show
+event and introduced the new information without modifing any of the existing codebase ... saving time and headaches.s
 
 ## Limitations & Issues
 

@@ -31,17 +31,17 @@ class Event
     /**
      * Event is actively being called.
      */
-    const STATE_ACTIVE = 0xCF60;
+    const STATE_ACTIVE = 0x01;
 
     /**
      * Event is inactive and awaiting for its bubble.
      */
-    const STATE_INACTIVE = 0x5250;
+    const STATE_INACTIVE = 0x02;
 
     /**
      * Event has encountered a failure
      */
-    const STATE_ERROR = 0x2F4B;
+    const STATE_ERROR = 0x03;
 
     /**
      * Current state event in which this event is in.
@@ -56,7 +56,7 @@ class Event
      * @var  mixed
      */
     protected $_return = null;
-    
+
     /**
      * Results from a chained event
      *
@@ -374,7 +374,7 @@ class Event
     {
         $this->_return = null;
     }
-    
+
     /**
      * Retrieves the results of the executed event chain.
      *
