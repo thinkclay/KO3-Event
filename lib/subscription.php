@@ -42,6 +42,13 @@ class Subscription {
      * triggered.
      */
     protected $_function = null;
+
+    /**
+     * String identifier for this subscription
+     *
+     * @var  string
+     */
+     protected $_identifier = null;
     
     /**
      * Constructs a new subscription object.
@@ -50,9 +57,10 @@ class Subscription {
      *
      * @return  \prggmr\Queue
      */ 
-    public function __construct(\Closure $function)
+    public function __construct(\Closure $function, $identifier)
     {
         $this->_function = $function;
+        $this->_identifier = (string) $identifier;
     }
     
     /**
@@ -63,5 +71,15 @@ class Subscription {
      public function fire()
      {
          return call_user_func_array($this->_function, func_get_args());
+     }
+
+     /**
+     * Returns the identifier.
+     * 
+     * @return  string
+     */
+     public function getIdentifier()
+     {
+         return $this->_identifier;
      }
 }

@@ -35,7 +35,7 @@ class Queue extends SplPriorityQueue {
     
     protected $_event = null;
     
-    protected $serial = PHP_INT_MAX;
+    protected $_serial = PHP_INT_MAX;
     
     /**
      * Constructs a new queue object.
@@ -72,72 +72,65 @@ class Queue extends SplPriorityQueue {
      * 
      * @return  void
      */
-     public function enqueue(Subscription $subscription, $priority)
-     {
-        return parent::insert($data, array($priority, $this->serial--));
-     }
+    public function enqueue(Subscription $subscription, $priority = 1)
+    {
+        return parent::insert($subscription, array(
+                $priority, 
+                $this->_serial--
+            )
+        );
+    }
      
-     /**
-      * Removes a subscription from the queue.
-      * 
-      * @param  mixed  subscription  String identifier of the subscription or
-      *         a Subscription object.
-      * 
-      * @throws  InvalidArgumentException
-      * @return  void
-      */
-     public function dequeue($subscription)
-     {
-        if (is_string($subscription)) {
-            $subscription = $this->locate($subscription);
-        } 
-        
-        if (!is_object($subscription) || 
-                   !$subscription instanceof Subscription) {
-            throw new \InvalidArgumentException(
-                sprintf('Expected string or instance of Subscription recieved %s',
-                (is_object($subscription) ? get_class($subscription) : 
-                gettype($subscription))
-                )
-            );       
-        }
-        
-        while ($this->next()) {
-            if ($this->current() === $subscription) {
-                unset($this->current());
+    /**
+    * Removes a subscription from the queue.
+    * 
+    * @todo 
+    * Currently this method does not function providing no means to remove a 
+    * subscription from the queue as such functionality is reasonably 
+    * useful it needs to be implemented.
+    *
+    * @param  mixed  subscription  String identifier of the subscription or
+    *         a Subscription object.
+    * 
+    * @throws  InvalidArgumentException
+    * @return  void
+    */
+    public function dequeue($subscription)
+    {}
+     
+    /**
+    * Locates a subscription in the queue by the identifier.
+    * 
+    * @param  string  $identifier  String identifier of the subscription
+    * 
+    * @return  mixed  Subscription object | False otherwise
+    */
+    public function locate($identifier)
+    {
+        while($this->valid()) {
+            if ($this->current()->getIdentifier() == $identifier) {
+                break;
             }
+            $this->next();
         }
-        
+        // we cannot rewind and return the current forcing to insert into a var
+        $sub = $this->current();
         $this->rewind();
-     }
-     
-     /**
-      * Locates a subscription in the queue by the identifier.
-      * 
-      * @param  string  $identifier  String identifier of the subscription
-      * 
-      * @return  mixed  Subscription object | False otherwise
-      */
-      public function locate($identifier)
-      {
-          while($this->next()) {
-              if ($this->current()->getIdentifier() == $identifier) {
-                    return $this->current();
-              }
-          }
-          $this->rewind();
-          return false;
-      }
+        return $sub;
+    }
       
-      /**
-       * Override insert method and force enqueue use.
-       *
-       * @throws  BadMethodCallException
-       */
-       public function insert($value, $priority) 
-       {
-           throw new \BadMethodCallException(
-               'insert method is disallowed use enqueue instead'
-           );
-       }
+    /**
+    * Override insert method and force enqueue use.
+    *
+    * @throws  BadMethodCallException
+    */
+    public function insert($value, $priority) 
+    {
+       throw new \BadMethodCallException(
+           'insert method is disallowed use enqueue instead'
+       );
+    }
 }
+
+$queue = new Queue('my_event');
+$queue->insert();
