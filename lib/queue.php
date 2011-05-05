@@ -21,32 +21,43 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-use \SplQueue;
+use \SplQueue,
+    \InvalidArgumentException;
 
 
 /**
- * Queue
- *
- * Represents a que
+ * The Queue object is a queue based object using the SplQueue std object
+ * developed into PHP 5.3. The object is a basic representation of an
+ * event that will be called by the engine. 
  */
 class Queue extends SplQueue {
-
+    
+    protected $_event = null;
+    
     /**
-     * Lookup table associating strings to their index
+     * Constructs a new queue object.
      *
-     * @var array
-     */
-    public $_lookup = array();
-
-    public function offsetExists($index)
+     * @param  string  $event  Event this queue represents
+     *
+     * @return  \prggmr\Queue
+     */ 
+    public function __construct($event)
     {
-        if (is_string($index)) {
-            return isset($_lookup[$index]);
+        if (null === $event) {
+            throw new InvalidArgumentException(
+                'Required parameter "event" not supplied'
+            );
         }
-        return parent::offsetExists($index);
+        $this->_event = $event;
     }
-
-    //mixed offsetGet ( mixed $index )
-    //void offsetSet ( mixed $index , mixed $newval )
-    //void offsetUnset ( mixed $index )
+    
+    /**
+     * Returns the event this queue represents.
+     *
+     * @return  string
+     */
+    public function getEvent()
+    {
+        return $this->_event;
+    }
 }
