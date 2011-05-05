@@ -21,10 +21,16 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
+use
+\Exception,
+\InvalidArgumentException,
+\Closure,
+\BadMethodCallException,
+\RuntimeException,
+\SplObjectStorage;
+
 /**
- * The engine object serves as the even processing engine, responsible for
- * interpreting incoming event signals, patching in new event subscribers
- * and firing the event signals.
+ * Event engine
  */
 class Engine extends SplObjectStorage {
 

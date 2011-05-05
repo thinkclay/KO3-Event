@@ -1,10 +1,7 @@
 0.1.1
 -----------------------------------
-- Engine class is now represented as a SplObjectStorage storing Queue objects
-- Events functions are now stored as a queue within a Subscription class this new implementation removes the need to loop for subscribers.
-- Event subscriptions now generate a Subscription object which attaches itself to the Queue object
-- Namespaces are implements as a SplQueue defined as the Space class
-- Events are now stored within the engine in an SplObjectStorage
+- Added the Subscription object
+- Added the Queue object
 - Removed benchmark from engine and created its on class Benchmark
 - Refactored Engine::benchmark to only benchmark with first param (start, stop) second name of benchmark
 - Renamed Engine::analyze to Engine::benchmark
@@ -28,7 +25,7 @@
 - Removed Event constructor parameter for parent event.
 - Refactored the directory structure to complement the modified/removed code.
 - Added the bubble, analyze and subscribe functions.
-- Changed Event state constants to 0xCF60 (active), 0x5250 (inactive), 0x2F4B (error)
+- Changed Event state constants to 0x01 (active), 0x02 (inactive), 0x03 (error)
 - Added AdapterInterface interface
 - Removed all logic code from adapter, adapter now acts only as an interface to the engine.
 - Renamed Listenable class to Adapter
