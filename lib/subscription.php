@@ -68,18 +68,18 @@ class Subscription {
      * 
      * @return  mixed  Results of the function
      */
-     public function fire()
-     {
-         return call_user_func_array($this->_function, func_get_args());
-     }
+    public function fire(/* ... */)
+    {
+        return call_user_func_array($this->_function, func_get_args());
+    }
 
      /**
      * Returns the identifier.
      * 
      * @return  string
      */
-     public function getIdentifier()
-     {
-         return $this->_identifier;
-     }
+    public function getIdentifier(/* ... */)
+    {
+        return $this->_identifier;
+    }
 }

@@ -21,47 +21,63 @@ namespace prggmr;
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-use \SplPriorityQueue,
-    \BadMethodCallException,
+use \Countable,
+    \Iterator,
     \InvalidArgumentException;
 
 
 /**
- * The Queue object is a queue based object using the SplPriorityQueue stdobject
- * developed into PHP 5.3. The object is a basic representation of an
- * event that will be called by the engine. 
+ * The queue object is a priority queue implemented using a heap, it was decided
+ * aganist using PHP's implementation of the current PriorityQueue which is not 
+ * to say it isn't useful, only wasteful. This does come at a disadvantage of
+ * sacrificing performance over functionality ... even at a small cost. 
+ *
+ * The priority works as a min-heap, which also bring the point that unlike 
+ * the implementation in the SPL priority is limited only to integers this is 
+ * done for performance reasons since sorting integers will be faster than
+ * any other method.
+ *
+ * The heap is implemented using only the priority, the data is ignored.
+ *
+ * The object itself represents the queue of subscriptions for an event Signal,
+ * which is passed as the constructors first parameter.
  */
-class Queue extends SplPriorityQueue {
+class Queue implements Countable, Iterator {
     
-    protected $_event = null;
+    /**
+     * The event signal for which this queue is attaching subscriptions.
+     * 
+     * @var  object  Signal
+     */
+    protected $_signal = null;
     
-    protected $_serial = PHP_INT_MAX;
-    
+    /**
+     * The queue data
+     *
+     * @var  array
+     */
+     protected $_data = array();
+     
     /**
      * Constructs a new queue object.
      *
-     * @param  string  $event  Event this queue represents
+     * @param  object  $signal  Signal
      *
      * @return  \prggmr\Queue
      */ 
-    public function __construct($event)
+    public function __construct(Signal $signal)
     {
-        if (null === $event) {
-            throw new InvalidArgumentException(
-                'Required parameter "event" not supplied'
-            );
-        }
-        $this->_event = $event;
+        $this->_signal = $signal;
     }
     
     /**
-     * Returns the event this queue represents.
+     * Returns the event signal this queue represents.
      *
-     * @return  string
+     * @return  object
      */
-    public function getEvent()
+    public function getSignal(/* ... */)
     {
-        return $this->_event;
+        return $this->_signal;
     }
     
     /**
@@ -74,20 +90,16 @@ class Queue extends SplPriorityQueue {
      */
     public function enqueue(Subscription $subscription, $priority = 1)
     {
-        return parent::insert($subscription, array(
-                $priority, 
-                $this->_serial--
-            )
+        // force int
+        $priority = (integer) $priority;
+        $this->_data[] = array(
+            $subscription, $priority
         );
+        $this->_prioritize();
     }
      
     /**
     * Removes a subscription from the queue.
-    * 
-    * @todo 
-    * Currently this method does not function providing no means to remove a 
-    * subscription from the queue as such functionality is reasonably 
-    * useful it needs to be implemented.
     *
     * @param  mixed  subscription  String identifier of the subscription or
     *         a Subscription object.
@@ -96,7 +108,13 @@ class Queue extends SplPriorityQueue {
     * @return  void
     */
     public function dequeue($subscription)
-    {}
+    {
+        if (is_string($ubscription)) {
+            $subscription = $this->locate($subscription);
+        }
+        
+        
+    }
      
     /**
     * Locates a subscription in the queue by the identifier.
@@ -118,19 +136,87 @@ class Queue extends SplPriorityQueue {
         $this->rewind();
         return $sub;
     }
-      
+    
     /**
-    * Override insert method and force enqueue use.
-    *
-    * @throws  BadMethodCallException
-    */
-    public function insert($value, $priority) 
+     * Returns the number of subscriptions in the queue.
+     *
+     * @return  integer
+     */
+    public function count(/* ... */)
     {
-       throw new \BadMethodCallException(
-           'insert method is disallowed use enqueue instead'
-       );
+        return count($this->_data);
+    }
+     
+    /**
+     * Moves the internal iterator to the next position.
+     * 
+     * @return  void
+     */
+    public function next(/* ... */)
+    {
+        next($this->_data);
+    }
+    
+    /**
+     * Returns the current iterator position.
+     *
+     * @return  integer
+     */
+    public function key(/* ... */)
+    {
+        return key($this->_data);
+    }
+    
+    /**
+     * Returns if the current position is valid.
+     *
+     * @return  boolean
+     */
+    public function valid(/* ... */)
+    {
+        return isset($this->_data[$this->key()]);
+    }
+    
+    /**
+     * Rewinds the iterator to position 0.
+     *
+     * @return  void
+     */
+    public function rewind(/* ... */)
+    {
+        reset($this->_data);
+    }
+    
+    /**
+     * Returns the data at the current iterator position. 
+     * 
+     * @return  array
+     */
+    public function current(/* ... */)
+    {
+        return current($this->_data);
+    }
+     
+    /**
+     * Prioritizes the queue.
+     *
+     * @return  void
+     */
+    protected function _prioritize(/* ... */)
+    {
+        $tmp = array();
+        foreach ($this->_data as $_k => $_v) {
+            if (!isset($tmp[$_v[1]])) {
+                $tmp[$_v[1]] = array();
+            }
+            $tmp[$_v[1]][] = $_v;
+        }
+        ksort($tmp, SORT_NUMERIC);
+        $this->_data = array();
+        foreach ($tmp as $_array) {
+            foreach ($_array as $_sub) {
+                $this->_data[] = $_sub;
+            }
+        }
     }
 }
-
-$queue = new Queue('my_event');
-$queue->insert();

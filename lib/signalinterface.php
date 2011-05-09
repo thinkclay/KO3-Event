@@ -1,4 +1,5 @@
 <?php
+namespace prggmr;
 /**
  *  Copyright 2010 Nickolas Whiting
  *
@@ -20,19 +21,19 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-define('PRGGMR_VERSION', '0.1.1');
-
-// start'er up
-require 'functions.php';
-require 'data.php';
-require 'engine.php';
-require 'signalinterface.php';
-require 'signal.php';
-require 'adapterinterface.php';
-require 'adapter.php';
-require 'event.php';
-require 'singleton.php';
-require 'api.php';
-require 'benchmark.php';
-require 'queue.php';
-require 'subscription.php';
+/**
+ * The signal object represents the signal passed to the engine
+ * to fire a subscription queue.
+ */
+interface SignalInterface {
+    
+    /**
+     * Compares the event signal given aganist itself.
+     *
+     * @param  mixed  $signal  Signal to compare
+     *
+     * @return  mixed  False on failure. True if matches. String/Array
+     *          return results found via the match.
+     */
+    public function compare($signal);
+}

@@ -26,7 +26,7 @@ namespace prggmr;
  * interpreting incoming event signals, patching in new event subscribers
  * and firing the event signals.
  */
-class Engine extends SplObjectStorage {
+class Engine {
 
 	/**
      * Array of event subscribers

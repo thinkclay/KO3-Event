@@ -1,10 +1,10 @@
 0.1.1
 -----------------------------------
+- Added the SignalInterface interface
+- Added the Signal object
 - Added the Subscription object
 - Added the Queue object
 - Removed benchmark from engine and created its on class Benchmark
-- Refactored Engine::benchmark to only benchmark with first param (start, stop) second name of benchmark
-- Renamed Engine::analyze to Engine::benchmark
 - Removed Engine::initialise method
 - Engine::flush method added
 - Event benchmarks are now stored by the subscription and index by the subscriber name
@@ -18,13 +18,11 @@
 - Removed the DataInstance class as it was redundant and served no real purpose.
 - Added param (stateCheck) to Event::executeChain allowing the Event state check to be skipped.
 - Renamed Event::triggerChain to Event::executeChain
-- Renamed all listen and trigger method to subscribe and bubble throughout the entire codebase.
 - Event chain is now automatically executed before an event bubbles.
 - Event object chain (_parent) is now refered to as (_chain) for simplicity.
 - Refactored event chaining to allow the chain to be set dynamically rather than in the constructor.
 - Removed Event constructor parameter for parent event.
 - Refactored the directory structure to complement the modified/removed code.
-- Added the bubble, analyze and subscribe functions.
 - Changed Event state constants to 0x01 (active), 0x02 (inactive), 0x03 (error)
 - Added AdapterInterface interface
 - Removed all logic code from adapter, adapter now acts only as an interface to the engine.
