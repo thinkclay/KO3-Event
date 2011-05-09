@@ -27,26 +27,26 @@ namespace prggmr;
  * each signal must be exactly equal both in type and value.
  */
 class Signal implements SignalInterface {
-    
+
     /**
      * The event signal.
-     * 
+     *
      * @var  string
      */
     protected $_signal = null;
-     
+
     /**
      * Constructs a new signal object.
      *
      * @param  mixed  $signal  Event signal
      *
      * @return  \prggmr\Queue
-     */ 
+     */
     public function __construct($signal)
     {
         $this->_signal = $signal;
     }
-    
+
     /**
      * Compares the event signal given with itself.
      *
@@ -58,5 +58,15 @@ class Signal implements SignalInterface {
     public function compare($signal)
     {
         return ($this->_signal === $signal);
+    }
+
+    /**
+     * Returns the signal.
+     *
+     * @return  mixed  Event signal.
+     */
+    public function signal()
+    {
+        return $this->_signal;
     }
 }
