@@ -67,14 +67,27 @@ class Subscription {
 
     /**
      * Fires this subscriptions function.
+     * Allowing for the first parameter as an array of parameters or
+     * by passing them directly.
+     *
+     * @param  array  $params  Array of parameters to pass.
      *
      * @throws  RuntimeException  When exception thrown within the closure.
      * @return  mixed  Results of the function
      */
-    public function fire(/* ... */)
+    public function fire($params = null)
     {
+        if (count(func_get_args()) >= 2) {
+            $params = func_get_args();
+        } else {
+            // force array
+            if (!is_array($params)) {
+                $params = array($params);
+            }
+        }
+
         try {
-            return call_user_func_array($this->_function, func_get_args());
+            return call_user_func_array($this->_function, $params);
         } catch (\Exception $e) {
             throw new \RuntimeException($e->getMessage());
         }

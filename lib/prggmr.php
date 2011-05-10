@@ -28,6 +28,7 @@ require 'data.php';
 require 'engine.php';
 require 'signalinterface.php';
 require 'signal.php';
+require 'regexsignal.php';
 require 'adapterinterface.php';
 require 'adapter.php';
 require 'event.php';

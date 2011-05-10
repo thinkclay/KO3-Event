@@ -54,4 +54,22 @@ class SubscriptionTest extends \PHPUnit_Framework_TestCase
         }, 'helloworld');
         $sub->fire();
     }
+
+    public function testEventFireParameters()
+    {
+        $sub = new \prggmr\Subscription(function($param1){
+            return $param1;
+        }, 'helloworld');
+        $this->assertEquals('helloworld', $sub->fire('helloworld'));
+
+        $sub = new \prggmr\Subscription(function($param1){
+            return $param1;
+        }, 'helloworld');
+        $this->assertEquals('helloworld', $sub->fire(array('helloworld')));
+
+        $sub = new \prggmr\Subscription(function($param1, $param2){
+            return $param1.$param2;
+        }, 'helloworld');
+        $this->assertEquals('helloworld', $sub->fire('hello', 'world'));
+    }
 }

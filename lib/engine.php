@@ -125,8 +125,6 @@ class Engine {
 		} else {
 			static::$__events[$options['namespace']][$event][$options['name']] = $function;
 		}
-        var_dump($function);
-        die();
         return true;
     }
 
@@ -474,7 +472,7 @@ class Engine {
 				}
 				break;
 			case is_int($op):
-				$exception = new Exception(
+				$exception = new \Exception(
 					sprintf('%s', $string)
 				);
 				static::debug($exception);
