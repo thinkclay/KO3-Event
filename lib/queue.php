@@ -112,10 +112,10 @@ class Queue extends \SplObjectStorage {
     public function dequeue($subscription)
     {
         if (is_string($subscription) && $this->locate($subscription)) {
-            $this->detach($this->current());
+            parent::detach($this->current());
             $this->dirty = true;
         } elseif ($subscription instanceof Subscription) {
-            $this->detach($subscription);
+            parent::detach($subscription);
             $this->dirty = true;
         }
     }
@@ -187,5 +187,10 @@ class Queue extends \SplObjectStorage {
     public function attach()
     {
         throw new Exception('attach method disallowed; use of enqueue required');
+    }
+    
+    public function detach()
+    {
+        throw new Exception('detach method disallowed; use of dequeue required');
     }
 }
