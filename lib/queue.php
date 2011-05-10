@@ -49,13 +49,13 @@ class Queue extends \SplObjectStorage {
      * @var  object  Signal
      */
     protected $_signal = null;
-
+    
     /**
-     * The queue data
+     * Flag for the prioritizing the queue.
      *
-     * @var  array
+     * @var  boolean
      */
-    protected $_data = array();
+    public $dirty = false;
 
     /**
      * Constructs a new queue object.
@@ -89,12 +89,15 @@ class Queue extends \SplObjectStorage {
      * Inserts a subscription into the queue.
      *
      * @param  object  $subscription  \prggmr\Subscription
+     * @param  integer $priority  Priority of the subscription
      *
      * @return  void
      */
-    public function enqueue(Subscription $subscription)
+    public function enqueue(Subscription $subscription, $priority = 100)
     {
-        parent::attach($subscription);
+        $this->dirty = true;
+        $priority = (integer) $priority;
+        parent::attach($subscription, $priority);
     }
 
     /**
@@ -109,11 +112,11 @@ class Queue extends \SplObjectStorage {
     public function dequeue($subscription)
     {
         if (is_string($subscription) && $this->locate($subscription)) {
-            var_dump($this->current());
             $this->detach($this->current());
-            $this->rewind();
+            $this->dirty = true;
         } elseif ($subscription instanceof Subscription) {
             $this->detach($subscription);
+            $this->dirty = true;
         }
     }
 
@@ -127,13 +130,62 @@ class Queue extends \SplObjectStorage {
     */
     public function locate($identifier)
     {
+        $this->rewind(false);
         while($this->valid()) {
-            var_dump($this->current());
             if ($this->current()->getIdentifier() == $identifier) {
-                break;
+                return true;
             }
             $this->next();
         }
         return false;
+    }
+    
+    /**
+     * Rewinds the iterator to prepare for iteration of the queue, also
+     * triggers prioritizing.
+     *
+     * @param  boolean  $prioritize  Flag to prioritize the queue.
+     * 
+     * @return  void
+     */
+    public function rewind($prioritize = true)
+    {
+        if ($prioritize) {
+            $this->_prioritize();
+        }
+        return parent::rewind();
+    }
+    
+    /**
+     * Prioritizes the queue.
+     *
+     * @return  void
+     */
+    protected function _prioritize(/* ... */)
+    {
+        if (!$this->dirty) return null;
+        $tmp = array();
+        $this->rewind(false);
+        while($this->valid()) {
+            $pri = $this->getInfo();
+            if (!isset($tmp[$pri])) {
+                $tmp[$pri] = array();
+            }
+            $tmp[$pri][] = $this->current();
+            $this->next();
+        }
+        ksort($tmp, SORT_NUMERIC);
+        $this->removeAll($this);
+        foreach ($tmp as $priority => $_array) {
+            foreach ($_array as $_sub) {
+                parent::attach($_sub, $priority);
+            }
+        }
+        $this->dirty = false;
+    }
+    
+    public function attach()
+    {
+        throw new Exception('attach method disallowed; use of enqueue required');
     }
 }

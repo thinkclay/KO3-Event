@@ -66,6 +66,33 @@ class QueueTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(!$this->queue->dequeue($sub));
         $this->assertEquals(0, $this->queue->count());
     }
+    
+    public function testPriorityFlag()
+    {
+        $this->assertFalse($this->queue->dirty);
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test1'));
+        $this->assertTrue($this->queue->dirty);
+        $this->queue->rewind();
+        $this->assertFalse($this->queue->dirty);
+    }
+    
+    public function testPriority()
+    {
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test1'), 100);
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test2'), 75);
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test3'), 125);
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test4'), 1);
+        $this->queue->enqueue(new \prggmr\Subscription(function(){}, 'test5'), 125);
+        $this->queue->rewind();
+        $array = array();
+        while($this->queue->valid()) {
+            $array[] = $this->queue->current()->getIdentifier();
+            $this->queue->next();
+        }
+        $this->assertEquals(array(
+            'test4','test2','test1','test3','test5'
+        ), $array);
+    }
 
     public function testRewindKeyNext()
     {
