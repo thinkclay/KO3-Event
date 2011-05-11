@@ -46,9 +46,6 @@ class Benchmark extends Data {
 	*/
     public static function benchmark($op, $name)
     {
-        if (false === \prggmr\Engine::debug()) {
-            return true;
-        }
         $microtime = function() {
             $time = explode(" ",microtime());
             return $time[0] + $time[1];

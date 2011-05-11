@@ -105,9 +105,9 @@ class Engine extends Singleton {
 
         $this->_storage->rewind();
         while($this->_storage->valid()) {
-            if (($obj && $this->_storage->current->getSignal() === $signal) ||
+            if (($obj && $this->_storage->current()->getSignal() === $signal) ||
                 ($this->_storage->current()->getSignal(true) === $signal)) {
-                return $this->current();
+                return $this->_storage->current();
             }
             $this->_storage->next();
         }
@@ -116,9 +116,11 @@ class Engine extends Singleton {
             $obj = new Signal($signal);
         }
 
+        $obj = new Queue($obj);
+
         // new queue
-        $this->_storage->attach(new Queue($obj));
-        return $this->_storage[$obj];
+        $this->_storage->attach($obj);
+        return $obj;
     }
 
     /**
