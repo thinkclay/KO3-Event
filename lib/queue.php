@@ -49,7 +49,7 @@ class Queue extends \SplObjectStorage {
      * @var  object  Signal
      */
     protected $_signal = null;
-    
+
     /**
      * Flag for the prioritizing the queue.
      *
@@ -96,6 +96,7 @@ class Queue extends \SplObjectStorage {
     public function enqueue(Subscription $subscription, $priority = 100)
     {
         $this->dirty = true;
+        if (null === $priority) $priority = 100;
         $priority = (integer) $priority;
         parent::attach($subscription, $priority);
     }
@@ -139,13 +140,13 @@ class Queue extends \SplObjectStorage {
         }
         return false;
     }
-    
+
     /**
      * Rewinds the iterator to prepare for iteration of the queue, also
      * triggers prioritizing.
      *
      * @param  boolean  $prioritize  Flag to prioritize the queue.
-     * 
+     *
      * @return  void
      */
     public function rewind($prioritize = true)
@@ -155,7 +156,7 @@ class Queue extends \SplObjectStorage {
         }
         return parent::rewind();
     }
-    
+
     /**
      * Prioritizes the queue.
      *
@@ -183,12 +184,12 @@ class Queue extends \SplObjectStorage {
         }
         $this->dirty = false;
     }
-    
+
     public function attach()
     {
         throw new Exception('attach method disallowed; use of enqueue required');
     }
-    
+
     public function detach()
     {
         throw new Exception('detach method disallowed; use of dequeue required');

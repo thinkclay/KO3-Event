@@ -55,12 +55,13 @@ class Subscription {
     /**
      * Constructs a new subscription object.
      *
-     * @param  object  $function  \Closure
+     * @param  mixed  $function  A callable variable.
      *
      * @return  \prggmr\Queue
      */
-    public function __construct(\Closure $function, $identifier)
+    public function __construct($function, $identifier = null)
     {
+        if (null === $identifier) $identifier = rand(100000,999999);
         $this->_function = $function;
         $this->_identifier = (string) $identifier;
     }

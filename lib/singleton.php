@@ -22,9 +22,9 @@ namespace prggmr;
  */
 
 /**
- * Singleton implementation which provides prggmr Engine adapter functionality.
+ * Singleton implementation.
  */
-abstract class Singleton extends Adapter
+abstract class Singleton
 {
     /**
      * @var  array  Instances of the singleton.
