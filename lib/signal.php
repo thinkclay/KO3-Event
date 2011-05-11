@@ -44,6 +44,7 @@ class Signal implements SignalInterface {
      */
     public function __construct($signal)
     {
+        if (is_object($signal)) $signal = spl_object_hash($signal);
         $this->_signal = $signal;
     }
 
@@ -57,6 +58,7 @@ class Signal implements SignalInterface {
      */
     public function compare($signal)
     {
+        if (is_object($signal)) $signal = spl_object_hash($signal);
         return ($this->_signal === $signal);
     }
 
