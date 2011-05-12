@@ -51,6 +51,7 @@ class Subscription {
      * @var  string
      */
      protected $_identifier = null;
+     
 
     /**
      * Constructs a new subscription object.

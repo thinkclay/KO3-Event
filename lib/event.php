@@ -58,20 +58,6 @@ class Event
     protected $_return = null;
 
     /**
-     * Results from a chained event
-     *
-     * @var  mixed
-     */
-    protected $_chainReturn = null;
-
-    /**
-     * Event object to call when bubbling the event chain.
-     *
-     * @var  object  \prggmr\util\Event
-     */
-    protected $_chain = null;
-
-    /**
      * Halt the event que after this event finishes.
      *
      * @var  boolean  True to propagate | False otherwise
@@ -79,11 +65,11 @@ class Event
     protected $_halt = false;
 
     /**
-     * Subscriber in which this event will bubble upon.
+     * Signal this event represents.
      *
-     * @var  string  Name of event subscriber.
+     * @var  object  Signal
      */
-    protected $_subscription = null;
+    protected $_signal = null;
 
     /**
      * Flag that allows the results from each subscriber to stack and return
@@ -100,6 +86,13 @@ class Event
      * @var  string
      */
     protected $_stateMessage = null;
+
+    /**
+     * Event which was chained from this event.
+     *
+     * @param  object  Event
+     */
+    protected $_chain = null;
 
     /**
      * Constructs a new event object.
@@ -245,124 +238,21 @@ class Event
      *
      * @return  string
      */
-    public function getSubscription(/* ... */)
+    public function getSignal(/* ... */)
     {
-        return $this->_subscription;
+        return $this->_signal;
     }
 
     /**
-     * Sets the subscription string for this event.
+     * Sets the signal this event represents.
      *
-     * @param  string  $str  String name to subscribe this event.
+     * @param  object  $signal  Signal
      *
      * @return  void
      */
-    public function setSubscription($str)
+    public function setSignal($signal)
     {
-        $this->_subscription = $str;
-    }
-
-	/**
-	 * Sets the event chain.
-	 *
-	 * @todo  Possibly a method of establishing event chains based on dynamic
-	 * 		  data related to the event/chain sequence.
-	 *
-	 *
-	 * @param  object  $event  Event object to bubble in chain
-	 *
-	 * @return  void
-	 */
-	public function setChain(Event $event)
-	{
-		$this->_chain = $event;
-		return null;
-	}
-
-    /**
-     * Bubbles the event chains attached for this event.
-     *
-     * @param  boolean  stateCheck  Boolean to check the event state, setting
-     * 		   false will skip the check allowing for a chained event sequence
-     * 		   while the event is in any state. Otherwise the event will be
-     * 		   forced into an active state.
-     *
-     * @return  mixed  Results of the chain execution.
-     */
-    public function executeChain($stateCheck = true)
-    {
-        if ($this->isHalted()) {
-            return false;
-        }
-
-        if ($this->hasChain()) {
-
-            // Ensure we are in an active state
-            if ($stateCheck && self::STATE_ACTIVE !== $this->getState()) {
-                $this->setState(self::STATE_ACTIVE);
-            }
-            $this->_chain->bubble();
-            return $this->_chain->getResults();
-        }
-    }
-
-    /**
-     * Determains if this event has a chain sequence to call.
-     *
-     * @return  boolean  True | False
-     */
-    public function hasChain(/* ... */)
-    {
-        return (null !== $this->_chain);
-    }
-
-    /**
-     * Bubbles an event.
-     *
-     * @param  array  $params  Parameters to directly pass to the event subscriber
-     * @param  array  $options  Array of options. Avaliable options
-     *
-     *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to Engine::GLOBAL_DEFAULT.
-     *
-     *         `benchmark` - Benchmark this events execution.
-     *
-     *         `offset` - Specify the alternate place from which to start the search.
-     *
-     *         `object` - Return the event object.
-     *
-     *         `suppress` - Suppress exceptions when an event is encountered in
-     *         a STATE_ERROR.
-     *
-     *         `stateCheck` -
-     *
-     * @throws  LogicException when an error is encountered during subscriber
-     *          execution
-     *          RuntimeException when attempting to execute an event in
-     *          an unexecutable state
-     *
-     * @return  mixed  Results of event
-     * @see  Engine::bubble
-     */
-    public function bubble(array $params = array(), array $options = array()) {
-		$defaults = array('stateCheck' => true);
-		$options += $defaults;
-		//bubble chain if exists
-		$this->_chainReturn = $this->executeChain($options['stateCheck']);
-        return Engine::bubble($this, $params, $options);
-    }
-
-    /**
-     * Automatically sets the subscription to the overloaded method then bubbles.
-     *
-     * @return  mixed  Results of the event
-     */
-    public function __call($event, array $args = array())
-    {
-        $defaults = array(0 => array(), 1 => array());
-        $args += $defaults;
-        $this->setSubscription($event);
-        return $this->bubble($args[0], $args[1]);
+        $this->_signal = $signal;
     }
 
     /**
@@ -376,12 +266,22 @@ class Event
     }
 
     /**
-     * Retrieves the results of the executed event chain.
+     * Sets the chained event.
      *
-     * @return  mixed
+     * @param  object  $chain  Event
      */
-    public function getChainResults()
+    public function setChain(Event $chain)
     {
-        return $this->_chainReturn;
+        $this->_chain = $chain;
+    }
+
+    /**
+     * Returns the chained Event object if exists.
+     *
+     * @return  mixed  Event object, null if no chain exists.
+     */
+    public function getChain()
+    {
+        return $this->_chain;
     }
 }

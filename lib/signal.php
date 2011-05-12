@@ -36,15 +36,24 @@ class Signal implements SignalInterface {
     protected $_signal = null;
 
     /**
+     * Chain signal
+     *
+     * @var  mixed
+     */
+    protected $_chain = null;
+
+    /**
      * Constructs a new signal object.
      *
      * @param  mixed  $signal  Event signal
+     * @param  mixed  $chain  An additional signal for a chain
      *
      * @return  \prggmr\Queue
      */
-    public function __construct($signal)
+    public function __construct($signal, $chain = null)
     {
         if (is_object($signal)) $signal = spl_object_hash($signal);
+        $this->_chain = $chain;
         $this->_signal = $signal;
     }
 
@@ -70,5 +79,15 @@ class Signal implements SignalInterface {
     public function signal()
     {
         return $this->_signal;
+    }
+
+    /**
+     * Returns the signal chain.
+     *
+     * @return  mixed
+     */
+    public function getChain()
+    {
+        return $this->_chain;
     }
 }

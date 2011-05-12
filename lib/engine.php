@@ -97,7 +97,7 @@ class Engine extends Singleton {
      *
      * @param  mixed  $signal  Signal the queue represents.
      * @param  boolean  $generate  Generate the queue if not found.
-     * 
+     *
      * @return  mixed  Queue object, false if generate is false and queue
      *          is not found.
      */
@@ -115,34 +115,45 @@ class Engine extends Singleton {
         }
 
         if (!$obj) {
-            $obj = new Signal($signal);
+            $signal = new Signal($signal);
         }
 
-        $obj = new Queue($obj);
+        $obj = new Queue($signal);
 
         // new queue
         $this->_storage->attach($obj);
         return $obj;
     }
-    
+
     /**
-     * Fires an event signal returning the results.
+     * Fires an event signal.
      *
      * @param  mixed  $signal  The event signal, this can be the signal object
      *         or the signal representation.
      *
      * @param  object  $event  Event
      *
+     * @param  array  $vars  Array of variables to pass the subscribers
+     *
      * @return  object  Event
      */
-    public function bubble($signal, $event = null)
+    public function bubble($signal, $event = null, array $vars = array())
     {
-        $queue = $this->_queue($signal, false);
-        
-        if (!$queue) {
+        $this->_storage->rewind();
+        while($this->_storage->valid()) {
+            if (false !== ($compare = $this->_storage->current()->getSignal()->compare($signal))) {
+                break;
+            }
+            $this->_storage->next();
+        }
+
+        if (false === $compare) {
             return false;
         }
-        
+
+        $queue = $this->_storage->current();
+        $queue->rewind();
+
         if (!is_object($event)) {
             $event = new Event($queue->getSignal());
         } elseif (!$event instanceof Event) {
@@ -152,10 +163,32 @@ class Engine extends Singleton {
                 , get_class($event))
             );
         }
-        
-        $queue->rewind();
+
+        $event->setSignal($queue->getSignal());
+
+        if (count($vars) == 0) {
+            $vars = array($event);
+        } else {
+            $vars = array_merge(array($event), $vars);
+        }
+
+        if ($compare !== true) {
+            // allow for array return
+            if (is_array($compare)) {
+                $vars = array_merge($vars, $compare);
+            } else {
+                $vars[] = $compare;
+            }
+        }
+
+        // execute the chain
+        if (null !== ($chain = $queue->getSignal()->getChain())) {
+            $chain = $this->bubble($chain, null, $vars);
+            $event->setChain($chain);
+        }
+
         while($queue->valid()) {
-            
+            if ($event->isHalted()) break;
             if ($event->getState() === Event::STATE_ERROR) {
                 throw new \RuntimeException(
                     sprintf(
@@ -164,11 +197,11 @@ class Engine extends Singleton {
                     )
                 );
             }
-            
-            $queue->current()
-            
+            $queue->current()->fire($vars);
             $queue->next();
         }
+
+        return $event;
     }
 
     /**

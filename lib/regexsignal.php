@@ -33,16 +33,17 @@ class RegexSignal extends Signal {
      * Support for :name parameters are supported.
      *
      * @param  string  $signal  Regex event signal
+     * @param  mixed  $chain  An additional signal for a chain
      *
      * @return  void
      */
-    public function __construct($signal)
+    public function __construct($signal, $chain)
     {
         $regex = preg_replace('#:([\w]+)#i', 'fix\(?P<$1>[\w_-]+fix\)', $signal);
         $regex = str_replace('fix\(', '(', $regex);
         $regex = str_replace('fix\)', ')', $regex);
         $regex = '#' . $regex . '$#i';
-        $this->_signal = $regex;
+        parent::__construct($regex, $chain);
     }
 
     /**
