@@ -96,10 +96,12 @@ class Engine extends Singleton {
      * Locates a Queue object in storage, if not found one is created.
      *
      * @param  mixed  $signal  Signal the queue represents.
-     *
-     * @return  object  Queue
+     * @param  boolean  $generate  Generate the queue if not found.
+     * 
+     * @return  mixed  Queue object, false if generate is false and queue
+     *          is not found.
      */
-    public function _queue($signal)
+    public function _queue($signal, $generate = true)
     {
         $obj = (is_object($signal) && $signal instanceof Signal);
 
@@ -121,6 +123,52 @@ class Engine extends Singleton {
         // new queue
         $this->_storage->attach($obj);
         return $obj;
+    }
+    
+    /**
+     * Fires an event signal returning the results.
+     *
+     * @param  mixed  $signal  The event signal, this can be the signal object
+     *         or the signal representation.
+     *
+     * @param  object  $event  Event
+     *
+     * @return  object  Event
+     */
+    public function bubble($signal, $event = null)
+    {
+        $queue = $this->_queue($signal, false);
+        
+        if (!$queue) {
+            return false;
+        }
+        
+        if (!is_object($event)) {
+            $event = new Event($queue->getSignal());
+        } elseif (!$event instanceof Event) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'bubble expected instance of Event recieved "%s"'
+                , get_class($event))
+            );
+        }
+        
+        $queue->rewind();
+        while($queue->valid()) {
+            
+            if ($event->getState() === Event::STATE_ERROR) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Event execution failed with message "%s"',
+                        $event->getStateMessage()
+                    )
+                );
+            }
+            
+            $queue->current()
+            
+            $queue->next();
+        }
     }
 
     /**
