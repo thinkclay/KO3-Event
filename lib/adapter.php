@@ -16,7 +16,7 @@ namespace prggmr;
  *  limitations under the License.
  *
  *
- * @author  Nickolas Whiting  <me@nwhiting.com>
+ * @author  Nickolas Whiting <me@nwhiting.com>
  * @package  prggmr
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */

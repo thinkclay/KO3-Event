@@ -20,7 +20,7 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-define('PRGGMR_VERSION', '0.2.0a');
+define('PRGGMR_VERSION', '0.2.0b');
 
 // start'er up
 require 'functions.php';

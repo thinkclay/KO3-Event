@@ -76,7 +76,7 @@ class Signal implements SignalInterface {
      *
      * @return  mixed  Event signal.
      */
-    public function signal()
+    public function signal(/* ... */)
     {
         return $this->_signal;
     }
@@ -86,8 +86,20 @@ class Signal implements SignalInterface {
      *
      * @return  mixed
      */
-    public function getChain()
+    public function getChain(/* ... */)
     {
         return $this->_chain;
+    }
+
+    /**
+     * Sets the signal chain
+     *
+     * @param  mixed  $signal  Chain signal
+     *
+     * @return  void
+     */
+    public function setChain($signal)
+    {
+        $this->_chain = $signal;
     }
 }

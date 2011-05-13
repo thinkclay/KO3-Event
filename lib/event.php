@@ -51,11 +51,11 @@ class Event
     protected $_state = Event::STATE_INACTIVE;
 
     /**
-     * Results returned after this event bubbles.
+     * Data attached to this event
      *
      * @var  mixed
      */
-    protected $_return = null;
+    protected $_data = null;
 
     /**
      * Halt the event que after this event finishes.
@@ -70,15 +70,6 @@ class Event
      * @var  object  Signal
      */
     protected $_signal = null;
-
-    /**
-     * Flag that allows the results from each subscriber to stack and return
-     * an array, rather than overwriting the current return each time a new
-     * is recieved.
-     *
-     * @var  boolean  True | False
-     */
-    protected $_stackableResults = true;
 
     /**
      * Message associated with the current event state.
@@ -160,74 +151,37 @@ class Event
     }
 
     /**
-     * Returns the current return value of this event.
+     * Returns the current data value of this event.
      *
      * This method should also be used to detect if this event currently
-     * has results previously attatched by a subscriber in the same stack to
+     * has data previously attatched by a subscriber in the same stack to
      * avoid overwritting results.
      *
      * @return  mixed  Results of
      */
-    public function getResults(/* ... */)
+    public function getData(/* ... */)
     {
-        return $this->_return;
+        return $this->_data;
     }
 
     /**
-     * Returns if this event can have a result stack rather than a single
-     * returnable result.
-     * This can set by calling `setResultsStackable()` method before
-     * bubbling an event.
+     * Sets data in the event.
      *
-     * @return  boolean  True | False
-     */
-    public function isResultsStackable(/* ... */)
-    {
-        return $this->_stackableResults;
-    }
-
-    /**
-     * Sets this event to allow a stack return, allowing multiple results
-     * rather than a single value.
-     * It must be noted that this must be set before an event begins firing
-     * or this flag will be ignored, also once set the results will allways
-     * be returned within an array.
-     *
-     * @param  boolean  $flag  True to allow | False otherwise.
-     *
-     * @return  boolean  True on success | False otherwise
-     */
-    public function setResultsStackable($flag)
-    {
-        $flag = (boolean) $flag;
-        if ($this->getState() !== self::STATE_INACTIVE) {
-            return false;
-        }
-        $this->_stackableResults = $flag;
-        return true;
-    }
-
-    /**
-     * Sets the value that will be returned by `getResults`.
-     *
-     * @param  mixed  $return  Value to set as the result of this event.
+     * @param  mixed  $data  Value to set as the result of this event.
      *
      * @return  boolean  True
      */
-    public function setResults($return)
+    public function setData($value, $key = false)
     {
-        if ($this->isResultsStackable()) {
-            if (null === $this->_return) {
-                $this->_return = array();
-            }
-            if (!is_array($this->_return)) {
-                (array) $this->_return[] = $return;
-            } else {
-                $this->_return[] = $return;
-            }
+
+        if (!is_array($this->_data)) {
+            (array) $this->_data[$key] = $value;
         } else {
-            // Blindly overwrite the return of this event
-            $this->_return = $return;
+            if (false === $key) {
+                $this->_data[] = $value;
+            } else {
+                $this->_data[$key] = $value;
+            }
         }
 
         return true;
@@ -253,16 +207,6 @@ class Event
     public function setSignal($signal)
     {
         $this->_signal = $signal;
-    }
-
-    /**
-     * Empties the current return results.
-     *
-     * @return  void
-     */
-    public function clearResults()
-    {
-        $this->_return = null;
     }
 
     /**

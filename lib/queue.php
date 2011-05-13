@@ -194,4 +194,14 @@ class Queue extends \SplObjectStorage {
     {
         throw new Exception('detach method disallowed; use of dequeue required');
     }
+
+    /**
+     * Flushes the queue.
+     *
+     * @return  void
+     */
+    public function flush(/* ... */)
+    {
+        $this->removeAll($this);
+    }
 }

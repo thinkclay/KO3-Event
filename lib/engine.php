@@ -58,8 +58,13 @@ class Engine extends Singleton {
     /**
      * Attaches a new subscription to a signal queue.
      *
+     * NOTE: Passing an array as the signal parameter should be done only
+     *       once per subscription que as each time a new Queue is created.
+     *
+     *
      * @param  mixed  $signal  Signal the subscription will attach to, this
-     *         can be a Signal object or the signal represented.
+     *         can be a Signal object, the signal representation or an array
+     *         for a chained signal.
      *
      * @param  mixed  $subscription  Subscription closure that will trigger on
      *         fire or a Subscription object.
@@ -89,7 +94,13 @@ class Engine extends Singleton {
             $subscription = new Subscription($subscription, $identifier);
         }
 
-        return $this->_queue($signal)->enqueue($subscription, $priority);
+        if (is_array($signal) && isset($signal[0]) && isset($signal[1])) {
+            $queue = $this->_queue($signal[0]);
+            $queue->getSignal()->setChain($signal[1]);
+            return $queue->enqueue($subscription, $priority);
+        } else {
+            return $this->_queue($signal)->enqueue($subscription, $priority);
+        }
     }
 
     /**
@@ -137,7 +148,7 @@ class Engine extends Singleton {
      *
      * @return  object  Event
      */
-    public function bubble($signal, $event = null, array $vars = array())
+    public function fire($signal, $event = null, array $vars = array())
     {
         $this->_storage->rewind();
         while($this->_storage->valid()) {
@@ -165,8 +176,9 @@ class Engine extends Singleton {
         }
 
         $event->setSignal($queue->getSignal());
+        $event->setState(Event::STATE_ACTIVE);
 
-        if (count($vars) == 0) {
+        if (count($vars) === 0) {
             $vars = array($event);
         } else {
             $vars = array_merge(array($event), $vars);
@@ -179,12 +191,6 @@ class Engine extends Singleton {
             } else {
                 $vars[] = $compare;
             }
-        }
-
-        // execute the chain
-        if (null !== ($chain = $queue->getSignal()->getChain())) {
-            $chain = $this->bubble($chain, null, $vars);
-            $event->setChain($chain);
         }
 
         while($queue->valid()) {
@@ -201,6 +207,23 @@ class Engine extends Singleton {
             $queue->next();
         }
 
+        // execute the chain
+        if (null !== ($chain = $queue->getSignal()->getChain())) {
+            if (null !== ($data = $event->getData())) {
+                // remove the current event from the vars
+                unset($vars[0]);
+                $vars = array_merge($vars, $event->getData());
+            }
+            //var_dump($vars);
+            $chain = $this->fire($chain, null, $vars);
+            if (false !== $chain) {
+                $event->setChain($chain);
+            }
+        }
+
+        // keep the event in an active state until its chain completes
+        $event->setState(Event::STATE_INACTIVE);
+
         return $event;
     }
 
@@ -212,5 +235,13 @@ class Engine extends Singleton {
     public static function version(/* ... */)
     {
         return PRGGMR_VERSION;
+    }
+
+    /**
+     * Flushes the engine.
+     */
+    public function flush(/* ... */)
+    {
+        $this->_storage = new \SplObjectStorage();
     }
 }
