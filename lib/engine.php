@@ -93,8 +93,15 @@ class Engine extends Singleton {
             }
             $subscription = new Subscription($subscription, $identifier);
         }
-
+		
         if (is_array($signal) && isset($signal[0]) && isset($signal[1])) {
+			// TODO: The peeve i have with this is it allows for overiding an
+			// existing chain ... possibly to solve this is to setup the chain
+			// as a sequence but that would require priority or would it?
+			// it could also be done as a stack but that would puts in the
+			// limitation that chains are now lifo ... i think that a chain
+			// object which incorporates a multiplex of transformation
+			// capabilities will suffice.
             $queue = $this->_queue($signal[0]);
             $queue->getSignal()->setChain($signal[1]);
             return $queue->enqueue($subscription, $priority);
@@ -152,6 +159,11 @@ class Engine extends Singleton {
     {
         $this->_storage->rewind();
         while($this->_storage->valid()) {
+			// compare the signal given with the queue signal ..
+			// TODO: Currently this allows for the first signal match to be used
+			// this should allow for either it to continue on with itself until
+			// it finds the signal it wants based on some crazy algorithm that
+			// has yet to be written OR use every signal it compares with
             if (false !== ($compare = $this->_storage->current()->getSignal()->compare($signal))) {
                 break;
             }
@@ -161,10 +173,11 @@ class Engine extends Singleton {
         if (false === $compare) {
             return false;
         }
-
+		
         $queue = $this->_storage->current();
+		// rewinds and prioritizes the queue
         $queue->rewind();
-
+		
         if (!is_object($event)) {
             $event = new Event($queue->getSignal());
         } elseif (!$event instanceof Event) {
@@ -192,7 +205,8 @@ class Engine extends Singleton {
                 $vars[] = $compare;
             }
         }
-
+		
+		// the main loop
         while($queue->valid()) {
             if ($event->isHalted()) break;
             if ($event->getState() === Event::STATE_ERROR) {
@@ -207,14 +221,13 @@ class Engine extends Singleton {
             $queue->next();
         }
 
-        // execute the chain
+        // the chain
         if (null !== ($chain = $queue->getSignal()->getChain())) {
             if (null !== ($data = $event->getData())) {
                 // remove the current event from the vars
                 unset($vars[0]);
                 $vars = array_merge($vars, $event->getData());
             }
-            //var_dump($vars);
             $chain = $this->fire($chain, null, $vars);
             if (false !== $chain) {
                 $event->setChain($chain);
