@@ -149,13 +149,13 @@ class Engine extends Singleton {
      * @param  mixed  $signal  The event signal, this can be the signal object
      *         or the signal representation.
      *
-     * @param  object  $event  Event
-     *
      * @param  array  $vars  Array of variables to pass the subscribers
+     *
+     * @param  object  $event  Event
      *
      * @return  object  Event
      */
-    public function fire($signal, $event = null, array $vars = array())
+    public function fire($signal, array $vars = array(), $event = null)
     {
         $this->_storage->rewind();
         while($this->_storage->valid()) {
@@ -228,7 +228,7 @@ class Engine extends Singleton {
                 unset($vars[0]);
                 $vars = array_merge($vars, $event->getData());
             }
-            $chain = $this->fire($chain, null, $vars);
+            $chain = $this->fire($chain, $vars);
             if (false !== $chain) {
                 $event->setChain($chain);
             }
@@ -256,5 +256,15 @@ class Engine extends Singleton {
     public function flush(/* ... */)
     {
         $this->_storage = new \SplObjectStorage();
+    }
+    
+    /**
+     * Returns the count of subsciption queues in the engine.
+     *
+     * @return  integer
+     */
+    public function count()
+    {
+        return $this->_storage->count();
     }
 }

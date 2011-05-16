@@ -30,17 +30,20 @@ include_once 'bootstrap.php';
 
 class EngineTest extends \PHPUnit_Framework_TestCase
 {
+    public function setUp()
+    {
+        $this->engine = \prggmr\Engine::instance();
+    }
+    
     public function tearDown()
     {
-        //\prggmr\Engine::flush('s','r','e','stats');
+        $this->engine->flush();
     }
 
-    public function assertEvent($event, $params, $expected, $options = array())
+    public function assertEvent($event, $params, $expected)
     {
-        $defaults = array('stackResults' => false);
-        $options += $defaults;
-        $event = \prggmr\Engine::bubble($event, $params, $options);
-        $this->assertEquals($expected, $event);
+        $event = $this->engine->fire($event, $params);
+        $this->assertEquals($expected, $event->getData());
     }
 
     /**
@@ -51,8 +54,8 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testSubscribe()
     {
-        \prggmr\Engine::subscribe('subscriber', function($event){}, array('name' => 'testSubscribe'));
-        $this->assertTrue(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
+        $this->engine->subscribe('subscriber', function($event){}, array('name' => 'testSubscribe'));
+        $this->assertTrue($this->engine->count() == 1);
     }
 
     /**
@@ -64,10 +67,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventSingleParameter()
     {
-        \prggmr\Engine::subscribe('subscribe-parameter-single', function($event, $param1){
-            return $param1;
-        }, array('name' => 'testEventSingleParameter'));
-        $this->assertEvent('subscribe-parameter-single', array('helloworld'), 'helloworld');
+        $this->engine->subscribe('subscribe-parameter-single', function($event, $param1){
+            $event->setData($param1);
+        }, 'testEventSingleParameter');
+        $this->assertEvent('subscribe-parameter-single', array('helloworld'), array('helloworld'));
     }
 
     /**
@@ -79,10 +82,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleParameter()
     {
-        \prggmr\Engine::subscribe('multiparam', function($event, $param1, $param2){
-            return $param1.$param2;
+        $this->engine->subscribe('multiparam', function($event, $param1, $param2){
+            $event->setData($param1.$param2);
         }, array('name' => 'testEventWithMultipleParameter'));
-        $this->assertEvent('multiparam', array('hello', 'world'), 'helloworld');
+        $this->assertEvent('multiparam', array('hello', 'world'), array('helloworld'));
     }
 
     /**
@@ -94,10 +97,11 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventSingleRegexParameter()
     {
-        \prggmr\Engine::subscribe('regexparam/([a-z]+)', function($event, $param){
-            return $param;
+        $signal = new \prggmr\RegexSignal('regexparam/([a-z]+)');
+        $this->engine->subscribe($signal, function($event, $param){
+            $event->setData($param);
         }, array('name' => 'testEventSingleRegexParameter'));
-        $this->assertEvent('regexparam/helloworld', null, 'helloworld');
+        $this->assertEvent('regexparam/helloworld', null, array('helloworld'));
     }
 
     /**
@@ -109,10 +113,11 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleRegexParameter()
     {
-        \prggmr\Engine::subscribe('multiregexparam/([a-z]+)/([a-z]+)', function($event, $param1, $param2){
+        $signal = new \prggmr\RegexSignal('multiregexparam/([a-z]+)/([a-z]+)');
+        $this->engine->subscribe($signal, function($event, $param1, $param2){
             return $param1.$param2;
         }, array('name' => 'testEventWithMultipleRegexParameter'));
-        $this->assertEvent('multiregexparam/hello/world', array(), 'helloworld');
+        $this->assertEvent('multiregexparam/hello/world', array(), array('helloworld'));
     }
 
     /**
@@ -125,10 +130,11 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleRegexAndMultipleSuppliedParamters()
     {
-        \prggmr\Engine::subscribe('multiparam2/([a-z]+)/([a-z]+)', function($event, $param1, $param2, $regex1, $regex2){
-            return $param1.$param2.$regex1.$regex2;
+        $signal = new \prggmr\RegexSignal('multiparam2/([a-z]+)/([a-z]+)');
+        $this->engine->subscribe($signal, function($event, $param1, $param2, $regex1, $regex2){
+            $event->setData($param1.$param2.$regex1.$regex2);
         }, array('name' => 'testEventWithMultipleRegexAndMultipleSuppliedParamters'));
-        $this->assertEvent('multiparam2/wor/ld', array('hel','lo'), 'helloworld');
+        $this->assertEvent('multiparam2/wor/ld', array('hel','lo'), array('helloworld'));
     }
 
     /**
@@ -140,10 +146,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testRegexEventWithSimpleRegex()
     {
-        \prggmr\Engine::subscribe('simpleregex/:name', function($event, $name){
-            return $name;
+        $this->engine->subscribe(new \prggmr\RegexSignal('simpleregex/:name'), function($event, $name){
+            $event->setData($name);
         }, array('name' => 'testRegexEventWithSimpleRegex'));
-        $this->assertEvent('simpleregex/helloworld', array(), 'helloworld');
+        $this->assertEvent('simpleregex/helloworld', array(), array('helloworld'));
     }
 
     /**
@@ -155,10 +161,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleSimpleRegex()
     {
-        \prggmr\Engine::subscribe('multisimpleregex/:name/:slug', function($event, $name, $slug){
-            return $name.$slug;
+        $this->engine->subscribe(new \prggmr\RegexSignal('multisimpleregex/:name/:slug'), function($event, $name, $slug){
+            $event->setData($name.$slug);
         }, array('name' => 'testEventWithMultipleSimpleRegex'));
-        $this->assertEvent('multisimpleregex/hello/world', array(), 'helloworld');
+        $this->assertEvent('multisimpleregex/hello/world', array(), array('helloworld'));
     }
 
     /**
@@ -171,10 +177,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithMultipleSimpleRegexAndSuppliedParameters()
     {
-        \prggmr\Engine::subscribe('multisimpleregexparamsupplied/:name/:slug', function($event, $param1, $param2, $name, $slug){
-            return $name.$param1.$slug.$param2;
+        $this->engine->subscribe(new \prggmr\RegexSignal('multisimpleregexparamsupplied/:name/:slug'), function($event, $param1, $param2, $name, $slug){
+            $event->setData($name.$param1.$slug.$param2);
         }, array('name' => 'testEventWithMultipleSimpleRegexAndSuppliedParameters'));
-        $this->assertEvent('multisimpleregexparamsupplied/hel/wor', array('lo','ld'), 'helloworld');
+        $this->assertEvent('multisimpleregexparamsupplied/hel/wor', array('lo','ld'), array('helloworld'));
     }
 
     /**
@@ -187,10 +193,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithSimpleRegexAndRegexParameters()
     {
-        \prggmr\Engine::subscribe('simpleandregex/:name/([a-z]+)', function($event, $param1, $param2){
-            return $param1.$param2;
+        $this->engine->subscribe(new \prggmr\RegexSignal('simpleandregex/:name/([a-z]+)'), function($event, $param1, $param2){
+            $event->setData($param1.$param2);
         }, array('name' => 'testEventWithSimpleRegexAndRegexParameters'));
-        $this->assertEvent('simpleandregex/hello/world', array(), 'helloworld');
+        $this->assertEvent('simpleandregex/hello/world', array(), array('helloworld'));
     }
 
     /**
@@ -203,22 +209,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventWithSimpleRegexRegexAndSuppliedParameters()
     {
-        \prggmr\Engine::subscribe('simpleregexsupplied/:name/([a-z]+)', function($event, $param1, $param2, $param3){
-            return $param2.$param1.$param3;
+        $this->engine->subscribe(new \prggmr\RegexSignal('simpleregexsupplied/:name/([a-z]+)'), function($event, $param1, $param2, $param3){
+            $event->setData($param2.$param1.$param3);
         }, array('name' => 'testEventWithSimpleRegexRegexAndSuppliedParameters'));
-        $this->assertEvent('simpleregexsupplied/hel/ld', array('lowor'), 'helloworld');
-    }
-
-
-    /**
-     * @expectedException LogicException
-     */
-    public function testException()
-    {
-        \prggmr\Engine::subscribe('exceptiontest', function($event){
-            throw new Exception('This is a test!');
-        }, array('name' => 'testException'));
-        $this->assertEvent('exceptiontest', array(), array());
+        $this->assertEvent('simpleregexsupplied/hel/ld', array('lowor'), array('helloworld'));
     }
 
     /**
@@ -227,7 +221,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testVersion()
     {
-        $this->assertEquals(\prggmr\Engine::version(), PRGGMR_VERSION);
+        $this->assertEquals($this->engine->version(), PRGGMR_VERSION);
     }
 
     /**
@@ -235,23 +229,23 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      * @Engine\analyze
      *      @option benchmark
      */
-    public function testBenchmark()
+    /*public function testBenchmark()
     {
-        \prggmr\Engine::debug(true);
-        \prggmr\Engine::benchmark('start', 'benchmark_this');
+        $this->engine->debug(true);
+        $this->engine->benchmark('start', 'benchmark_this');
         for($i=0;$i!=1000;$i++);
-        \prggmr\Engine::benchmark('stop', 'benchmark_this');
-        $this->assertArrayHasKey('benchmark_this', \prggmr\Engine::$__stats['benchmarks']);
-        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['benchmarks']['benchmark_this']));
-        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('start', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
-        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']));
-        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']);
-        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['benchmarks']['benchmark_this']['start']);
-    }
+        $this->engine->benchmark('stop', 'benchmark_this');
+        $this->assertArrayHasKey('benchmark_this', $this->engine->$__stats['benchmarks']);
+        $this->assertEquals('array', gettype($this->engine->$__stats['benchmarks']['benchmark_this']));
+        $this->assertArrayHasKey('memory', $this->engine->$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('time', $this->engine->$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('end', $this->engine->$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('start', $this->engine->$__stats['benchmarks']['benchmark_this']);
+        $this->assertEquals('array', gettype($this->engine->$__stats['benchmarks']['benchmark_this']['start']));
+        $this->assertArrayHasKey('end', $this->engine->$__stats['benchmarks']['benchmark_this']);
+        $this->assertArrayHasKey('memory', $this->engine->$__stats['benchmarks']['benchmark_this']['start']);
+        $this->assertArrayHasKey('time', $this->engine->$__stats['benchmarks']['benchmark_this']['start']);
+    }*/
 
     /**
      * Methods Covered
@@ -259,212 +253,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testFlush()
     {
-        \prggmr\Engine::flush('subscribers');
-        $this->assertFalse(\prggmr\Engine::hasSubscriber('testSubscribe', 'subscriber'));
-        \prggmr\Engine::subscribe('test_flush', function(){}, array('name' => 'test'));
-        $this->assertTrue(\prggmr\Engine::hasSubscriber('test', 'test_flush'));
-        \prggmr\Engine::flush('s');
-        $this->assertFalse(\prggmr\Engine::hasSubscriber('test', 'test_flush'));
-        \prggmr\Engine::set('test', true);
-        $this->assertTrue(\prggmr\Engine::has('test'));
-        \prggmr\Engine::flush('registry');
-        $this->assertFalse(\prggmr\Engine::has('test'));
-        \prggmr\Engine::set('test', true);
-        $this->assertTrue(\prggmr\Engine::has('test'));
-        \prggmr\Engine::flush('r');
-        $this->assertFalse(\prggmr\Engine::has('test'));
-        \prggmr\Engine::debug(true);
-        \prggmr\Engine::benchmark('start', 'benchmark_test');
-        for($i=0;$i!=1000;$i++);
-        \prggmr\Engine::benchmark('stop', 'benchmark_test');
-        $this->assertArrayHasKey('benchmark_test', \prggmr\Engine::$__stats['benchmarks']);
-        \prggmr\Engine::flush('stats');
-        $this->assertArrayNotHasKey('benchmark_test', \prggmr\Engine::$__stats['benchmarks']);
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\registry
-     *      @with array
-     */
-    public function testRegistryArray()
-    {
-        $registry = \prggmr\Engine::registry();
-        $this->assertArrayHasKey('__data', $registry);
-        $this->assertArrayHasKey('__events', $registry);
-        $this->assertArrayHasKey('__debug', $registry);
-        $this->assertArrayHasKey('__stats', $registry);
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\registry
-     *      @with array
-     */
-    public function testRegistryObject()
-    {
-        $registry = \prggmr\Engine::registry('object');
-        $this->assertObjectHasAttribute('__data', $registry);
-        $this->assertObjectHasAttribute('__events', $registry);
-        $this->assertObjectHasAttribute('__debug', $registry);
-        $this->assertObjectHasAttribute('__stats', $registry);
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\bubble
-     *     @with option stackResults
-     */
-    public function testEngineStackResults()
-    {
-        \prggmr\Engine::subscribe('stacktest', function(){
-            return 'HelloWorld';
-        });
-        $this->assertEvent('stacktest', null, 'HelloWorld', array(
-            'stackResults' => false
-        ));
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\subscribe
-     *      @with option shift = true
-     * @Engine\bubble
-     *      @with option stackResults = true
-     */
-    public function testSubscriptionShift()
-    {
-        \prggmr\Engine::subscribe('shift_test', function($event){
-            return 'Event1';
-        });
-
-        \prggmr\Engine::subscribe('shift_test', function($event){
-            return 'Event2';
-        });
-
-        $this->assertEvent('shift_test', null, array('Event1','Event2'), array(
-            'stackResults' => true
-        ));
-
-        \prggmr\Engine::flush('s');
-
-        \prggmr\Engine::subscribe('shift_test', function($event){
-            return 'Event1';
-        });
-
-        \prggmr\Engine::subscribe('shift_test', function($event){
-            return 'Event2';
-        }, array('shift' => true));
-
-        $this->assertEvent('shift_test', null, array('Event2','Event1'), array(
-            'stackResults' => true
-        ));
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\subscribe
-     *      @with option force = true
-     */
-    public function testSubscriptionForce()
-    {
-        \prggmr\Engine::subscribe('force_test', function($event){
-            return 'Force1';
-        }, array('name' => 'ForceTest'));
-
-        \prggmr\Engine::subscribe('force_test', function($event){
-            return 'Force2';
-        }, array('name' => 'ForceTest'));
-
-        $this->assertEvent('force_test', null, 'Force1');
-
-        \prggmr\Engine::subscribe('force_test', function($event){
-            return 'Force2';
-        }, array('name' => 'ForceTest', 'force' => true));
-
-        $this->assertEvent('force_test', null, 'Force2');
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\bubble
-     *      @with option namespace
-     */
-    public function testNamespace()
-    {
-        \prggmr\Engine::subscribe('namespace_test', function($event){
-            return 'Namespace1';
-        }, array('name' => 'NamespaceTest'));
-
-        \prggmr\Engine::subscribe('namespace_test', function($event){
-            return 'UnitTest1';
-        }, array('name' => 'NamespaceTest', 'namespace' => 'UnitTest'));
-
-        $this->assertEvent('namespace_test', null, 'Namespace1');
-        $this->assertEvent('namespace_test', null, 'UnitTest1', array(
-            'namespace' => 'UnitTest'
-        ));
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\bubble
-     *      @with option event
-     */
-    public function testEventReturn()
-    {
-        \prggmr\Engine::subscribe('object_test', function($event){
-            return 'MyResults';
-        });
-
-        $bubble = \prggmr\Engine::bubble('object_test', null, array(
-            'object' => true
-        ));
-        $this->assertInstanceOf('\prggmr\Event', $bubble);
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\bubble
-     *      @with option benchmark
-     */
-    public function testEventBenchmark()
-    {
-        \prggmr\Engine::debug(true);
-        \prggmr\Engine::subscribe('benchmark_this', function($event){
-            // need something to stat?
-            for($i=0;$i!=1000;$i++){}
-        });
-        \prggmr\Engine::bubble('benchmark_this', null, array(
-            'benchmark' => true
-        ));
-        // wow this could be done better huh?
-        $this->assertArrayHasKey('benchmark_this', \prggmr\Engine::$__stats['events']);
-        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this']));
-        $this->assertArrayHasKey(0, \prggmr\Engine::$__stats['events']['benchmark_this']);
-        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this'][0]));
-        $this->assertArrayHasKey('stats', \prggmr\Engine::$__stats['events']['benchmark_this'][0]);
-        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
-        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
-        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
-        $this->assertArrayHasKey('start', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
-        $this->assertEquals('array', gettype(\prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']));
-        $this->assertArrayHasKey('end', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']);
-        $this->assertArrayHasKey('memory', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
-        $this->assertArrayHasKey('time', \prggmr\Engine::$__stats['events']['benchmark_this'][0]['stats']['start']);
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\callStatic
-     */
-    public function testEventOverloadCall()
-    {
-        \prggmr\Engine::subscribe('HelloWorld', function(){
-            return 'HelloWorld';
-        });
-        $test = \prggmr\Engine::HelloWorld(null, array('stackResults' => false));
-        $this->assertEquals('HelloWorld', $test);
+        $this->engine->subscribe('test', function(){});
+        $this->assertTrue($this->engine->count() == 1);
+        $this->engine->flush();
+        $this->assertTrue($this->engine->count() == 0);
     }
 
     /**
@@ -472,32 +264,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEngineErrorState()
     {
-        \prggmr\Engine::subscribe('stateerrortest', function($event){
+        $this->engine->subscribe('stateerrortest', function($event){
             $event->setState(\prggmr\Event::STATE_ERROR);
         }, array('name' => 'testException'));
         $this->assertEvent('stateerrortest', array(), array());
-    }
-
-    /**
-     * Methods Covered
-     * @Engine\bubble
-     *      @with error
-     */
-    public function testEngineErrorSilence()
-    {
-        \prggmr\Engine::subscribe('imgonnafail', function($event){
-            $event->setState(\prggmr\Event::STATE_ERROR);
-        });
-        try {
-            $test = \prggmr\Engine::bubble('imgonnafail', null, array(
-                'silent' => true
-            ));
-        } catch (RuntimeException $e) {}
-        if (!$test) {
-            $this->addToAssertionCount(1);
-        } else {
-            $this->fail('Failed asserting that silent option supresses error state exception');
-        }
     }
 
     /**
@@ -507,16 +277,16 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventHalt()
     {
-        \prggmr\Engine::subscribe('halt', function(){
-            return 'Hello';
+        $this->engine->subscribe('halt', function(){
+            $event->setData('Hello');
         });
         // this halts it :)
-        \prggmr\Engine::subscribe('halt', function(){
+        $this->engine->subscribe('halt', function(){
             return false;
         });
-        \prggmr\Engine::subscribe('halt', function(){
+        $this->engine->subscribe('halt', function(){
             return 'World';
         });
-        $this->assertEvent('halt', null, 'Hello');
+        $this->assertEvent('halt', null, array('Hello'));
     }
 }
