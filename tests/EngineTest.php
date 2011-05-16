@@ -34,7 +34,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $this->engine = \prggmr\Engine::instance();
     }
-    
+
     public function tearDown()
     {
         $this->engine->flush();
@@ -101,7 +101,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->engine->subscribe($signal, function($event, $param){
             $event->setData($param);
         }, array('name' => 'testEventSingleRegexParameter'));
-        $this->assertEvent('regexparam/helloworld', null, array('helloworld'));
+        $this->assertEvent('regexparam/helloworld', array(), array('helloworld'));
     }
 
     /**
@@ -115,7 +115,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $signal = new \prggmr\RegexSignal('multiregexparam/([a-z]+)/([a-z]+)');
         $this->engine->subscribe($signal, function($event, $param1, $param2){
-            return $param1.$param2;
+            $event->setData($param1.$param2);
         }, array('name' => 'testEventWithMultipleRegexParameter'));
         $this->assertEvent('multiregexparam/hello/world', array(), array('helloworld'));
     }
@@ -266,8 +266,8 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     {
         $this->engine->subscribe('stateerrortest', function($event){
             $event->setState(\prggmr\Event::STATE_ERROR);
-        }, array('name' => 'testException'));
-        $this->assertEvent('stateerrortest', array(), array());
+        }, 'exception_test');
+        $event = $this->engine->fire('stateerrortest');
     }
 
     /**
@@ -277,7 +277,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventHalt()
     {
-        $this->engine->subscribe('halt', function(){
+        $this->engine->subscribe('halt', function($event){
             $event->setData('Hello');
         });
         // this halts it :)
@@ -287,6 +287,6 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->engine->subscribe('halt', function(){
             return 'World';
         });
-        $this->assertEvent('halt', null, array('Hello'));
+        $this->assertEvent('halt', array(), array('Hello'));
     }
 }

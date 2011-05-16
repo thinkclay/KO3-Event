@@ -93,7 +93,7 @@ class Engine extends Singleton {
             }
             $subscription = new Subscription($subscription, $identifier);
         }
-		
+
         if (is_array($signal) && isset($signal[0]) && isset($signal[1])) {
 			// TODO: The peeve i have with this is it allows for overiding an
 			// existing chain ... possibly to solve this is to setup the chain
@@ -173,11 +173,11 @@ class Engine extends Singleton {
         if (false === $compare) {
             return false;
         }
-		
+
         $queue = $this->_storage->current();
 		// rewinds and prioritizes the queue
         $queue->rewind();
-		
+
         if (!is_object($event)) {
             $event = new Event($queue->getSignal());
         } elseif (!$event instanceof Event) {
@@ -192,9 +192,9 @@ class Engine extends Singleton {
         $event->setState(Event::STATE_ACTIVE);
 
         if (count($vars) === 0) {
-            $vars = array($event);
+            $vars = array(&$event);
         } else {
-            $vars = array_merge(array($event), $vars);
+            $vars = array_merge(array(&$event), $vars);
         }
 
         if ($compare !== true) {
@@ -205,11 +205,12 @@ class Engine extends Singleton {
                 $vars[] = $compare;
             }
         }
-		
+
 		// the main loop
         while($queue->valid()) {
             if ($event->isHalted()) break;
-            if ($event->getState() === Event::STATE_ERROR) {
+            $queue->current()->fire($vars);
+            if ($event->getState() == Event::STATE_ERROR) {
                 throw new \RuntimeException(
                     sprintf(
                         'Event execution failed with message "%s"',
@@ -217,7 +218,6 @@ class Engine extends Singleton {
                     )
                 );
             }
-            $queue->current()->fire($vars);
             $queue->next();
         }
 
@@ -257,7 +257,7 @@ class Engine extends Singleton {
     {
         $this->_storage = new \SplObjectStorage();
     }
-    
+
     /**
      * Returns the count of subsciption queues in the engine.
      *
