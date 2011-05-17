@@ -61,26 +61,10 @@ class EventTest extends \PHPUnit_Framework_TestCase
     /**
      * Test event subscription set
      */
-    public function testEventSubscription()
+    public function testEventSignal()
     {
-        $this->assertNull($this->event->getSubscription());
-        $this->event->setSubscription('test');
-        $this->assertEquals('test', $this->event->getSubscription());
-    }
-    
-    /**
-     * Test event chaining
-     */
-    public function testEventChain()
-    {
-        $this->assertFalse($this->event->hasChain());
-        $chain = new \prggmr\Event();
-        $chain->setSubscription('test_chain');
-        \prggmr\Engine::subscribe('test_chain', function(){
-            return 'HelloWorld';
-        });
-        $this->event->setChain($chain);
-        $this->event->bubble();
-        $this->assertEquals(array('HelloWorld'), $this->event->getChainResults());
+        $this->assertNull($this->event->getSignal());
+        $this->event->setSignal(new \prggmr\Signal('test'));
+        $this->assertEquals('test', $this->event->getSignal()->signal());
     }
 }

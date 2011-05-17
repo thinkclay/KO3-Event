@@ -27,51 +27,42 @@ namespace prggmr;
 interface AdapterInterface
 {
 	/**
-     * Register a new callable event to the event stack.
+     * Attaches a new subscription to a signal queue.
      *
-     * @param  string  $event  Name of the event to subscribe
-     * @param  closure  $function  Anonymous function to bubble.
-     * @param  array  $options  Array of options. Avaliable options.
+     * NOTE: Passing an array as the signal parameter should be done only
+     *       once per subscription que as each time a new Queue is created.
      *
-     *         `shift` - Push this subscriber to the beginning of the queue.
      *
-     *         `name` - name to be given to the subscriber; Leave blank to have
-     *         a random name given. ( recommended to avoid collisions ).
+     * @param  mixed  $signal  Signal the subscription will attach to, this
+     *         can be a Signal object, the signal representation or an array
+     *         for a chained signal.
      *
-     *         `force` - force this subscriber if name collision exists.
+     * @param  mixed  $subscription  Subscription closure that will trigger on
+     *         fire or a Subscription object.
      *
-     *         `namespace` - Namespace for event.
-     *         Defaults to \Engine::GLOBAL_DEFAULT.
+     * @param  mixed  $identifier  String identifier for this subscription, if
+     *         an integer is provided it will be treated as the priority.
      *
-     * @throws  InvalidArgumentException,RuntimeException
+     * @param  mixed  $priority  Priority of this subscription within the Queue
      *
-     * @return  boolean
+     * @throws  InvalidArgumentException  Thrown when an invalid callback is
+     *          provided.
+     *
+     * @return  void
      */
-    public function subscribe($event, \Closure $function, array $options = array());
+    public function subscribe($signal, $subscription, $identifier = null, $priority = null);
 
 	/**
-     * Bubbles an event.
+     * Fires an event signal.
      *
-     * @param  array  $params  Parameters to directly pass to the event subscriber
-     * @param  array  $options  Array of options. Avaliable options
+     * @param  mixed  $signal  The event signal, this can be the signal object
+     *         or the signal representation.
      *
-     *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to Engine::GLOBAL_DEFAULT.
+     * @param  array  $vars  Array of variables to pass the subscribers
      *
-     *         `benchmark` - Benchmark this events execution.
+     * @param  object  $event  Event
      *
-     *         `object` - Return the event object.
-     *
-     *         `suppress` - Suppress exceptions when an event is encountered in
-     *         a STATE_ERROR.
-     *
-     * @throws  LogicException when an error is encountered during subscriber
-     *          execution
-     *          RuntimeException when attempting to execute an event in
-     *          an unexecutable state
-     *
-     * @return  mixed  Results of event
-     * @see  Engine::bubble
+     * @return  object  Event
      */
-    public function bubble($event, array $params = array(), array $options = array());
+    public function fire($signal, array $vars = array(), $event = null);
 }

@@ -22,70 +22,46 @@
 
 
 /**
- * Subscribes to a prggmr event.
- *
- * @param  string  $event  Name of the event to subscribe
- * @param  closure  $function  Anonymous function to bubble.
- * @param  array  $options  Array of options. Avaliable options.
- *
- *         `shift` - Push this subscriber to the beginning of the queue.
- *
- *         `name` - name to be given to the subscriber; Leave blank to have
- *          a random name given. ( recommended to avoid collisions ).
- *
- *         `force` - force this subscriber if name collision exists.
- *
- *         `namespace` - Namespace for event.
- *         Defaults to \Engine::GLOBAL_DEFAULT.
- *
- * @throws  InvalidArgumentException,RuntimeException
- *
- * @return  void
- */
-function subscribe($event, \Closure $function, array $options = array()) {
-	return \prggmr\Engine::subscribe($event, $function, $options);
+* Attaches a new subscription to a signal queue.
+*
+* NOTE: Passing an array as the signal parameter should be done only
+*       once per subscription que as each time a new Queue is created.
+*
+*
+* @param  mixed  $signal  Signal the subscription will attach to, this
+*         can be a Signal object, the signal representation or an array
+*         for a chained signal.
+*
+* @param  mixed  $subscription  Subscription closure that will trigger on
+*         fire or a Subscription object.
+*
+* @param  mixed  $identifier  String identifier for this subscription, if
+*         an integer is provided it will be treated as the priority.
+*
+* @param  mixed  $priority  Priority of this subscription within the Queue
+*
+* @throws  InvalidArgumentException  Thrown when an invalid callback is
+*          provided.
+*
+* @return  void
+*/
+function subscribe($signal, $subscription, $identifier = null, $priority = null) {
+	return \prggmr\Engine::instance()->subscribe($signal, $subscription, $identifier, $priority);
 }
 
 /**
- * Bubbles an event.
- *
- * @param  array  $params  Parameters to directly pass to the event subscriber
- * @param  array  $options  Array of options. Avaliable options
- *
- *         `namespace` - `namespace` - Namespace for event.
- *         Defaults to Engine::GLOBAL_DEFAULT.
- *
- *         `benchmark` - Benchmark this events execution.
- *
- *         `object` - Return the event object.
- *
- *         `suppress` - Suppress exceptions when an event is encountered in
- *         a STATE_ERROR.
- *
- * @throws  LogicException when an error is encountered during subscriber
- *          execution
- *          RuntimeException when attempting to execute an event in
- *          an unexecutable state
- *
- * @return  mixed  Results of event
- * @see  Engine::bubble
- */
-function bubble($event, array $params = array(), array $options = array()) {
-	return \prggmr\Engine::bubble($event, $params, $options);
-}
-
-/**
-	* Benchmarks current system runtime useage information for debugging
-	* purposes.
-	*
-    * @param  string  $op  start - Begin benchmark
-    *                      stop - End Benchmark
-	*
-	* @param  string  $name  Name of benchmark
-	*
-	* @return  mixed  Array of info on stop, boolean on start
-	*/
-function benchmark($op, $name)
+* Fires an event signal.
+*
+* @param  mixed  $signal  The event signal, this can be the signal object
+*         or the signal representation.
+*
+* @param  array  $vars  Array of variables to pass the subscribers
+*
+* @param  object  $event  Event
+*
+* @return  object  Event
+*/
+function fire($signal, array $vars = array(), $event = null)
 {
-	return \prggmr\Engine::benchmark($op, $name);
+  return \prggmr\Engine::instance()->fire($signal, $vars, $event);
 }

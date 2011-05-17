@@ -29,84 +29,59 @@ namespace prggmr;
  */
 class Adapter implements AdapterInterface
 {
-
     /**
-     * Register a new callable event to the event stack.
+     * Reference to the engine.
      *
-     * @param  string  $event  Name of the event to subscribe
-     * @param  closure  $function  Anonymous function to bubble.
-     * @param  array  $options  Array of options. Avaliable options.
-     *
-     *         `shift` - Push this subscriber to the beginning of the queue.
-     *
-     *         `name` - name to be given to the subscriber; Leave blank to have
-     *         a random name given. ( recommended to avoid collisions ).
-     *
-     *         `force` - force this subscriber if name collision exists.
-     *
-     *         `namespace` - Namespace for event.
-     *         Defaults to \Engine::GLOBAL_DEFAULT.
-     *
-     * @throws  InvalidArgumentException,RuntimeException
-     *
-     * @return  boolean
+     * @var  object
      */
-    public function subscribe($event, \Closure $function, array $options = array()) {
-        return Engine::subscribe($event, $function, $options);
+    protected $_engine = null;
+    
+    public function __construct() {
+        $this->_engine = Engine::instance();
     }
 
     /**
-     * Bubbles an event.
+     * Attaches a new subscription to a signal queue.
      *
-     * @param  array  $params  Parameters to directly pass to the event subscriber
-     * @param  array  $options  Array of options. Avaliable options
+     * NOTE: Passing an array as the signal parameter should be done only
+     *       once per subscription que as each time a new Queue is created.
      *
-     *         `namespace` - `namespace` - Namespace for event.
-     *         Defaults to Engine::GLOBAL_DEFAULT.
      *
-     *         `benchmark` - Benchmark this events execution.
+     * @param  mixed  $signal  Signal the subscription will attach to, this
+     *         can be a Signal object, the signal representation or an array
+     *         for a chained signal.
      *
-     *         `object` - Return the event object.
+     * @param  mixed  $subscription  Subscription closure that will trigger on
+     *         fire or a Subscription object.
      *
-     *         `suppress` - Suppress exceptions when an event is encountered in
-     *         a STATE_ERROR.
+     * @param  mixed  $identifier  String identifier for this subscription, if
+     *         an integer is provided it will be treated as the priority.
      *
-     * @throws  LogicException when an error is encountered during subscriber
-     *          execution
-     *          RuntimeException when attempting to execute an event in
-     *          an unexecutable state
+     * @param  mixed  $priority  Priority of this subscription within the Queue
      *
-     * @return  mixed  Results of event
-     * @see  Engine::bubble
+     * @throws  InvalidArgumentException  Thrown when an invalid callback is
+     *          provided.
+     *
+     * @return  void
      */
-    public function bubble($event, array $params = array(), array $options = array()) {
-       return Engine::bubble($event, $params, $options);
+    public function subscribe($signal, $subscription, $identifier = null, $priority = null) {
+        return $this->_engine->subscribe($signal, $subscription, $identifier, $priority);
     }
 
     /**
-     * Checks if a subscriber with the given name currently exists in the
-     * subscriber stack.
+     * Fires an event signal.
      *
-     * @param  string  $subscriber  Name of the event subscriber.
-     * @param  string  $event  Event which the subscriber will execute on.
-     * @param  string  $namespace  Namespace subscriber belongs to.
-     *         [Default: static::GLOBAL_DEFAULT]
+     * @param  mixed  $signal  The event signal, this can be the signal object
+     *         or the signal representation.
      *
-     * @return  boolean  False | True otherwise.
+     * @param  array  $vars  Array of variables to pass the subscribers
+     *
+     * @param  object  $event  Event
+     *
+     * @return  object  Event
      */
-    public function hasSubscriber($subscriber, $event, $namespace) {
-        return Engine::hasSubscriber($subscriber, $event, $namespace);
-    }
-
-    /**
-     * __call directs itself to the Engine bubble.
-     *
-     * @see  Engine::bubble
-     */
-    public function __call($event, array $args = array())
+    public function fire($signal, array $vars = array(), $event = null)
     {
-        $defaults = array(0 => array(), 1 => array());
-        $args += $defaults;
-        return $this->bubble($event, $args[0], $args[1]);
+       return $this->_engine->fire($signal, $vars, $event);
     }
 }

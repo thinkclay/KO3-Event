@@ -226,29 +226,6 @@ class EngineTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Methods Covered
-     * @Engine\analyze
-     *      @option benchmark
-     */
-    /*public function testBenchmark()
-    {
-        $this->engine->debug(true);
-        $this->engine->benchmark('start', 'benchmark_this');
-        for($i=0;$i!=1000;$i++);
-        $this->engine->benchmark('stop', 'benchmark_this');
-        $this->assertArrayHasKey('benchmark_this', $this->engine->$__stats['benchmarks']);
-        $this->assertEquals('array', gettype($this->engine->$__stats['benchmarks']['benchmark_this']));
-        $this->assertArrayHasKey('memory', $this->engine->$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('time', $this->engine->$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('end', $this->engine->$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('start', $this->engine->$__stats['benchmarks']['benchmark_this']);
-        $this->assertEquals('array', gettype($this->engine->$__stats['benchmarks']['benchmark_this']['start']));
-        $this->assertArrayHasKey('end', $this->engine->$__stats['benchmarks']['benchmark_this']);
-        $this->assertArrayHasKey('memory', $this->engine->$__stats['benchmarks']['benchmark_this']['start']);
-        $this->assertArrayHasKey('time', $this->engine->$__stats['benchmarks']['benchmark_this']['start']);
-    }*/
-
-    /**
-     * Methods Covered
      * @Engine\flush
      */
     public function testFlush()
@@ -288,5 +265,27 @@ class EngineTest extends \PHPUnit_Framework_TestCase
             return 'World';
         });
         $this->assertEvent('halt', array(), array('Hello'));
+    }
+    
+    /**
+     * Test event chaining
+     */
+    public function testEventChain()
+    {
+        $this->engine->subscribe(array('test', 'chain_link_1'), function($event){
+           $event->setData('one'); 
+        });
+        $this->engine->subscribe(array('chain_link_1', 'chain_link_2'), function($event){
+            $event->setData('two');
+        });
+        $this->engine->subscribe('chain_link_2', function($event){
+            $event->setData('three');
+        });
+        $event = $this->engine->fire('test');
+        $this->assertEquals(array('one'), $event->getData());
+        $this->assertInstanceOf('\prggmr\Event', $event->getChain());
+        $this->assertInstanceOf('\prggmr\Event', $event->getChain()->getChain());
+        $this->assertEquals(array('two'), $event->getChain()->getData());
+        $this->assertEquals(array('three'), $event->getChain()->getChain()->getData());
     }
 }
