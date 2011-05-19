@@ -288,4 +288,10 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('two'), $event->getChain()->getData());
         $this->assertEquals(array('three'), $event->getChain()->getChain()->getData());
     }
+    
+    public function testEventQueueEmptyFire()
+    {
+        $this->assertEquals(0, $this->engine->count());
+        $this->assertFalse($this->engine->fire('test'));
+    }
 }

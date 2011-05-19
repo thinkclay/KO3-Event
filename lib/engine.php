@@ -157,6 +157,7 @@ class Engine extends Singleton {
      */
     public function fire($signal, array $vars = array(), $event = null)
     {
+		$compare = false;
         $this->_storage->rewind();
         while($this->_storage->valid()) {
 			// compare the signal given with the queue signal ..
