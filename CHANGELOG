@@ -1,31 +1,27 @@
-0.1.1
+0.2.0
 -----------------------------------
 - Added the SignalInterface interface
 - Added the Signal object
 - Added the Subscription object
 - Added the Queue object
-- Removed benchmark from engine and created its on class Benchmark
-- Removed Engine::initialise method
-- Engine::flush method added
-- Event benchmarks are now stored by the subscription and index by the subscriber name
-- Removed the library and loader class as they add to much bulk and be easily be added outside
-- Added stackResults option to bubble method
-- Removed flags option in bubble method to allow for engine level stacking config
-- Event object is no longer a child of Adapter
-- Revised codebase to fit a better 80 margin ... was it needed?
-- Removed all current UnitTests as they need to be rewritten to follow new structure
-- All classes, functions are under the "prggmr" namespace.
-- Removed the DataInstance class as it was redundant and served no real purpose.
-- Added param (stateCheck) to Event::executeChain allowing the Event state check to be skipped.
-- Renamed Event::triggerChain to Event::executeChain
-- Event chain is now automatically executed before an event bubbles.
-- Event object chain (_parent) is now refered to as (_chain) for simplicity.
-- Refactored event chaining to allow the chain to be set dynamically rather than in the constructor.
-- Removed Event constructor parameter for parent event.
-- Refactored the directory structure to complement the modified/removed code.
-- Changed Event state constants to 0x01 (active), 0x02 (inactive), 0x03 (error)
-- Added AdapterInterface interface
+- Removed benchmark utility 
+- Removed data object
+- Removed functions file
+- Removed the autoloaders
 - Removed all logic code from adapter, adapter now acts only as an interface to the engine.
 - Renamed Listenable class to Adapter
-- Renamed prggmr class to engine.
-- Added support for simplified regex events e.g. "hello/:world" rather than "hello/(?P<world>[a-z0-9_-]+)"
+- Adapter implements new Engine api
+- AdapterInterface implements new Engine api
+- Engine object is now a singleton
+- Engine object rewritten
+- Queue and Engine now use a SplObjectStorage rather than an array
+- Event object no longer supplies the event chain, rather is supplied a chained event
+- Event chains are now added through a signal
+- Signal object added
+- Queue object added implemented as a SplObjectStorage with priority in a queue (LIFO) by default
+- bubble method renamed to fire
+- prggmr object renamed to engine
+- All Unittests rewritten
+- Event is no longer a child of Adapter
+- RegexSignal object added which supports event naming of "hello/:world" and any regex string
+- New api implemented (fire, subscribe) removed benchmark, bubble

@@ -1,17 +1,16 @@
 <?php
 require 'lib/prggmr.php';
 
-\prggmr\Benchmark::benchmark('start', 'bench');
+subscribe('exception', function(){
+    fire('exception_2');
+});
 
-$engine = prggmr\Engine::instance();
+subscribe('exception_2', function(){
+    fire('exception_3');
+});
 
-for ($i=1;$i!=243;$i++) {
-    for ($a=0;$a!=1;$a++) {
-        $engine->subscribe('chain_'.$i, function($event){
-            $event->setData('four');
-        });
-        //$engine->fire('chain_'.$i);
-    }
-}
+subscribe('exception_3', function(){
+    throw new Exception('I have no trace ...');
+});
 
-var_dump(\prggmr\Benchmark::benchmark('stop', 'bench'));
+fire('exception');

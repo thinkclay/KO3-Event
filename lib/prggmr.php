@@ -23,8 +23,6 @@
 define('PRGGMR_VERSION', '0.2.0');
 
 // start'er up
-require 'functions.php';
-require 'data.php';
 require 'singleton.php';
 require 'engine.php';
 require 'signalinterface.php';
@@ -34,6 +32,5 @@ require 'adapterinterface.php';
 require 'adapter.php';
 require 'event.php';
 require 'api.php';
-require 'benchmark.php';
 require 'queue.php';
 require 'subscription.php';

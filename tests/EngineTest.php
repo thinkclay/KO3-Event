@@ -294,4 +294,126 @@ class EngineTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->engine->count());
         $this->assertFalse($this->engine->fire('test'));
     }
+    
+    public function testQueue()
+    {
+        $this->assertEquals(0, $this->engine->count());
+        $this->engine->subscribe('test', function(){});
+        $this->assertInstanceOf('\prggmr\Queue', $this->engine->queue('test'));
+        $this->assertFalse($this->engine->queue('none', false));
+    }
+    
+    public function testIdentifier()
+    {
+        $this->assertEquals(0, $this->engine->count());
+        $this->engine->subscribe('test', function(){}, 'test_sub');
+        $this->engine->subscribe('test', function(){}, 1);
+        $this->engine->subscribe('test', function(){}, 1.25);
+        $this->engine->subscribe('test', function(){}, false);
+        $this->engine->subscribe('test', function(){}, true);
+        $this->engine->subscribe('test', function(){}, null);
+        $this->assertEquals(6, $this->engine->queue('test')->count());
+        $this->assertTrue($this->engine->queue('test')->locate('test_sub'));
+        $this->assertTrue($this->engine->queue('test')->locate(1.25));
+        $this->assertTrue($this->engine->queue('test')->locate(1));
+        $this->assertTrue($this->engine->queue('test')->locate(true));
+        $this->assertTrue($this->engine->queue('test')->locate(null));
+        $this->assertTrue($this->engine->queue('test')->locate(false));
+    }
+    
+    public function testDequeue()
+    {
+        $this->assertEquals(0, $this->engine->count());
+        $this->engine->subscribe('test', function(){}, 'test_sub');
+        $this->engine->subscribe('test', function(){}, 'test_sub_1');
+        $this->assertTrue($this->engine->queue('test')->locate('test_sub'));
+        $this->assertTrue($this->engine->queue('test')->locate('test_sub_1'));
+        $this->engine->dequeue('test', 'test_sub');
+        $this->assertFalse($this->engine->queue('test')->locate('test_sub'));
+        $this->assertTrue($this->engine->queue('test')->locate('test_sub_1'));
+        $this->assertFalse($this->engine->dequeue(1, 'test'));
+        $this->assertFalse($this->engine->dequeue(false, 'test', 'test'));
+        $this->assertFalse($this->engine->dequeue(1.25, 'test'));
+        $this->assertFalse($this->engine->dequeue(null, 'test'));
+        $this->assertFalse($this->engine->dequeue(new stdClass(), 'test'));
+        $this->assertFalse($this->engine->dequeue(true, 'test'));
+    }
+    
+    public function testPriority()
+    {
+        $this->assertEquals(0, $this->engine->count());
+        $this->engine->subscribe('test', function($event){
+            $event->setData('one');
+        });
+        $this->engine->subscribe('test', function($event){
+            $event->setData('two');
+        }, 10);
+        $this->engine->subscribe('test', function($event){
+           $event->setData('three'); 
+        }, 'sub_3', 1);
+        $this->engine->subscribe('test', function($event){
+            $event->setData('four');
+        }, '123');
+        $this->engine->subscribe('test', function($event){
+            $event->setData('five');
+        }, array('asd'));
+        $this->assertTrue($this->engine->queue('test')->locate('sub_3'));
+        $this->assertEvent('test', array(), array(
+            'three', 'two', 'one', 'four', 'five'
+        ));
+    }
+    
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testInvalidSubscription()
+    {
+        $this->engine->subscribe('test', 'asdf');
+    }
+    
+    public function testfireEventParam()
+    {
+        $this->engine->subscribe('test', function($event){
+            $event->setData('one');
+        });
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), 'string')->getData());
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), 1)->getData());
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), null)->getData());
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), true)->getData());
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), false)->getData());
+        $this->assertEquals(array('one'), $this->engine->fire('test', array(), 1.25)->getData());
+    }
+    
+    public function testfireVarParam()
+    {
+        $this->engine->subscribe('test', function($event, $param){
+            $event->setData($param);
+        });
+        $this->assertEquals(array(1.25), $this->engine->fire('test', 1.25)->getData());
+        $this->assertEquals(array(1), $this->engine->fire('test', 1)->getData());
+        $this->assertEquals(array('string'), $this->engine->fire('test', 'string')->getData());
+        try {
+            $this->assertEquals(array(), $this->engine->fire('test', array())->getData());
+        } catch (\RuntimeException $e) {
+            $this->addToAssertionCount(1);
+        }
+        $this->assertEquals(array(true), $this->engine->fire('test', true)->getData());
+        $this->assertEquals(array(false), $this->engine->fire('test', false)->getData());
+        try {
+            $this->assertEquals(array(), $this->engine->fire('test', null)->getData());
+        } catch (\RuntimeException $e) {
+            $this->addToAssertionCount(1);
+        }
+        $obj = new \stdClass();
+        $this->assertEquals(array($obj), $this->engine->fire('test', $obj)->getData());
+    }
+    
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testfireInvalidObject()
+    {
+        $this->engine->subscribe('test', function($event){});
+        $this->engine->fire('test', array(), new stdClass());
+    }
 }

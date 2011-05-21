@@ -108,7 +108,7 @@ class Queue extends \SplObjectStorage {
     *         a Subscription object.
     *
     * @throws  InvalidArgumentException
-    * @return  boolean  False on failure
+    * @return  void
     */
     public function dequeue($subscription)
     {
@@ -187,12 +187,12 @@ class Queue extends \SplObjectStorage {
 
     public function attach()
     {
-        throw new Exception('attach method disallowed; use of enqueue required');
+        throw new \Exception('attach method disallowed; use of enqueue required');
     }
 
     public function detach()
     {
-        throw new Exception('detach method disallowed; use of dequeue required');
+        throw new \Exception('detach method disallowed; use of dequeue required');
     }
 
     /**

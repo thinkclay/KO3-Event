@@ -67,4 +67,12 @@ class EventTest extends \PHPUnit_Framework_TestCase
         $this->event->setSignal(new \prggmr\Signal('test'));
         $this->assertEquals('test', $this->event->getSignal()->signal());
     }
+    
+    public function testEventData()
+    {
+        $this->assertEquals(0, count($this->event->getData()));
+        $this->event->setData('test');
+        $this->assertEquals(1, count($this->event->getData()));
+        $this->assertEquals(array('test'), $this->event->getData());
+    }
 }

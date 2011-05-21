@@ -61,7 +61,7 @@ function subscribe($signal, $subscription, $identifier = null, $priority = null)
 *
 * @return  object  Event
 */
-function fire($signal, array $vars = array(), $event = null)
+function fire($signal, $vars = null, $event = null)
 {
   return \prggmr\Engine::instance()->fire($signal, $vars, $event);
 }

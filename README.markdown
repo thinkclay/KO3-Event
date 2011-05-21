@@ -6,108 +6,81 @@ lightweight, intuitive event-processing library for PHP 5.3+ applications
 
 prggmr implements a fast event-processing engine for use with developing
 event driven applications in PHP 5.3+. It's incredibly simple, is driven by
-a robust engine that allows for event chaining, halting, states, namespaces,
+a robust engine that allows for event chaining, halting, states,
 asynchronous execution and robust subscriptions.
 
 ## Features
-* Asynchronous event bubbling
+
+* Asynchronous event firing
 * Robust event subscription
 * Stateful events
 * Chaining events
-* Event Namespaces
-* Benchmarking tools
 * High performance oriented
 * High test coverage
-* Needs no configuration
+* ZERO configuration
+* Priority based subscription
 
 ## HelloWorld Example
 
-prggmr uses [anonymous functions](http://www.php.net/Closures) as it's callback mechanism, the alternative method of array('function') and array('class', 'method') callbacks
-are not supported.
+### Code
 
-    include 'prggmr.php';
-
-    // all callbacks are allways passed the current event scope object as the first parameter
-    subscribe('helloworld', function($event){
-        echo 'Hello World';
+    subscribe('my_event', function($event){
+        echo 'HelloWorld';
     });
+    
+    fire('my_event');
+    
+### Results
 
-    // Bubbling the helloworld event outputting "HelloWorld"
-    bubble('helloworld');
-
-Simple no?
-
-## Whats so great about events?
-
-The HelloWorld example can easily be written as a function and achieve the same results.
-
-    function helloworld() {
-        echo "HelloWorld";
-    }
-
-    helloworld();
-
-This really defeats the purpose of events, and simply put events allow code to react and interact with itself with infinite possibilities.
-
-### So why use events
-
-Here is a real world example.
-
-I recently developed a program which sync's a users Google account into a local database, halfway through development new requirements came in and new information
-was required to be synced. The task was easy, I simple refactored production ready code, tested and published. The problem is I had to modify code
-which was already in a stable state, possibly introducing new bugs in the code. If I had written the system using events I could have added a new subscriber to the sync
-event and introduced the new information without modifing any of the existing codebase ... saving time and headaches.s
+    HelloWorld
 
 ## Limitations & Issues
 
-* Timeout and Interval methods are not realistically possible in PHP ... yet.
+* Timeout and Interval methods are not realistically possible in PHP ... although written as an extension this would be possible.
 * Stacks are not maintained within events resulting in untraceable stacks.
 
-This can be demonstrated with the following code.
+## Untraceable stack demostration
 
-    include 'prggmr.php';
-
-    \prggmr\Engine::initialize();
-    \prggmr\Engine::debug(true);
-
-    subscribe('event1', function(){
-            bubble('event2');
+    subscribe('exception', function(){
+        fire('exception_2');
+    });
+    
+    subscribe('exception_2', function(){
+        fire('exception_3');
+    });
+    
+    subscribe('exception_3', function(){
+        throw new Exception('I have no trace ...');
     });
 
-    subscribe('event2', function(){
-        bubble('event3');
-    });
+### Result
 
-    subscribe('event3', function(){
-        throw new \Exception("I'm an error");
-    });
+    RuntimeException: I have no trace ... in /home/nick/Apps/Prggmr/lib/subscription.php on line 94
 
-    bubble('event1');
+    Call Stack:
+        0.0002     328852   1. {main}() /home/nick/Apps/Prggmr/test.php:0
+        0.0023     504908   2. fire() /home/nick/Apps/Prggmr/test.php:16
+        0.0023     504964   3. prggmr\Engine->fire() /home/nick/Apps/Prggmr/lib/api.php:66
+        0.0024     505692   4. prggmr\Subscription->fire() /home/nick/Apps/Prggmr/lib/engine.php:240
 
-### Results
-
-    Message [Event (event1) Subscriber "dnpsuvxz" execution failed due to exception "LogicException" with message "Event (event2) Subscriber "fimnpsvx" execution failed due to exception "LogicException" with message "Event (event3) Subscriber "dfhjmpqs" execution failed due to exception "Exception" with message "I'm an error"""]
-    File [prggmr.php]
-    Line [703]
-    Trace Route
-    {#0} prggmr.php(1688): Unknown::prggmr\bubble (event1)
-    {#1} prggmr.php(1644): prggmr\Engine::bubble (event1, Array(), Array())
 
 ### Expected
 
-    Message [Event (event1) Subscriber "dnpsuvxz" execution failed due to exception "LogicException" with message "Event (event2) Subscriber "fimnpsvx" execution failed due to exception "LogicException" with message "Event (event3) Subscriber "dfhjmpqs" execution failed due to exception "Exception" with message "I'm an error"""]
-    File [~/prggmr.php]
-    Line [703]
-    Trace Route
-    {#0} prggmr.php(1688): Unknown::prggmr\bubble (event1)
-    {#1} prggmr.php(1644): prggmr\Engine::bubble (event1, Array(), Array())
-    {#2} prggmr.php(1644): prggmr\Engine::bubble (event2, Array(), Array())
-    {#3} prggmr.php(1644): prggmr\Engine::bubble (event3, Array(), Array())
+    RuntimeException: I have no trace ... in /home/nick/Apps/Prggmr/lib/subscription.php on line 94
 
-### Solutions?
+    Call Stack:
+        0.0002     328852   1. {main}() /home/nick/Apps/Prggmr/test.php:0
+        0.0023     504908   2. fire() /home/nick/Apps/Prggmr/test.php:16
+        0.0023     504964   3. prggmr\Engine->fire() /home/nick/Apps/Prggmr/lib/api.php:66
+        0.0023     504908   4. fire() /home/nick/Apps/Prggmr/test.php:5
+        0.0023     504964   5. prggmr\Engine->fire() /home/nick/Apps/Prggmr/lib/api.php:66
+        0.0023     504908   6. fire() /home/nick/Apps/Prggmr/test.php:9
+        0.0023     504964   7. prggmr\Engine->fire() /home/nick/Apps/Prggmr/lib/api.php:66
 
-* Unfortunately Timeout and Internal methods do not currently have a reliable method of implementation without halting execution in some manner wether that is sleeping, looping or line counting.
-* Regarding the stacktrace, the current method in planning is to attach the event to a stacktrace on each fire which would allow a backwards rebuild.
+
+### Solution 
+
+The method which is in planning is to attach the event to a stacktrace on each fire which would rebuilt itself in reverse.
 
 ## About the Author
 

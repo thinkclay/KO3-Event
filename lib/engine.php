@@ -102,13 +102,32 @@ class Engine extends Singleton {
 			// limitation that chains are now lifo ... i think that a chain
 			// object which incorporates a multiplex of transformation
 			// capabilities will suffice.
-            $queue = $this->_queue($signal[0]);
+            $queue = $this->queue($signal[0]);
             $queue->getSignal()->setChain($signal[1]);
             return $queue->enqueue($subscription, $priority);
         } else {
-            return $this->_queue($signal)->enqueue($subscription, $priority);
+            return $this->queue($signal)->enqueue($subscription, $priority);
         }
     }
+	
+	/**
+    * Removes a subscription from the queue.
+    *
+    * @param  mixed  $signal  Signal the subscription is attached to, this
+     *         can be a Signal object or the signal representation.
+    *
+    * @param  mixed  subscription  String identifier of the subscription or
+    *         a Subscription object.
+    *
+    * @throws  InvalidArgumentException
+    * @return  void
+    */
+    public function dequeue($signal, $subscription)
+    {
+		$queue = $this->queue($signal, false);
+		if (false === $queue) return false;
+		return $queue->dequeue($subscription);
+	}
 
     /**
      * Locates a Queue object in storage, if not found one is created.
@@ -119,7 +138,7 @@ class Engine extends Singleton {
      * @return  mixed  Queue object, false if generate is false and queue
      *          is not found.
      */
-    public function _queue($signal, $generate = true)
+    public function queue($signal, $generate = true)
     {
         $obj = (is_object($signal) && $signal instanceof Signal);
 
@@ -131,7 +150,9 @@ class Engine extends Singleton {
             }
             $this->_storage->next();
         }
-
+		
+		if (!$generate) return false;
+		
         if (!$obj) {
             $signal = new Signal($signal);
         }
@@ -155,7 +176,7 @@ class Engine extends Singleton {
      *
      * @return  object  Event
      */
-    public function fire($signal, array $vars = array(), $event = null)
+    public function fire($signal, $vars = null, $event = null)
     {
 		$compare = false;
         $this->_storage->rewind();
@@ -174,6 +195,12 @@ class Engine extends Singleton {
         if (false === $compare) {
             return false;
         }
+		
+		if (null !== $vars) {
+			if (!is_array($vars)) {
+				$vars = array($vars);
+			}
+		}
 
         $queue = $this->_storage->current();
 		// rewinds and prioritizes the queue
@@ -184,7 +211,7 @@ class Engine extends Singleton {
         } elseif (!$event instanceof Event) {
             throw new \InvalidArgumentException(
                 sprintf(
-                    'bubble expected instance of Event recieved "%s"'
+                    'fire expected instance of Event recieved "%s"'
                 , get_class($event))
             );
         }
