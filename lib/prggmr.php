@@ -20,17 +20,19 @@
  * @copyright  Copyright (c), 2010 Nickolas Whiting
  */
 
-define('PRGGMR_VERSION', '0.2.0');
+define('PRGGMR_VERSION', '0.1.1');
+
+$dir = dirname(realpath(__FILE__));
 
 // start'er up
-require 'singleton.php';
-require 'engine.php';
-require 'signalinterface.php';
-require 'signal.php';
-require 'regexsignal.php';
-require 'adapterinterface.php';
-require 'adapter.php';
-require 'event.php';
-require 'api.php';
-require 'queue.php';
-require 'subscription.php';
+require $dir.'/singleton.php';
+require $dir.'/engine.php';
+require $dir.'/signalinterface.php';
+require $dir.'/signal.php';
+require $dir.'/regexsignal.php';
+require $dir.'/adapterinterface.php';
+require $dir.'/adapter.php';
+require $dir.'/event.php';
+require $dir.'/api.php';
+require $dir.'/queue.php';
+require $dir.'/subscription.php';

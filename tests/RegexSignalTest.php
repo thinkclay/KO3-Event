@@ -25,8 +25,9 @@
  */
 
 include_once 'bootstrap.php';
+require_once 'SignalTest.php';
 
-class RegexSignalTest extends \PHPUnit_Framework_TestCase
+class RegexSignalTest extends SignalTest
 {
     public function testRegexSignal()
     {
