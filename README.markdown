@@ -22,15 +22,13 @@ asynchronous execution and robust subscriptions.
 
 ## Installation
 
-prggmr is designed to be a wolf in sheeps clothing, with a very minimalistic easy-to-use api with a robust complex engine backing it, the installation of
-prggmr currently requires inclusion of a single file and nothing else.
+prggmr is designed to be a wolf in sheeps clothing, with a very minimalistic easy-to-use api with a robust complex engine backing it, the installation of prggmr currently requires inclusion of a single file and nothing else.
 
-    require 'lib/prggmr.php';
+    require 'prggmr/lib/prggmr.php';
 
 ### Installing in the include path (Unix)
 
-The recommended method of installation is into your PHP include path allowing you to have a single local copy avaliable system wide. The following steps will
-install prggmr to your include path.
+The recommended method of installation is into your PHP include path allowing you to have a single local copy avaliable system wide. The following steps will install prggmr to your include path.
 
 Note this assumes an include path of /usr/local/lib/php and you have root or sudo access.
 
@@ -42,6 +40,10 @@ The following will install prggmr to your include path, again replace if yours d
 
     cd /usr/local/lib/php
     git clone git@github.com:nwhitingx/prggmr.git
+
+prggmr can now be included using 
+
+    require 'prggmr/lib/prggmr.php';
 
 ## HelloWorld Example
 
