@@ -20,6 +20,29 @@ asynchronous execution and robust subscriptions.
 * ZERO configuration
 * Priority based subscription
 
+## Installation
+
+prggmr is designed to be a wolf in sheeps clothing, with a very minimalistic easy-to-use api with a robust complex engine backing it, the installation of
+prggmr currently requires inclusion of a single file and nothing else.
+
+    require 'lib/prggmr.php';
+
+### Installing in the include path (Unix)
+
+The recommended method of installation is into your PHP include path allowing you to have a single local copy avaliable system wide. The following steps will
+install prggmr to your include path.
+
+Note this assumes an include path of /usr/local/lib/php and you have root or sudo access.
+
+If unsure of your include path you can retrieve it by running the command
+
+    php -r "echo get_include_path()\n";
+
+The following will install prggmr to your include path, again replace if yours differs.
+
+    cd /usr/local/lib/php
+    git clone git@github.com:nwhitingx/prggmr.git
+
 ## HelloWorld Example
 
 ### Code
@@ -27,9 +50,9 @@ asynchronous execution and robust subscriptions.
     subscribe('my_event', function($event){
         echo 'HelloWorld';
     });
-    
+
     fire('my_event');
-    
+
 ### Results
 
     HelloWorld
@@ -44,11 +67,11 @@ asynchronous execution and robust subscriptions.
     subscribe('exception', function(){
         fire('exception_2');
     });
-    
+
     subscribe('exception_2', function(){
         fire('exception_3');
     });
-    
+
     subscribe('exception_3', function(){
         throw new Exception('I have no trace ...');
     });
@@ -78,7 +101,7 @@ asynchronous execution and robust subscriptions.
         0.0023     504964   7. prggmr\Engine->fire() /home/nick/Apps/Prggmr/lib/api.php:66
 
 
-### Solution 
+### Solution
 
 The method which is in planning is to attach the event to a stacktrace on each fire which would rebuilt itself in reverse.
 
