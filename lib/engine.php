@@ -95,14 +95,8 @@ class Engine extends Singleton {
         }
 
         if (is_array($signal) && isset($signal[0]) && isset($signal[1])) {
-			// TODO: The peeve i have with this is it allows for overiding an
-			// existing chain ... possibly to solve this is to setup the chain
-			// as a sequence but that would require priority or would it?
-			// it could also be done as a stack but that would puts in the
-			// limitation that chains are now lifo ... i think that a chain
-			// object which incorporates a multiplex of transformation
-			// capabilities will suffice.
             $queue = $this->queue($signal[0]);
+			$chain = $this->queue($signal[1]);
             $queue->getSignal()->setChain($signal[1]);
             return $queue->enqueue($subscription, $priority);
         } else {
