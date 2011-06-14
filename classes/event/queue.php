@@ -1,4 +1,5 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
+
 /**
  * The queue object is a priority queue implemented using a heap, it was decided
  * aganist using PHP's implementation of the current PriorityQueue which is not
@@ -38,7 +39,7 @@ class Queue extends SplObjectStorage {
      *
      * @return  Queue
      */
-    public function __construct(Signal $signal)
+    public function __construct ( Signal $signal )
     {
         $this->_signal = $signal;
     }
@@ -50,55 +51,58 @@ class Queue extends SplObjectStorage {
      *
      * @return  object
      */
-    public function getSignal($signal = false)
+    public function getSignal ( $signal = false )
     {
-        if (!$signal) {
+        if ( ! $signal )
             return $this->_signal;
-        } else {
+        
+        else
             return $this->_signal->signal();
-        }
     }
 
     /**
      * Inserts a subscription into the queue.
      *
-     * @param  object  $subscription  Subscription
+     * @param  object  $callback  Callback
      * @param  integer $priority  Priority of the subscription
      *
      * @return  void
      */
-    public function enqueue ( Subscription $subscription, $priority = 100 )
+    public function enqueue ( Callback $callback, $priority = 100 )
     {
         $this->dirty = true;
-        if (null === $priority) $priority = 100;
+        
+        if (null === $priority) 
+        	$priority = 100;
+        
         $priority = (integer) $priority;
-        parent::attach($subscription, $priority);
+        parent::attach($callback, $priority);
     }
 
     /**
     * Removes a subscription from the queue.
     *
-    * @param  mixed  subscription  String identifier of the subscription or a Subscription object.
+    * @param  mixed  callback  String identifier of the subscription or a Subscription object.
     *
     * @throws  InvalidArgumentException
     * @return  void
     */
-    public function dequeue ( $subscription )
+    public function dequeue ( $callback )
     {
-        if (is_string($subscription) && $this->locate($subscription)) 
+        if (is_string($callback) && $this->locate($callback)) 
         {
             parent::detach($this->current());
             $this->dirty = true;
         } 
-        elseif ($subscription instanceof Subscription) 
+        elseif ($callback instanceof Callback) 
         {
-            parent::detach($subscription);
+            parent::detach($callback);
             $this->dirty = true;
         }
     }
 
     /**
-    * Locates a subscription in the queue by the identifier setting as the current.
+    * Locates a callback in the queue by the identifier setting as the current.
     *
     * @param  string  $identifier  String identifier of the subscription
     *
@@ -110,9 +114,8 @@ class Queue extends SplObjectStorage {
         while($this->valid()) 
         {
             if ($this->current()->getIdentifier() == $identifier) 
-            {
                 return true;
-            }
+
             $this->next();
         }
         return false;
@@ -127,9 +130,9 @@ class Queue extends SplObjectStorage {
      */
     public function rewind ( $prioritize = true )
     {
-        if ($prioritize) {
+        if ($prioritize)
             $this->_prioritize();
-        }
+
         return parent::rewind();
     }
 
@@ -146,9 +149,10 @@ class Queue extends SplObjectStorage {
         while($this->valid()) 
         {
             $pri = $this->getInfo();
-            if (!isset($tmp[$pri])) {
+           
+		    if (!isset($tmp[$pri]))
                 $tmp[$pri] = array();
-            }
+
             $tmp[$pri][] = $this->current();
             $this->next();
         }
@@ -164,22 +168,12 @@ class Queue extends SplObjectStorage {
         $this->dirty = false;
     }
 
-    // public static function attach()
-    // {
-        // throw new Exception('attach method disallowed; use of enqueue required');
-    // }
-
-    // public function detach()
-    // {
-        // throw new Exception('detach method disallowed; use of dequeue required');
-    // }
-
     /**
      * Flushes the queue.
      *
      * @return  void
      */
-    public function flush(/* ... */)
+    public function flush ()
     {
         $this->removeAll($this);
     }

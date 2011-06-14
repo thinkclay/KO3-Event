@@ -1,4 +1,5 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
+
 /**
  * The default signal object allows for signals of any type requiring only
  * that they evalute to true on a strict comparison check, otherwise meaning
@@ -40,9 +41,8 @@ class RegexSignal extends Signal
             if (count($matches) != 0) 
             {
                 foreach ($matches as $_k => $_v) {
-                    if (is_string($_k)) {
+                    if (is_string($_k))
                         unset($matches[$_k]);
-                    }
                 }
                 return $matches;
             }

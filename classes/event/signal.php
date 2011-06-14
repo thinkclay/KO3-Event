@@ -1,11 +1,12 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
+
 /**
  * The default signal object allows for signals of any type requiring only
  * that they evalute to true on a strict comparison check, otherwise meaning
  * each signal must be exactly equal both in type and value.
  */
-class Signal {
-
+class Signal 
+{
     /**
      * The event signal.
      *
@@ -26,11 +27,13 @@ class Signal {
      * @param  mixed  $signal  Event signal
      * @param  mixed  $chain  An additional signal for a chain
      *
-     * @return  \prggmr\Queue
+     * @return  Queue
      */
-    public function __construct($signal, $chain = null)
+    public function __construct ( $signal, $chain = null )
     {
-        if (is_object($signal)) $signal = spl_object_hash($signal);
+        if (is_object($signal))	
+        	$signal = spl_object_hash($signal);
+		
         $this->_chain = $chain;
         $this->_signal = $signal;
     }
@@ -40,12 +43,13 @@ class Signal {
      *
      * @param  mixed  $signal  Signal to compare
      *
-     * @return  mixed  False on failure. True if matches. String/Array
-     *          return results found via the match.
+     * @return  mixed  False on failure. True if matches. String/Array return results found via the match.
      */
-    public function compare($signal)
+    public function compare ( $signal )
     {
-        if (is_object($signal)) $signal = spl_object_hash($signal);
+        if (is_object($signal))	
+        	$signal = spl_object_hash($signal);
+        
         return ($this->_signal === $signal);
     }
 
@@ -54,7 +58,7 @@ class Signal {
      *
      * @return  mixed  Event signal.
      */
-    public function signal(/* ... */)
+    public function signal ()
     {
         return $this->_signal;
     }
@@ -64,7 +68,7 @@ class Signal {
      *
      * @return  mixed
      */
-    public function getChain(/* ... */)
+    public function getChain ()
     {
         return $this->_chain;
     }
@@ -76,7 +80,7 @@ class Signal {
      *
      * @return  void
      */
-    public function setChain($signal)
+    public function setChain ( $signal )
     {
         $this->_chain = $signal;
     }

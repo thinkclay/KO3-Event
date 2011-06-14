@@ -1,8 +1,9 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
+
 /**
  * Event
  *
- * Represents an executed/executable prggmr event.
+ * Represents an executed/executable event.
  */
 class Event_Instance
 {
@@ -66,7 +67,7 @@ class Event_Instance
     /**
      * Constructs a new event object.
      */
-    public function __construct()
+    public function __construct ()
     {
 		// default event state
         $this->setState(self::STATE_INACTIVE);
@@ -80,7 +81,7 @@ class Event_Instance
      *
      * @return  boolean  True on success
      */
-    public function setState($state, $msg = null)
+    public function setState ( $state, $msg = null )
     {
         $this->_state = (int) $state;
         $this->_stateMessage = $msg;
@@ -92,7 +93,7 @@ class Event_Instance
      *
      * @return  mixed  Current event state message, NULL otherwise.
      */
-    public function getStateMessage(/* ... */)
+    public function getStateMessage ()
     {
         return $this->_stateMessage;
     }
@@ -102,7 +103,7 @@ class Event_Instance
      *
      * @return  integer  Current state of this event.
      */
-    public function getState(/* ... */)
+    public function getState ()
     {
         return $this->_state;
     }
@@ -112,7 +113,7 @@ class Event_Instance
      *
      * @return  void
      */
-    public function halt(/* ... */)
+    public function halt ()
     {
         $this->_halt = true;
     }
@@ -123,7 +124,7 @@ class Event_Instance
      *
      * @return  boolean  True to halt | False otherwise
      */
-    public function isHalted(/* ... */)
+    public function isHalted ()
     {
         return $this->_halt;
     }
@@ -137,7 +138,7 @@ class Event_Instance
      *
      * @return  mixed  Results of
      */
-    public function getData(/* ... */)
+    public function getData ()
     {
         return $this->_data;
     }
@@ -149,17 +150,19 @@ class Event_Instance
      *
      * @return  boolean  True
      */
-    public function setData($value, $key = false)
+    public function setData ( $value, $key = false )
     {
 
-        if (!is_array($this->_data)) {
+        if (!is_array($this->_data)) 
+        {
             (array) $this->_data[$key] = $value;
-        } else {
-            if (false === $key) {
+        } 
+        else {
+            if (false === $key) 
                 $this->_data[] = $value;
-            } else {
+            
+            else
                 $this->_data[$key] = $value;
-            }
         }
 
         return true;
@@ -170,7 +173,7 @@ class Event_Instance
      *
      * @return  string
      */
-    public function getSignal(/* ... */)
+    public function getSignal ()
     {
         return $this->_signal;
     }
@@ -182,7 +185,7 @@ class Event_Instance
      *
      * @return  void
      */
-    public function setSignal($signal)
+    public function setSignal ( $signal )
     {
         $this->_signal = $signal;
     }
@@ -192,7 +195,7 @@ class Event_Instance
      *
      * @param  object  $chain  Event
      */
-    public function setChain(Event $chain)
+    public function setChain ( Event $chain )
     {
         $this->_chain = $chain;
     }
@@ -202,7 +205,7 @@ class Event_Instance
      *
      * @return  mixed  Event object, null if no chain exists.
      */
-    public function getChain()
+    public function getChain ()
     {
         return $this->_chain;
     }
