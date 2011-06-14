@@ -1,31 +1,10 @@
 <?php
-namespace prggmr;
-/**
- *  Copyright 2010 Nickolas Whiting
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *
- * @author  Nickolas Whiting  <me@nwhiting.com>
- * @package  prggmr
- * @copyright  Copyright (c), 2010 Nickolas Whiting
- */
-
-
-use \SplObjectStorage,
-    \Closure,
-    \InvalidArgumentException;
-
+require 'event/signal.php';
+require 'event/regexsignal.php';
+require 'event/event_instance.php';
+require 'event/queue.php';
+require 'event/subscription.php';
+		
 /**
  * The engine object rewritten serves now as much less the workhorse
  * of the system and rather the moderator as it technically should.
@@ -36,7 +15,8 @@ use \SplObjectStorage,
  * The engine still supports the main methods of bubbling and subscripting
  * only it now performs almost no logic other than type checking.
  */
-class Engine extends Singleton {
+class Event extends Event_Core 
+{
 
     /**
      * The storage of Queues.
@@ -50,9 +30,9 @@ class Engine extends Singleton {
      *
      * @return  void
      */
-    public function __construct(/* ... */)
+    public function __construct ()
     {
-        $this->_storage = new \SplObjectStorage();
+        $this->_storage = new SplObjectStorage();
     }
 
     /**
@@ -87,7 +67,7 @@ class Engine extends Singleton {
 
         if (!$subscription instanceof Subscription) {
             if (!is_callable($subscription)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'subscription callback is not a valid callback'
                 );
             }
@@ -116,7 +96,7 @@ class Engine extends Singleton {
     * @throws  InvalidArgumentException
     * @return  void
     */
-    public function dequeue($signal, $subscription)
+    public static function dequeue($signal, $subscription)
     {
 		$queue = $this->queue($signal, false);
 		if (false === $queue) return false;
@@ -201,9 +181,9 @@ class Engine extends Singleton {
         $queue->rewind();
 
         if (!is_object($event)) {
-            $event = new Event($queue->getSignal());
-        } elseif (!$event instanceof Event) {
-            throw new \InvalidArgumentException(
+            $event = new Event_Instance($queue->getSignal());
+        } elseif (!$event instanceof Event_Instance) {
+            throw new InvalidArgumentException(
                 sprintf(
                     'fire expected instance of Event recieved "%s"'
                 , get_class($event))
@@ -211,7 +191,7 @@ class Engine extends Singleton {
         }
 
         $event->setSignal($queue->getSignal());
-        $event->setState(Event::STATE_ACTIVE);
+        $event->setState(Event_Instance::STATE_ACTIVE);
 
         if (count($vars) === 0) {
             $vars = array(&$event);
@@ -232,8 +212,8 @@ class Engine extends Singleton {
         while($queue->valid()) {
             if ($event->isHalted()) break;
             $queue->current()->fire($vars);
-            if ($event->getState() == Event::STATE_ERROR) {
-                throw new \RuntimeException(
+            if ($event->getState() == Event_Instance::STATE_ERROR) {
+                throw new RuntimeException(
                     sprintf(
                         'Event execution failed with message "%s"',
                         $event->getStateMessage()
@@ -257,7 +237,7 @@ class Engine extends Singleton {
         }
 
         // keep the event in an active state until its chain completes
-        $event->setState(Event::STATE_INACTIVE);
+        $event->setState(Event_Instance::STATE_INACTIVE);
 
         return $event;
     }
@@ -277,7 +257,7 @@ class Engine extends Singleton {
      */
     public function flush(/* ... */)
     {
-        $this->_storage = new \SplObjectStorage();
+        $this->_storage = new SplObjectStorage();
     }
 
     /**
