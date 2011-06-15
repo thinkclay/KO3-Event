@@ -39,30 +39,29 @@ class Event extends Event_Core
      * NOTE: Passing an array as the signal parameter should be done only once per subscription que as each time a new Queue is created.
      *
      *
-     * @param  mixed  $signal  Signal the subscription will attach to, this can be a Signal object, the signal representation or an array for a chained signal.
-     * @param  mixed  $subscription  Subscription closure that will trigger on fire or a Subscription object.
-     * @param  mixed  $identifier  String identifier for this subscription, if an integer is provided it will be treated as the priority.
-     * @param  mixed  $priority  Priority of this subscription within the Queue
+     * @param   mixed  $signal       Signal the subscription will attach to, this can be an object, string, or array for a chained signal.
+     * @param   mixed  $callback     Callback closure that will trigger on fire or a Callback object.
+     * @param   mixed  $identifier   String identifier for this subscription, if an integer is provided it will be treated as the priority.
+     * @param   mixed  $priority     Priority of this subscription within the Queue / Chain
      *
      * @throws  InvalidArgumentException  Thrown when an invalid callback is provided.
-     *
      * @return  void
      */
     public function listen ( $signal, $callback, $identifier = null, $priority = null )
     {
-        if (is_int($identifier))
+        if ( is_int($identifier) )
             $priority = $identifier;
 
         if ( ! $callback instanceof Callback) 
         {
             if ( ! is_callable($callback) ) 
-            {
                 throw new InvalidArgumentException('subscription callback is not a valid callback');
-            }
+
             $callback = new Callback($callback, $identifier);
         }
 
-        if (is_array($signal) && isset($signal[0]) && isset($signal[1])) {
+        if ( is_array($signal) && isset($signal[0]) && isset($signal[1]) ) 
+        {
             $queue = $this->queue($signal[0]);
 			$chain = $this->queue($signal[1]);
             $queue->getSignal()->setChain($signal[1]);
@@ -75,15 +74,15 @@ class Event extends Event_Core
     }
 	
 	/**
-    * Removes a subscription from the queue.
-    *
-    * @param  mixed  $signal  Signal the subscription is attached to, this can be a Signal object or the signal representation.
-    *
-    * @param  mixed  subscription  String identifier of the subscription or a Subscription object.
-    *
-    * @throws  InvalidArgumentException
-    * @return  void
-    */
+     * Removes a callback from the queue.
+     *
+     * @param   mixed  $signal    Signal the subscription is attached to, this can be a Signal object or the signal representation.
+     *
+     * @param   mixed  $callback  String identifier of the subscription or a Subscription object.
+     *
+     * @throws  InvalidArgumentException
+     * @return  void
+     */
     public static function dequeue ( $signal, $callback )
     {
 		$queue = $this->queue($signal, false);
@@ -97,8 +96,8 @@ class Event extends Event_Core
     /**
      * Locates a Queue object in storage, if not found one is created.
      *
-     * @param  mixed  $signal  Signal the queue represents.
-     * @param  boolean  $generate  Generate the queue if not found.
+     * @param   mixed    $signal     Signal the queue represents.
+     * @param   boolean  $generate   Generate the queue if not found.
      *
      * @return  mixed  Queue object, false if generate is false and queue is not found.
      */
