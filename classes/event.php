@@ -253,8 +253,22 @@ class Event extends Event_Core
      *
      * @return  integer
      */
-    public function count()
+    public function count ()
     {
         return $this->_storage->count();
     }
+	
+	/**
+     * Assembles the string identifier
+     *
+     * @return  string
+     */
+	public static function assemble ()
+	{
+		return strtoupper(
+			Request::$current->directory().'_'.
+			Request::$current->controller().'_'.
+			Request::$current->action()
+		);
+	}
 }
