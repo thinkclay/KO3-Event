@@ -5,7 +5,7 @@
  * that they evalute to true on a strict comparison check, otherwise meaning
  * each signal must be exactly equal both in type and value.
  */
-class RegexSignal extends Signal 
+class Event_RegexSignal extends Event_Signal 
 {
 
     /**
@@ -38,9 +38,11 @@ class RegexSignal extends Signal
         if (preg_match($this->_signal, $signal, $matches)) 
         {
             array_shift($matches);
-            if (count($matches) != 0) 
+			
+            if ( count($matches) != 0 ) 
             {
-                foreach ($matches as $_k => $_v) {
+                foreach ( $matches as $_k => $_v ) 
+                {
                     if (is_string($_k))
                         unset($matches[$_k]);
                 }

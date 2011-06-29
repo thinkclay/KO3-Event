@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Event_Callback extends Kohana_Event_Callback 
+class Event_Instance extends Kohana_Event_Instance 
 {
 	
 }

@@ -5,7 +5,7 @@
  *
  * Represents an executed/executable event.
  */
-class Event_Instance
+class Kohana_Event_Instance
 {
     /**
      * Event is actively being called.
@@ -70,7 +70,7 @@ class Event_Instance
     public function __construct ()
     {
 		// default event state
-        $this->setState(self::STATE_INACTIVE);
+        $this->set_state(self::STATE_INACTIVE);
     }
 
     /**
@@ -81,7 +81,7 @@ class Event_Instance
      *
      * @return  boolean  True on success
      */
-    public function setState ( $state, $msg = null )
+    public function set_state ( $state, $msg = null )
     {
         $this->_state = (int) $state;
         $this->_stateMessage = $msg;
@@ -153,11 +153,12 @@ class Event_Instance
     public function setData ( $value, $key = false )
     {
 
-        if (!is_array($this->_data)) 
+        if ( ! is_array($this->_data) ) 
         {
             (array) $this->_data[$key] = $value;
         } 
-        else {
+        else 
+        {
             if (false === $key) 
                 $this->_data[] = $value;
             
@@ -173,7 +174,7 @@ class Event_Instance
      *
      * @return  string
      */
-    public function getSignal ()
+    public function get_signal ()
     {
         return $this->_signal;
     }
@@ -185,7 +186,7 @@ class Event_Instance
      *
      * @return  void
      */
-    public function setSignal ( $signal )
+    public function set_signal ( $signal )
     {
         $this->_signal = $signal;
     }

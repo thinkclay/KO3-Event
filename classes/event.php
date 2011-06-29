@@ -1,10 +1,4 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-
-require 'event/signal.php';
-require 'event/regexsignal.php';
-require 'event/event_instance.php';
-require 'event/queue.php';
-require 'event/callback.php';
 		
 /**
  * The engine is responsible for ensuring all data passed into the system
@@ -52,19 +46,19 @@ class Event extends Event_Core
         if ( is_int($identifier) )
             $priority = $identifier;
 
-        if ( ! $callback instanceof Callback) 
+        if ( ! $callback instanceof Event_Callback) 
         {
             if ( ! is_callable($callback) ) 
                 throw new InvalidArgumentException('subscription callback is not a valid callback');
 
-            $callback = new Callback($callback, $identifier);
+            $callback = new Event_Callback($callback, $identifier);
         }
 
-        if ( is_array($signal) && isset($signal[0]) && isset($signal[1]) ) 
+        if ( is_array($signal) AND isset($signal[0]) AND isset($signal[1]) ) 
         {
             $queue = $this->queue($signal[0]);
 			$chain = $this->queue($signal[1]);
-            $queue->getSignal()->setChain($signal[1]);
+            $queue->get_signal()->setChain($signal[1]);
             return $queue->enqueue($subscription, $priority);
         } 
         else 
@@ -103,24 +97,26 @@ class Event extends Event_Core
      */
     public function queue ( $signal, $generate = true )
     {
-        $obj = (is_object($signal) && $signal instanceof Signal);
+        $obj = (is_object($signal) AND $signal instanceof Event_Signal);
 
         $this->_storage->rewind();
-        while($this->_storage->valid()) {
-            if (($obj && $this->_storage->current()->getSignal() === $signal) ||
-                ($this->_storage->current()->getSignal(true) === $signal)) {
+        while ( $this->_storage->valid() ) 
+        {
+        	$storage = ($this->_storage->current()->get_signal() === $signal);
+			
+            if ( ($obj AND $storage) OR ($this->_storage->current()->get_signal(true) === $signal) ) 
                 return $this->_storage->current();
-            }
+
             $this->_storage->next();
         }
 		
-		if (!$generate) 
+		if ( !$generate ) 
 			return false;
 		
-        if (!$obj)
-            $signal = new Signal($signal);
+        if ( !$obj )
+            $signal = new Event_Signal($signal);
 
-        $obj = new Queue($signal);
+        $obj = new Event_Queue($signal);
 
         // new queue
         $this->_storage->attach($obj);
@@ -140,25 +136,26 @@ class Event extends Event_Core
     {
 		$compare = false;
         $this->_storage->rewind();
-        while($this->_storage->valid()) 
+		
+        while ( $this->_storage->valid() ) 
         {
 			// compare the signal given with the queue signal ..
 			// TODO: Currently this allows for the first signal match to be used
 			// this should allow for either it to continue on with itself until
 			// it finds the signal it wants based on some crazy algorithm that
 			// has yet to be written OR use every signal it compares with
-            if (false !== ($compare = $this->_storage->current()->getSignal()->compare($signal))) 
+            if ( ($compare = $this->_storage->current()->get_signal()->compare($signal)) !== false ) 
                 break;
 
             $this->_storage->next();
         }
 
-        if (false === $compare)
+        if ( $compare === false )
             return false;
 		
-		if (null !== $vars) 
+		if ( $vars !== null ) 
 		{
-			if (!is_array($vars))
+			if ( ! is_array($vars) )
 				$vars = array($vars);
 		}
 
@@ -166,11 +163,11 @@ class Event extends Event_Core
 		// rewinds and prioritizes the queue
         $queue->rewind();
 
-        if (!is_object($event)) 
+        if ( ! is_object($event) ) 
         {
-            $event = new Event_Instance($queue->getSignal());
+            $event = new Event_Instance($queue->get_signal());
         } 
-        elseif (!$event instanceof Event_Instance) 
+        elseif ( ! $event instanceof Event_Instance ) 
         {
             throw new InvalidArgumentException(
                 sprintf(
@@ -179,19 +176,19 @@ class Event extends Event_Core
             );
         }
 
-        $event->setSignal($queue->getSignal());
-        $event->setState(Event_Instance::STATE_ACTIVE);
+        $event->set_signal($queue->get_signal());
+        $event->set_state(Event_Instance::STATE_ACTIVE);
 
-        if (count($vars) === 0)
+        if ( count($vars) === 0 )
             $vars = array(&$event);
         
         else
             $vars = array_merge(array(&$event), $vars);
 
-        if ($compare !== true) 
+        if ( $compare !== true ) 
         {
             // allow for array return
-            if (is_array($compare))
+            if ( is_array($compare) )
                 $vars = array_merge($vars, $compare);
             
             else
@@ -199,14 +196,14 @@ class Event extends Event_Core
         }
 
 		// the main loop
-        while($queue->valid()) 
+        while ( $queue->valid() ) 
         {
             if ($event->isHalted()) 
             	break;
 			
             $queue->current()->fire($vars);
             
-            if ($event->getState() == Event_Instance::STATE_ERROR) 
+            if ( $event->getState() == Event_Instance::STATE_ERROR ) 
             {
                 throw new RuntimeException(
                     sprintf(
@@ -219,9 +216,9 @@ class Event extends Event_Core
         }
 
         // the chain
-        if (null !== ($chain = $queue->getSignal()->getChain())) 
+        if ( ($chain = $queue->get_signal()->getChain()) !== null ) 
         {
-            if (null !== ($data = $event->getData())) 
+            if ( ($data = $event->getData()) !== null ) 
             {
                 // remove the current event from the vars
                 unset($vars[0]);
@@ -230,12 +227,12 @@ class Event extends Event_Core
 			
             $chain = $this->fire($chain, $vars);
             
-            if (false !== $chain)
+            if ( $chain )
                 $event->setChain($chain);
         }
 
         // keep the event in an active state until its chain completes
-        $event->setState(Event_Instance::STATE_INACTIVE);
+        $event->set_state(Event_Instance::STATE_INACTIVE);
 
         return $event;
     }
@@ -259,16 +256,21 @@ class Event extends Event_Core
     }
 	
 	/**
-     * Assembles the string identifier
+     * Assembles the string identifier, builds from the current request if no args are passed
      *
      * @return  string
      */
-	public static function assemble ()
+	public static function assemble ( $namespace = null, $controller = null, $action = null )
 	{
-		return strtoupper(
-			Request::$current->directory().'_'.
-			Request::$current->controller().'_'.
-			Request::$current->action()
-		);
+		if ( ! $namespace )
+			$namespace = Request::$current->directory();
+		
+		if ( ! $controller )
+			$controller = Request::$current->controller();
+		
+		if ( ! $action ) 
+			$action = Request::$current->action(); 
+		
+		return strtoupper($namespace.'_'.$controller.'_'.$action);
 	}
 }
