@@ -196,7 +196,7 @@ class Kohana_Event_Instance
      *
      * @param  object  $chain  Event
      */
-    public function setChain ( Event $chain )
+    public function set_chain ( Event $chain )
     {
         $this->_chain = $chain;
     }
@@ -206,7 +206,7 @@ class Kohana_Event_Instance
      *
      * @return  mixed  Event object, null if no chain exists.
      */
-    public function getChain ()
+    public function get_chain ()
     {
         return $this->_chain;
     }

@@ -68,7 +68,7 @@ class Kohana_Event_Callback
      *
      * @return  string
      */
-    public function getIdentifier ()
+    public function get_identifier ()
     {
         return $this->_identifier;
     }

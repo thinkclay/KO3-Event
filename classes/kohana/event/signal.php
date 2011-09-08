@@ -68,7 +68,7 @@ class Kohana_Event_Signal
      *
      * @return  mixed
      */
-    public function getChain ()
+    public function get_chain ()
     {
         return $this->_chain;
     }
@@ -80,7 +80,7 @@ class Kohana_Event_Signal
      *
      * @return  void
      */
-    public function setChain ( $signal )
+    public function set_chain ( $signal )
     {
         $this->_chain = $signal;
     }

@@ -58,7 +58,7 @@ class Event extends Event_Core
         {
             $queue = $this->queue($signal[0]);
 			$chain = $this->queue($signal[1]);
-            $queue->get_signal()->setChain($signal[1]);
+            $queue->get_signal()->set_chain($signal[1]);
             return $queue->enqueue($subscription, $priority);
         } 
         else 
@@ -110,10 +110,10 @@ class Event extends Event_Core
             $this->_storage->next();
         }
 		
-		if ( !$generate ) 
+		if ( ! $generate ) 
 			return false;
 		
-        if ( !$obj )
+        if ( ! $obj )
             $signal = new Event_Signal($signal);
 
         $obj = new Event_Queue($signal);
@@ -170,9 +170,7 @@ class Event extends Event_Core
         elseif ( ! $event instanceof Event_Instance ) 
         {
             throw new InvalidArgumentException(
-                sprintf(
-                    'fire expected instance of Event recieved "%s"'
-                , get_class($event))
+                sprintf('fire expected instance of Event recieved "%s"', get_class($event))
             );
         }
 
@@ -206,10 +204,7 @@ class Event extends Event_Core
             if ( $event->getState() == Event_Instance::STATE_ERROR ) 
             {
                 throw new RuntimeException(
-                    sprintf(
-                        'Event execution failed with message "%s"',
-                        $event->getStateMessage()
-                    )
+                    sprintf('Event execution failed with message "%s"', $event->getStateMessage())
                 );
             }
             $queue->next();
@@ -222,13 +217,13 @@ class Event extends Event_Core
             {
                 // remove the current event from the vars
                 unset($vars[0]);
-                $vars = array_merge($vars, $event->getData());
+                $vars = array_merge($vars, $event->get_data());
             }
 			
             $chain = $this->fire($chain, $vars);
             
             if ( $chain )
-                $event->setChain($chain);
+                $event->set_chain($chain);
         }
 
         // keep the event in an active state until its chain completes
