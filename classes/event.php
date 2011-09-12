@@ -134,6 +134,10 @@ class Event extends Event_Core
      */
     public function fire ( $signal, $vars = null, $event = null )
     {
+    	// Lazy load models for any executing events
+    	//Model_Event::lazyload(); 
+    	echo $this->lazyload();
+		
 		$compare = false;
         $this->_storage->rewind();
 		
@@ -196,12 +200,12 @@ class Event extends Event_Core
 		// the main loop
         while ( $queue->valid() ) 
         {
-            if ($event->isHalted()) 
+            if ($event->is_halted()) 
             	break;
 			
             $queue->current()->fire($vars);
             
-            if ( $event->getState() == Event_Instance::STATE_ERROR ) 
+            if ( $event->get_state() == Event_Instance::STATE_ERROR ) 
             {
                 throw new RuntimeException(
                     sprintf('Event execution failed with message "%s"', $event->getStateMessage())
@@ -211,7 +215,7 @@ class Event extends Event_Core
         }
 
         // the chain
-        if ( ($chain = $queue->get_signal()->getChain()) !== null ) 
+        if ( ($chain = $queue->get_signal()->get_chain()) !== null ) 
         {
             if ( ($data = $event->getData()) !== null ) 
             {
@@ -267,5 +271,20 @@ class Event extends Event_Core
 			$action = Request::$current->action(); 
 		
 		return strtoupper($namespace.'_'.$controller.'_'.$action);
+	}
+	
+	/**
+     * Lazy load models based on the currently firing event
+     *
+     * @return  string
+     */
+	public static function lazyload ()
+	{
+		$namespace = Request::$current->directory();
+		$controller = Request::$current->controller();
+		$action = Request::$current->action(); 
+		
+		$current_executing_event = 'Model_Event_'.$controller;
+		$current_executing_event::$action();		
 	}
 }

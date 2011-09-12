@@ -28,7 +28,7 @@ Download or clone the event module from github and install to your module path
 
 	// For a test, drop this into any method in any controller or class
 	// This attaches your callback to a custom event which can be a string, function, etc
-	Event::instance()->subscribe(
+	Event::instance()->listen(
 		'EVENT_ECHO_TEST', 
 
 		function ($event) { 

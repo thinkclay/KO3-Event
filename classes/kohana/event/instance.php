@@ -93,7 +93,7 @@ class Kohana_Event_Instance
      *
      * @return  mixed  Current event state message, NULL otherwise.
      */
-    public function getStateMessage ()
+    public function get_state_message ()
     {
         return $this->_stateMessage;
     }
@@ -103,7 +103,7 @@ class Kohana_Event_Instance
      *
      * @return  integer  Current state of this event.
      */
-    public function getState ()
+    public function get_state ()
     {
         return $this->_state;
     }
@@ -124,7 +124,7 @@ class Kohana_Event_Instance
      *
      * @return  boolean  True to halt | False otherwise
      */
-    public function isHalted ()
+    public function is_halted ()
     {
         return $this->_halt;
     }
@@ -138,7 +138,7 @@ class Kohana_Event_Instance
      *
      * @return  mixed  Results of
      */
-    public function getData ()
+    public function get_data ()
     {
         return $this->_data;
     }
@@ -150,7 +150,7 @@ class Kohana_Event_Instance
      *
      * @return  boolean  True
      */
-    public function setData ( $value, $key = false )
+    public function set_data ( $value, $key = false )
     {
 
         if ( ! is_array($this->_data) ) 

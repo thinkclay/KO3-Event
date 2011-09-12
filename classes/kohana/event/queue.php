@@ -154,7 +154,7 @@ class Kohana_Event_Queue extends SplObjectStorage
         
         while ( $this->valid() ) 
         {
-            $pri = $this->get_info();
+            $pri = $this->getInfo();
            
 		    if ( ! isset($tmp[$pri]) )
                 $tmp[$pri] = array();
@@ -164,7 +164,7 @@ class Kohana_Event_Queue extends SplObjectStorage
         }
 		
         ksort($tmp, SORT_NUMERIC);
-        $this->remove_all($this);
+        $this->removeAll($this);
 		
         foreach ( $tmp as $priority => $_array ) 
         {
