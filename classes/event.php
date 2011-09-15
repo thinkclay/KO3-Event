@@ -135,8 +135,7 @@ class Event extends Event_Core
     public function fire ( $signal, $vars = null, $event = null )
     {
     	// Lazy load models for any executing events
-    	//Model_Event::lazyload(); 
-    	echo $this->lazyload();
+    	$this->lazyload();
 		
 		$compare = false;
         $this->_storage->rewind();
@@ -280,11 +279,11 @@ class Event extends Event_Core
      */
 	public static function lazyload ()
 	{
-		$namespace = Request::$current->directory();
 		$controller = Request::$current->controller();
 		$action = Request::$current->action(); 
 		
 		$current_executing_event = 'Model_Event_'.$controller;
-		$current_executing_event::$action();		
+		if ( class_exists($current_executing_event) )
+			$current_executing_event::$action();		
 	}
 }
