@@ -126,9 +126,6 @@ class Kohana_Event extends Event_Core
      */
     public function fire ( $signal, $vars = null, $event = null )
     {
-        // Lazy load models for any executing events
-        $this->lazyload();
-
         $compare = false;
         $this->_storage->rewind();
 
@@ -153,6 +150,9 @@ class Kohana_Event extends Event_Core
             if ( ! is_array($vars) )
                 $vars = array($vars);
         }
+
+        // Lazy load models for any executing events
+        $this->lazyload($vars);
 
         $queue = $this->_storage->current();
         // rewinds and prioritizes the queue
@@ -250,7 +250,7 @@ class Kohana_Event extends Event_Core
      *
      * @return  string
      */
-    public static function assemble ( $namespace = null, $controller = null, $action = null )
+    public static function assemble($namespace = null, $controller = null, $action = null)
     {
         if ( ! $namespace )
             $namespace = Request::$current->directory();
@@ -269,13 +269,13 @@ class Kohana_Event extends Event_Core
      *
      * @return  string
      */
-    public static function lazyload ()
+    public static function lazyload($vars = null)
     {
         $controller = Request::$current->controller();
         $action = Request::$current->action();
-
         $current_executing_event = 'Model_Event_'.$controller;
+
         if ( class_exists($current_executing_event) )
-            $current_executing_event::$action();
+            $current_executing_event::$action($vars);
     }
 }
