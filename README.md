@@ -1,16 +1,9 @@
 # Event Module for Kohana 3.x
+Lightweight, intuitive event-processing library for PHP 5.3+ applications running on Kohana 3.x (tested on 3.2 and 3.3)
 
-Lightweight, intuitive event-processing library for PHP 5.3+ applications built using the [prggmr](https://github.com/nwhitingx/prggmr) event framework by [Nickolas Whiting](http://github.com/nwhitingx)
-
-## Introduction
-
-The Kohana Event Module implements a fast event-processing engine for use with developing
-event driven applications in PHP 5.3+. It's incredibly simple, is driven by
-a robust engine that allows for event chaining, halting, states,
-asynchronous execution and robust subscriptions.
+The Kohana Event Module implements a fast event-processing engine for use with developing event driven applications in PHP 5.3+. It's incredibly simple, driven by a robust engine that allows for event chaining, halting, states, asynchronous execution and robust subscriptions.
 
 ## Features
-
 * Asynchronous event firing
 * Robust event subscription
 * Stateful events
@@ -19,10 +12,6 @@ asynchronous execution and robust subscriptions.
 * High test coverage
 * ZERO configuration
 * Priority based subscription
-
-## Installation and Getting Started
-
-Download or clone the event module from github and install to your module path
 
 ### Writing Code
 
@@ -47,7 +36,6 @@ Download or clone the event module from github and install to your module path
 * Stacks are not maintained within events resulting in untraceable stacks.
 * Since this is based on the prggmr framework, it inherits the same limitations and issues, though we plan to extend and resolve those over time.
 
-## License
 
 This module is released under an [MIT opensource license](http://opensource.org/licenses/MIT)
 
