@@ -18,11 +18,11 @@ The Kohana Event Module implements a fast event-processing engine for use with d
 	// For a test, drop this into any method in any controller or class
 	// This attaches your callback to a custom event which can be a string, function, etc
 	Event::instance()->listen(
-		'EVENT_ECHO_TEST', 
+		'EVENT_ECHO_TEST',
 
-		function ($event) { 
-			echo '<strong>Event Fired!!!</strong><br />'; 
-			var_dump($event); 
+		function ($event) {
+			echo '<strong>Event Fired!!!</strong><br />';
+			var_dump($event);
 		}
 	);
 
@@ -37,27 +37,5 @@ The Kohana Event Module implements a fast event-processing engine for use with d
 * Since this is based on the prggmr framework, it inherits the same limitations and issues, though we plan to extend and resolve those over time.
 
 
-This module is released under an [MIT opensource license](http://opensource.org/licenses/MIT)
-
 ----
-## The MIT License (MIT)
-
-### Copyright (c) 2013 Clay McIlrath
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This module is released under an [MIT opensource license](http://opensource.org/licenses/MIT)
