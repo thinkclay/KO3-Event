@@ -1,25 +1,25 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * The default signal object allows for signals of any type requiring only
  * that they evalute to true on a strict comparison check, otherwise meaning
  * each signal must be exactly equal both in type and value.
  */
-class Kohana_Event_Signal 
+class Kohana_Event_Signal
 {
     /**
      * The event signal.
      *
      * @var  string
      */
-    protected $_signal = null;
+    protected $_signal = NULL;
 
     /**
      * Chain signal
      *
      * @var  mixed
      */
-    protected $_chain = null;
+    protected $_chain = NULL;
 
     /**
      * Constructs a new signal object.
@@ -29,11 +29,13 @@ class Kohana_Event_Signal
      *
      * @return  Queue
      */
-    public function __construct ( $signal, $chain = null )
+    public function __construct($signal, $chain = NULL)
     {
-        if (is_object($signal))	
-        	$signal = spl_object_hash($signal);
-		
+        if (is_object($signal))
+        {
+            $signal = spl_object_hash($signal);
+        }
+
         $this->_chain = $chain;
         $this->_signal = $signal;
     }
@@ -45,11 +47,13 @@ class Kohana_Event_Signal
      *
      * @return  mixed  False on failure. True if matches. String/Array return results found via the match.
      */
-    public function compare ( $signal )
+    public function compare($signal)
     {
-        if (is_object($signal))	
-        	$signal = spl_object_hash($signal);
-        
+        if (is_object($signal))
+        {
+            $signal = spl_object_hash($signal);
+        }
+
         return ($this->_signal === $signal);
     }
 
@@ -58,7 +62,7 @@ class Kohana_Event_Signal
      *
      * @return  mixed  Event signal.
      */
-    public function signal ()
+    public function signal()
     {
         return $this->_signal;
     }
@@ -68,7 +72,7 @@ class Kohana_Event_Signal
      *
      * @return  mixed
      */
-    public function get_chain ()
+    public function get_chain()
     {
         return $this->_chain;
     }
@@ -80,7 +84,7 @@ class Kohana_Event_Signal
      *
      * @return  void
      */
-    public function set_chain ( $signal )
+    public function set_chain($signal)
     {
         $this->_chain = $signal;
     }

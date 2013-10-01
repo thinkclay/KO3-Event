@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 class Kohana_Event extends Event_Core
 {
@@ -7,7 +7,7 @@ class Kohana_Event extends Event_Core
      *
      * @var  object  SplObjectStorage
      */
-    private $_storage = null;
+    private $_storage = NULL;
 
     /**
      * Construction inits our blank object storage, nothing else.
@@ -16,7 +16,7 @@ class Kohana_Event extends Event_Core
      */
     public function __construct ()
     {
-        $this->_storage = new SplObjectStorage();
+        $this->_storage = new SplObjectStorage;
     }
 
     /**
@@ -33,24 +33,27 @@ class Kohana_Event extends Event_Core
      * @throws  InvalidArgumentException  Thrown when an invalid callback is provided.
      * @return  void
      */
-    public function listen ( $signal, $callback, $identifier = null, $priority = null )
+    public function listen ( $signal, $callback, $identifier = NULL, $priority = NULL )
     {
-        if ( is_int($identifier) )
+        if (is_int($identifier))
+        {
             $priority = $identifier;
+        }
 
         if ( ! $callback instanceof Event_Callback)
         {
-            if ( ! is_callable($callback) )
+            if ( ! is_callable($callback))
                 throw new InvalidArgumentException('subscription callback is not a valid callback');
 
             $callback = new Event_Callback($callback, $identifier);
         }
 
-        if ( is_array($signal) AND isset($signal[0]) AND isset($signal[1]) )
+        if (is_array($signal) AND isset($signal[0]) AND isset($signal[1]))
         {
             $queue = $this->queue($signal[0]);
             $chain = $this->queue($signal[1]);
             $queue->get_signal()->set_chain($signal[1]);
+
             return $queue->enqueue($subscription, $priority);
         }
         else
@@ -71,10 +74,10 @@ class Kohana_Event extends Event_Core
      */
     public static function dequeue ( $signal, $callback )
     {
-        $queue = $this->queue($signal, false);
+        $queue = $this->queue($signal, FALSE);
 
-        if (false === $queue)
-            return false;
+        if ($queue === FALSE)
+            return FALSE;
 
         return $queue->dequeue($callback);
     }
@@ -85,28 +88,30 @@ class Kohana_Event extends Event_Core
      * @param   mixed    $signal     Signal the queue represents.
      * @param   boolean  $generate   Generate the queue if not found.
      *
-     * @return  mixed  Queue object, false if generate is false and queue is not found.
+     * @return  mixed  Queue object, FALSE if generate is FALSE and queue is not found.
      */
-    public function queue ( $signal, $generate = true )
+    public function queue ( $signal, $generate = TRUE )
     {
         $obj = (is_object($signal) AND $signal instanceof Event_Signal);
 
         $this->_storage->rewind();
-        while ( $this->_storage->valid() )
+        while ($this->_storage->valid())
         {
             $storage = ($this->_storage->current()->get_signal() === $signal);
 
-            if ( ($obj AND $storage) OR ($this->_storage->current()->get_signal(true) === $signal) )
+            if (($obj AND $storage) OR ($this->_storage->current()->get_signal(TRUE) === $signal))
                 return $this->_storage->current();
 
             $this->_storage->next();
         }
 
-        if ( ! $generate )
-            return false;
+        if ( ! $generate)
+            return FALSE;
 
-        if ( ! $obj )
+        if ( ! $obj)
+        {
             $signal = new Event_Signal($signal);
+        }
 
         $obj = new Event_Queue($signal);
 
@@ -124,31 +129,33 @@ class Kohana_Event extends Event_Core
      *
      * @return  object  Event
      */
-    public function fire ( $signal, $vars = null, $event = null )
+    public function fire ( $signal, $vars = NULL, $event = NULL )
     {
-        $compare = false;
+        $compare = FALSE;
         $this->_storage->rewind();
 
-        while ( $this->_storage->valid() )
+        while ($this->_storage->valid())
         {
             // compare the signal given with the queue signal ..
             // TODO: Currently this allows for the first signal match to be used
             // this should allow for either it to continue on with itself until
             // it finds the signal it wants based on some crazy algorithm that
             // has yet to be written OR use every signal it compares with
-            if ( ($compare = $this->_storage->current()->get_signal()->compare($signal)) !== false )
+            if (($compare = $this->_storage->current()->get_signal()->compare($signal)) !== FALSE)
                 break;
 
             $this->_storage->next();
         }
 
-        if ( $compare === false )
-            return false;
+        if ($compare === FALSE)
+            return FALSE;
 
-        if ( $vars !== null )
+        if ($vars !== NULL)
         {
-            if ( ! is_array($vars) )
+            if ( ! is_array($vars))
+            {
                 $vars = array($vars);
+            }
         }
 
         // Lazy load models for any executing events
@@ -158,11 +165,11 @@ class Kohana_Event extends Event_Core
         // rewinds and prioritizes the queue
         $queue->rewind();
 
-        if ( ! is_object($event) )
+        if ( ! is_object($event))
         {
             $event = new Event_Instance($queue->get_signal());
         }
-        elseif ( ! $event instanceof Event_Instance )
+        elseif ( ! $event instanceof Event_Instance)
         {
             throw new InvalidArgumentException(
                 sprintf('fire expected instance of Event recieved "%s"', get_class($event))
@@ -172,31 +179,37 @@ class Kohana_Event extends Event_Core
         $event->set_signal($queue->get_signal());
         $event->set_state(Event_Instance::STATE_ACTIVE);
 
-        if ( count($vars) === 0 )
-            $vars = array(&$event);
-
+        if (count($vars) === 0)
+        {
+            $vars = [ & $event ];
+        }
         else
-            $vars = array_merge(array(&$event), $vars);
+        {
+            $vars = array_merge([ & $event ], $vars);
+        }
 
-        if ( $compare !== true )
+        if ($compare !== TRUE)
         {
             // allow for array return
-            if ( is_array($compare) )
+            if (is_array($compare))
+            {
                 $vars = array_merge($vars, $compare);
-
+            }
             else
+            {
                 $vars[] = $compare;
+            }
         }
 
         // the main loop
-        while ( $queue->valid() )
+        while ($queue->valid())
         {
             if ($event->is_halted())
                 break;
 
             $queue->current()->fire($vars);
 
-            if ( $event->get_state() == Event_Instance::STATE_ERROR )
+            if ($event->get_state() == Event_Instance::STATE_ERROR)
             {
                 throw new RuntimeException(
                     sprintf('Event execution failed with message "%s"', $event->getStateMessage())
@@ -206,9 +219,9 @@ class Kohana_Event extends Event_Core
         }
 
         // the chain
-        if ( ($chain = $queue->get_signal()->get_chain()) !== null )
+        if (($chain = $queue->get_signal()->get_chain()) !== NULL)
         {
-            if ( ($data = $event->getData()) !== null )
+            if (($data = $event->getData()) !== NULL)
             {
                 // remove the current event from the vars
                 unset($vars[0]);
@@ -217,8 +230,10 @@ class Kohana_Event extends Event_Core
 
             $chain = $this->fire($chain, $vars);
 
-            if ( $chain )
+            if ($chain)
+            {
                 $event->set_chain($chain);
+            }
         }
 
         // keep the event in an active state until its chain completes
@@ -232,7 +247,7 @@ class Kohana_Event extends Event_Core
      */
     public function flush ()
     {
-        $this->_storage = new SplObjectStorage();
+        $this->_storage = new SplObjectStorage;
     }
 
     /**
@@ -250,16 +265,22 @@ class Kohana_Event extends Event_Core
      *
      * @return  string
      */
-    public static function assemble($namespace = null, $controller = null, $action = null)
+    public static function assemble($namespace = NULL, $controller = NULL, $action = NULL)
     {
-        if ( ! $namespace )
+        if ( ! $namespace)
+        {
             $namespace = Request::$current->directory();
+        }
 
-        if ( ! $controller )
+        if ( ! $controller)
+        {
             $controller = Request::$current->controller();
+        }
 
-        if ( ! $action )
+        if ( ! $action)
+        {
             $action = Request::$current->action();
+        }
 
         return strtoupper($namespace.'_'.$controller.'_'.$action);
     }
@@ -269,13 +290,15 @@ class Kohana_Event extends Event_Core
      *
      * @return  string
      */
-    public static function lazyload($vars = null)
+    public static function lazyload($vars = NULL)
     {
         $controller = Request::$current->controller();
         $action = Request::$current->action();
         $current_executing_event = 'Model_Event_'.$controller;
 
-        if ( class_exists($current_executing_event) )
+        if (class_exists($current_executing_event))
+        {
             $current_executing_event::$action($vars);
+        }
     }
 }

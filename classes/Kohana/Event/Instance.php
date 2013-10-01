@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * Event
@@ -34,42 +34,40 @@ class Kohana_Event_Instance
      *
      * @var  mixed
      */
-    protected $_data = null;
+    protected $_data = NULL;
 
     /**
      * Halt the event que after this event finishes.
      *
      * @var  boolean  True to propagate | False otherwise
      */
-    protected $_halt = false;
+    protected $_halt = FALSE;
 
     /**
      * Signal this event represents.
      *
      * @var  object  Signal
      */
-    protected $_signal = null;
+    protected $_signal = NULL;
 
     /**
      * Message associated with the current event state.
      *
      * @var  string
      */
-    protected $_stateMessage = null;
+    protected $_state_message = NULL;
 
     /**
      * Event which was chained from this event.
-     *
-     * @param  object  Event
      */
-    protected $_chain = null;
+    protected $_chain = NULL;
 
     /**
      * Constructs a new event object.
      */
-    public function __construct ()
+    public function __construct()
     {
-		// default event state
+        // default event state
         $this->set_state(self::STATE_INACTIVE);
     }
 
@@ -81,11 +79,11 @@ class Kohana_Event_Instance
      *
      * @return  boolean  True on success
      */
-    public function set_state ( $state, $msg = null )
+    public function set_state($state, $msg = NULL)
     {
         $this->_state = (int) $state;
-        $this->_stateMessage = $msg;
-        return true;
+        $this->_state_message = $msg;
+        return TRUE;
     }
 
     /**
@@ -93,9 +91,9 @@ class Kohana_Event_Instance
      *
      * @return  mixed  Current event state message, NULL otherwise.
      */
-    public function get_state_message ()
+    public function get_state_message()
     {
-        return $this->_stateMessage;
+        return $this->_state_message;
     }
 
     /**
@@ -103,7 +101,7 @@ class Kohana_Event_Instance
      *
      * @return  integer  Current state of this event.
      */
-    public function get_state ()
+    public function get_state()
     {
         return $this->_state;
     }
@@ -113,9 +111,9 @@ class Kohana_Event_Instance
      *
      * @return  void
      */
-    public function halt ()
+    public function halt()
     {
-        $this->_halt = true;
+        $this->_halt = TRUE;
     }
 
     /**
@@ -124,7 +122,7 @@ class Kohana_Event_Instance
      *
      * @return  boolean  True to halt | False otherwise
      */
-    public function is_halted ()
+    public function is_halted()
     {
         return $this->_halt;
     }
@@ -138,7 +136,7 @@ class Kohana_Event_Instance
      *
      * @return  mixed  Results of
      */
-    public function get_data ()
+    public function get_data()
     {
         return $this->_data;
     }
@@ -150,23 +148,26 @@ class Kohana_Event_Instance
      *
      * @return  boolean  True
      */
-    public function set_data ( $value, $key = false )
+    public function set_data($value, $key = FALSE)
     {
 
-        if ( ! is_array($this->_data) ) 
+        if ( ! is_array($this->_data))
         {
             (array) $this->_data[$key] = $value;
-        } 
-        else 
+        }
+        else
         {
-            if (false === $key) 
+            if ($key === FALSE)
+            {
                 $this->_data[] = $value;
-            
+            }
             else
+            {
                 $this->_data[$key] = $value;
+            }
         }
 
-        return true;
+        return TRUE;
     }
 
     /**
@@ -174,7 +175,7 @@ class Kohana_Event_Instance
      *
      * @return  string
      */
-    public function get_signal ()
+    public function get_signal()
     {
         return $this->_signal;
     }
@@ -186,7 +187,7 @@ class Kohana_Event_Instance
      *
      * @return  void
      */
-    public function set_signal ( $signal )
+    public function set_signal($signal)
     {
         $this->_signal = $signal;
     }
@@ -196,7 +197,7 @@ class Kohana_Event_Instance
      *
      * @param  object  $chain  Event
      */
-    public function set_chain ( Event $chain )
+    public function set_chain(Event $chain)
     {
         $this->_chain = $chain;
     }
@@ -204,9 +205,9 @@ class Kohana_Event_Instance
     /**
      * Returns the chained Event object if exists.
      *
-     * @return  mixed  Event object, null if no chain exists.
+     * @return  mixed  Event object, NULL if no chain exists.
      */
-    public function get_chain ()
+    public function get_chain()
     {
         return $this->_chain;
     }

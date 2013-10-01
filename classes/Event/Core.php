@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php (defined('SYSPATH')) OR die('No direct script access.');
 
 abstract class Event_Core
 {
@@ -14,8 +14,10 @@ abstract class Event_Core
     {
         $class = get_called_class ();
 
-        if ( !isset(self::$_instances[$class]) )
+        if ( ! isset(self::$_instances[$class]))
+        {
             self::$_instances[$class] = new $class;
+        }
 
         return self::$_instances[$class];
     }
@@ -23,5 +25,8 @@ abstract class Event_Core
     /**
      * Disallow cloning of a singleton
      */
-    final private function __clone () {}
+    final private function __clone()
+    {
+
+    }
 }

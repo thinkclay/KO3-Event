@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * The callback object is the main object responsible for holding our event
@@ -12,20 +12,20 @@
  * call the event that is currently firing ... and if this seems a bit
  * crazy well thats because it is.
  */
-class Kohana_Event_Callback 
+class Kohana_Event_Callback
 {
     /**
      * The lambda function that will execute when this callback is triggered.
      */
-    protected $_function = null;
+    protected $_function = NULL;
 
     /**
      * String identifier for this callback
      *
      * @var  string
      */
-     protected $_identifier = null;
-     
+     protected $_identifier = NULL;
+
 
     /**
      * Constructs a new callback object.
@@ -34,11 +34,13 @@ class Kohana_Event_Callback
      *
      * @return  Queue
      */
-    public function __construct ( $function, $identifier = null )
+    public function __construct($function, $identifier = NULL)
     {
-        if (null === $identifier)
-        	$identifier = rand(100000,999999);
-		
+        if ($identifier === NULL)
+        {
+            $identifier = rand(100000,999999);
+        }
+
         $this->_function = $function;
         $this->_identifier = (string) $identifier;
     }
@@ -51,16 +53,25 @@ class Kohana_Event_Callback
      * @throws  RuntimeException  When exception thrown within the closure.
      * @return  mixed  Results of the function
      */
-    public function fire ( $params = null )
+    public function fire($params = NULL)
     {
-        if ( count(func_get_args()) >= 2 )
+        if (count(func_get_args()) >= 2)
+        {
             $params = func_get_args();
-		
+        }
         elseif ( ! is_array($params))
-        	$params = array($params);
+        {
+            $params = array($params);
+        }
 
-        try { return call_user_func_array($this->_function, $params); }
-        catch ( Exception $e ) { throw new RuntimeException($e->getMessage()); }
+        try
+        {
+            return call_user_func_array($this->_function, $params);
+        }
+        catch (Exception $e)
+        {
+            throw new RuntimeException($e->getMessage());
+        }
     }
 
     /**
@@ -68,7 +79,7 @@ class Kohana_Event_Callback
      *
      * @return  string
      */
-    public function get_identifier ()
+    public function get_identifier()
     {
         return $this->_identifier;
     }

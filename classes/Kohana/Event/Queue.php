@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') OR die('No direct script access.');
 
 /**
  * The queue object is a priority queue implemented using a heap, it was decided
@@ -16,7 +16,7 @@
  * The object itself represents the queue of subscriptions for an event Signal,
  * which is passed as the constructors first parameter.
  */
-class Kohana_Event_Queue extends SplObjectStorage 
+class Kohana_Event_Queue extends SplObjectStorage
 {
 
     /**
@@ -24,14 +24,14 @@ class Kohana_Event_Queue extends SplObjectStorage
      *
      * @var  object  Signal
      */
-    protected $_signal = null;
+    protected $_signal = NULL;
 
     /**
      * Flag for the prioritizing the queue.
      *
      * @var  boolean
      */
-    public $dirty = false;
+    public $dirty = FALSE;
 
     /**
      * Constructs a new queue object.
@@ -52,11 +52,11 @@ class Kohana_Event_Queue extends SplObjectStorage
      *
      * @return  object
      */
-    public function get_signal ( $signal = false )
+    public function get_signal ( $signal = FALSE )
     {
-        if ( ! $signal )
+        if ( ! $signal)
             return $this->_signal;
-        
+
         else
             return $this->_signal->signal();
     }
@@ -71,34 +71,36 @@ class Kohana_Event_Queue extends SplObjectStorage
      */
     public function enqueue ( Event_Callback $callback, $priority = 100 )
     {
-        $this->dirty = true;
-        
-        if ( $priority === null ) 
-        	$priority = 100;
-        
-        $priority = (integer) $priority;
+        $this->dirty = TRUE;
+
+        if ($priority === NULL)
+        {
+            $priority = 100;
+        }
+
+        $priority = (int) $priority;
         parent::attach($callback, $priority);
     }
 
     /**
     * Removes a subscription from the queue.
     *
-    * @param  mixed  callback  String identifier of the subscription or a Subscription object.
+    * @param    mixed  $callback  String identifier of the subscription or a Subscription object.
     *
-    * @throws  InvalidArgumentException
-    * @return  void
+    * @throws   InvalidArgumentException
+    * @return   void
     */
     public function dequeue ( $callback )
     {
-        if (is_string($callback) && $this->locate($callback)) 
+        if (is_string($callback) AND $this->locate($callback))
         {
             parent::detach($this->current());
-            $this->dirty = true;
-        } 
-        elseif ( $callback instanceof Event_Callback ) 
+            $this->dirty = TRUE;
+        }
+        elseif ($callback instanceof Event_Callback)
         {
             parent::detach($callback);
-            $this->dirty = true;
+            $this->dirty = TRUE;
         }
     }
 
@@ -111,17 +113,17 @@ class Kohana_Event_Queue extends SplObjectStorage
     */
     public function locate ( $identifier )
     {
-        $this->rewind(false);
-		
-        while ( $this->valid() ) 
+        $this->rewind(FALSE);
+
+        while ($this->valid())
         {
-            if ( $this->current()->get_identifier() == $identifier ) 
-                return true;
+            if ($this->current()->get_identifier() == $identifier)
+                return TRUE;
 
             $this->next();
         }
-		
-        return false;
+
+        return FALSE;
     }
 
     /**
@@ -131,10 +133,12 @@ class Kohana_Event_Queue extends SplObjectStorage
      *
      * @return  void
      */
-    public function rewind ( $prioritize = true )
+    public function rewind ( $prioritize = TRUE )
     {
-        if ( $prioritize )
+        if ($prioritize)
+        {
             $this->_prioritize();
+        }
 
         return parent::rewind();
     }
@@ -146,33 +150,37 @@ class Kohana_Event_Queue extends SplObjectStorage
      */
     protected function _prioritize ( )
     {
-        if (!$this->dirty) 
-        	return null;
-        
+        if ( ! $this->dirty)
+            return NULL;
+
         $tmp = array();
-        $this->rewind(false);
-        
-        while ( $this->valid() ) 
+        $this->rewind(FALSE);
+
+        while ($this->valid())
         {
             $pri = $this->getInfo();
-           
-		    if ( ! isset($tmp[$pri]) )
-                $tmp[$pri] = array();
+
+            if ( ! isset($tmp[$pri]))
+            {
+                $tmp[$pri] = [];
+            }
 
             $tmp[$pri][] = $this->current();
             $this->next();
         }
-		
+
         ksort($tmp, SORT_NUMERIC);
         $this->removeAll($this);
-		
-        foreach ( $tmp as $priority => $_array ) 
+
+        foreach ($tmp as $priority => $_array)
         {
-            foreach ( $_array as $_sub )
+            foreach ($_array as $_sub)
+            {
                 parent::attach($_sub, $priority);
+            }
         }
-		
-        $this->dirty = false;
+
+        $this->dirty = FALSE;
     }
 
     /**

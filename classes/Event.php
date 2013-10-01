@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php (defined('SYSPATH')) OR die('No direct script access.');
 
 /**
  * The engine is responsible for ensuring all data passed into the system
