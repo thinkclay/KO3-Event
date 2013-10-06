@@ -292,13 +292,19 @@ class Kohana_Event extends Event_Core
      */
     public static function lazyload($vars = NULL)
     {
-        $controller = Request::$current->controller();
-        $action = Request::$current->action();
-        $current_executing_event = 'Model_Event_'.$controller;
+        // Fetch the controller in a safe manner
+        $controller = NULL;
+        if ($request = Request::$current) {
 
-        if (class_exists($current_executing_event))
-        {
-            $current_executing_event::$action($vars);
+            $controller = $request->controller();
+            $action = $request->action();
+            $current_executing_event = 'Model_Event_'.$controller;
+
+            if (class_exists($current_executing_event))
+            {
+                
+                $current_executing_event::$action($vars);
+            }
         }
     }
 }
