@@ -181,11 +181,11 @@ class Kohana_Event extends Event_Core
 
         if (count($vars) === 0)
         {
-            $vars = [ & $event ];
+            $vars = array( & $event );
         }
         else
         {
-            $vars = array_merge([ & $event ], $vars);
+            $vars = array_merge(array( & $event ), $vars);
         }
 
         if ($compare !== TRUE)
@@ -302,7 +302,7 @@ class Kohana_Event extends Event_Core
 
             if (class_exists($current_executing_event))
             {
-                
+
                 $current_executing_event::$action($vars);
             }
         }
