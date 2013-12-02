@@ -1,5 +1,5 @@
 # Event Module for Kohana 3.x
-Lightweight, intuitive event-processing library for PHP 5.3+ applications running on Kohana 3.x (tested on 3.2 and 3.3)
+Lightweight, intuitive event-processing library for PHP 5.4+ ([see the 5.3 branch for older compatability](https://github.com/thinkclay/KO3-Event/tree/php-5.3)) applications running on Kohana 3.x (tested on 3.2 and 3.3)
 
 The Kohana Event Module implements a fast event-processing engine for use with developing event driven applications in PHP 5.3+. It's incredibly simple, driven by a robust engine that allows for event chaining, halting, states, asynchronous execution and robust subscriptions.
 
