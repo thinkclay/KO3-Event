@@ -162,7 +162,7 @@ class Kohana_Event_Queue extends SplObjectStorage
 
             if ( ! isset($tmp[$pri]))
             {
-                $tmp[$pri] = [];
+                $tmp[$pri] = array();
             }
 
             $tmp[$pri][] = $this->current();
