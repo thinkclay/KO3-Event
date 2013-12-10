@@ -1,19 +1,19 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-return array(
+return [
     // Module Information
-    'module' => array(
+    'module' => [
         'name'      => 'Event',
         'overview'  => 'Event engine for Kohana',
         'version'   => '0.0.1',
-        'url'       =>  array(
+        'url'       =>  [
             'author'    => 'http://thinkclay.com',
-        ),
+        ],
 
         // create a point release
         // levels: update, feature, security
-        'changelog' => array(
-            '0.0.1' => array('update' => 'Initial Development of the Module'),
-        ),
-    )
-);
+        'changelog' => [
+            '0.0.1' => ['update' => 'Initial Development of the Module'],
+        ],
+    ]
+];
